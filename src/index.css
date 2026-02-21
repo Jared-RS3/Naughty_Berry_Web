@@ -1,0 +1,186 @@
+@import "tailwindcss";
+
+/* ─── Hoss Round – self-hosted ─────────────────────────────────────────────
+   Place your Hoss Round font files inside /public/fonts/
+   Expected filenames (from HVD Fonts / Adobe Fonts export):
+     HossRound-Regular.woff2  /  HossRound-Bold.woff2  /  HossRound-Black.woff2
+   ─────────────────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Hoss Round';
+  src: url('/fonts/HossRound-Regular.woff2') format('woff2'),
+       url('/fonts/HossRound-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Hoss Round';
+  src: url('/fonts/HossRound-Bold.woff2') format('woff2'),
+       url('/fonts/HossRound-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Hoss Round';
+  src: url('/fonts/HossRound-Black.woff2') format('woff2'),
+       url('/fonts/HossRound-Black.woff') format('woff');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  /* ── Naughty Berry Brand Colors ── */
+  --color-pink-bg:      #FDE8EF;
+  --color-pink-light:   #FFC8DC;
+  --color-pink-mid:     #F78FB3;
+  --color-pink-hot:     #E8176D;
+  --color-pink-deep:    #C01057;
+  --color-pink-card:    #FFF0F6;
+  --color-pink-border:  #F9BDD4;
+  --color-text-dark:    #2D1225;
+  --color-text-mid:     #7A3B5E;
+  --color-white:        #FFFFFF;
+
+  /* Fonts */
+  --font-display: 'Hoss Round', 'Fredoka One', cursive;
+  --font-head:    'Hoss Round', 'Fredoka One', cursive;
+  --font-body:    'Nunito', system-ui, sans-serif;
+
+  /* Radii */
+  --radius-card: 1.5rem;
+  --radius-pill: 9999px;
+}
+
+/* ─── Global Reset ─────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-pink-bg);
+  color: var(--color-text-dark);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+a { text-decoration: none; color: inherit; }
+
+/* ─── Typography helpers ───────────────────────── */
+.font-display { font-family: var(--font-display); }
+.font-head    { font-family: var(--font-head); }
+.font-body    { font-family: var(--font-body); }
+
+/* ─── Gradient helpers ─────────────────────────── */
+.gradient-berry {
+  background: linear-gradient(135deg, #E8176D 0%, #C01057 100%);
+}
+.gradient-pink-soft {
+  background: linear-gradient(160deg, #FDE8EF 0%, #FFC8DC 100%);
+}
+.gradient-hero {
+  background: linear-gradient(160deg, #FDE8EF 0%, #F9C8D8 50%, #FFC8DC 100%);
+}
+.gradient-section-alt {
+  background: linear-gradient(160deg, #FFF0F6 0%, #FDE8EF 100%);
+}
+.gradient-hot-pink {
+  background: linear-gradient(135deg, #E8176D 0%, #FF6BAD 100%);
+}
+
+/* ─── Glass card – pink tinted ─────────────────── */
+.glass-card {
+  background: rgba(255, 240, 246, 0.75);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(232, 23, 109, 0.15);
+}
+
+/* ─── Pink card ────────────────────────────────── */
+.pink-card {
+  background: #FFF0F6;
+  border: 1.5px solid #F9BDD4;
+  border-radius: 1.5rem;
+}
+
+/* ─── Drip keyframes ───────────────────────────── */
+@keyframes drip {
+  0%   { transform: scaleY(0); opacity: 1; transform-origin: top; }
+  80%  { transform: scaleY(1); opacity: 1; transform-origin: top; }
+  100% { transform: scaleY(1) translateY(4px); opacity: 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-12px) rotate(1.5deg); }
+  66%       { transform: translateY(-6px) rotate(-1deg); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(232, 23, 109, 0.25); }
+  50%       { box-shadow: 0 0 40px rgba(232, 23, 109, 0.55), 0 0 80px rgba(232, 23, 109, 0.2); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-2deg); }
+  50%       { transform: rotate(2deg); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-float      { animation: float 4s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-spin-slow  { animation: spin-slow 20s linear infinite; }
+.animate-wiggle     { animation: wiggle 2s ease-in-out infinite; }
+
+/* ─── Shimmer text (hot pink) ──────────────────── */
+.text-shimmer {
+  background: linear-gradient(90deg, #E8176D 0%, #FF6BAD 40%, #fff 50%, #FF6BAD 60%, #E8176D 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ─── Scrollbar ────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #FDE8EF; }
+::-webkit-scrollbar-thumb { background: #E8176D; border-radius: 9999px; }
+
+/* ─── Reduced motion ───────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
