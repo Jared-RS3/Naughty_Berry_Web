@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useMotionValue, useSpring, useReducedMotion } from 'framer-motion'
 import { Download, Star, Flame, Heart, Zap, Coffee } from 'lucide-react'
 
 export const MENU_CATEGORIES = [
@@ -154,15 +154,45 @@ interface MenuCardProps {
 
 function MenuItemCard({ name, desc, price, tag, accent, index }: MenuCardProps) {
   const [hovered, setHovered] = useState(false)
+  const prefersReducedMotion = useReducedMotion()
+  const rotateX = useMotionValue(0)
+  const rotateY = useMotionValue(0)
+  const smoothRotateX = useSpring(rotateX, { stiffness: 230, damping: 18, mass: 0.35 })
+  const smoothRotateY = useSpring(rotateY, { stiffness: 230, damping: 18, mass: 0.35 })
+
+  const onMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (prefersReducedMotion) return
+    const rect = event.currentTarget.getBoundingClientRect()
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+    const xPct = x / rect.width
+    const yPct = y / rect.height
+    rotateY.set((xPct - 0.5) * 8)
+    rotateX.set((0.5 - yPct) * 8)
+  }
+
+  const resetTilt = () => {
+    rotateX.set(0)
+    rotateY.set(0)
+  }
 
   return (
     <motion.div
       variants={CARD_VARIANTS}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseMove={onMove}
+      onMouseLeave={() => {
+        setHovered(false)
+        resetTilt()
+      }}
+      whileHover={prefersReducedMotion ? undefined : { y: -8 }}
       className="relative pink-card rounded-2xl p-5 transition-all duration-300 overflow-hidden group bg-white"
       style={{
-      boxShadow: hovered ? `0 4px 32px ${accent}30, 0 4px 16px rgba(0,0,0,0.06)` : '0 2px 12px rgba(0,0,0,0.06)',
+        rotateX: prefersReducedMotion ? 0 : smoothRotateX,
+        rotateY: prefersReducedMotion ? 0 : smoothRotateY,
+        transformPerspective: 900,
+        transformStyle: 'preserve-3d',
+        boxShadow: hovered ? `0 20px 36px ${accent}30, 0 8px 18px rgba(0,0,0,0.06)` : '0 2px 12px rgba(0,0,0,0.06)',
         borderColor: hovered ? `${accent}50` : '#F9BDD4',
       }}
     >
@@ -171,6 +201,12 @@ function MenuItemCard({ name, desc, price, tag, accent, index }: MenuCardProps) 
         animate={{ opacity: hovered ? 1 : 0 }}
         className="absolute inset-0 pointer-events-none"
         style={{ background: `radial-gradient(circle at 50% 0%, ${accent}12, transparent 60%)` }}
+      />
+
+      <motion.div
+        animate={{ opacity: hovered ? 1 : 0.45 }}
+        className="absolute -inset-[1px] pointer-events-none motion-aurora"
+        style={{ borderRadius: 'inherit' }}
       />
 
       {/* Number */}
@@ -282,9 +318,9 @@ export default function MenuPreview() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveCategory(cat.id)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#FFF0F6]"
+                className="relative isolate overflow-hidden flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#FFF0F6]"
                 style={{
-                  background: isActive ? cat.color : 'rgba(232,23,109,0.08)',
+                  background: 'rgba(232,23,109,0.08)',
                   color: isActive ? '#fff' : '#7A3B5E',
                   borderColor: isActive ? cat.color : '#F9BDD4',
                   border: '1.5px solid',
@@ -293,6 +329,14 @@ export default function MenuPreview() {
               >
                 <Icon size={13} />
                 {cat.label}
+                {isActive && (
+                  <motion.span
+                    layoutId="active-menu-tab"
+                    className="absolute inset-0 rounded-full -z-10"
+                    style={{ background: `${cat.color}` }}
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
               </motion.button>
             )
           })}
@@ -308,7 +352,8 @@ export default function MenuPreview() {
             variants={CONTAINER_VARIANTS}
             initial="hidden"
             animate="visible"
-            exit={{ opacity: 0, y: -10, transition: { duration: 0.2 } }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            exit={{ opacity: 0, y: -10, filter: 'blur(4px)', transition: { duration: 0.22 } }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
           >
             {activeCat.items.map((item, i) => (

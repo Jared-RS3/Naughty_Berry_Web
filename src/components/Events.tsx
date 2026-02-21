@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Users, Star, Crown, CheckCircle } from 'lucide-react'
 
+const EASE_OUT = [0.22, 1, 0.36, 1] as const
+
 const PACKAGES = [
   {
     id: 'small',
@@ -154,16 +156,21 @@ export default function Events() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.8, delay: 0.15, ease: EASE_OUT }}
           className="flex flex-wrap justify-center gap-2 mb-16"
         >
-          {OCCASIONS.map((o) => (
-            <span
+          {OCCASIONS.map((o, i) => (
+            <motion.span
               key={o}
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.04 * i, ease: EASE_OUT }}
+              whileHover={{ y: -2, scale: 1.02 }}
               className="px-4 py-2 text-sm text-[#7A3B5E] bg-white border border-[#F9BDD4] rounded-full"
             >
               {o}
-            </span>
+            </motion.span>
           ))}
         </motion.div>
 
@@ -177,7 +184,8 @@ export default function Events() {
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.12 }}
+                whileHover={{ y: -10, scale: 1.01 }}
+                transition={{ duration: 0.65, delay: i * 0.1, ease: EASE_OUT }}
                 className={`relative rounded-3xl p-8 overflow-hidden ${pkg.featured ? '' : 'bg-white border border-[#F9BDD4]'}`}
                 style={pkg.featured ? {
                   background: "linear-gradient(145deg, #FFF0F6 0%, #FDE8EF 100%)",
@@ -185,6 +193,12 @@ export default function Events() {
                   boxShadow: `0 0 40px ${pkg.color}22, 0 8px 32px rgba(232,23,109,0.08)`,
                 } : {}}
               >
+                <motion.div
+                  className="absolute inset-0 pointer-events-none motion-aurora"
+                  initial={{ opacity: 0.28 }}
+                  whileHover={{ opacity: 0.6 }}
+                />
+
                 {pkg.featured && (
                   <div
                     className="absolute top-0 inset-x-0 h-1 rounded-t-3xl"
@@ -253,10 +267,10 @@ export default function Events() {
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 0.8, ease: EASE_OUT }}
           className="max-w-2xl mx-auto"
         >
-          <div className="bg-white border border-[#F9BDD4] rounded-3xl p-8 md:p-12">
+          <div className="bg-white border border-[#F9BDD4] rounded-3xl p-8 md:p-12 motion-sheen">
             <h3 className="font-display text-3xl font-bold text-[#2D1225] mb-2">
               Let's Make It Sweet.
             </h3>
@@ -270,6 +284,7 @@ export default function Events() {
                   key="success"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.55, ease: EASE_OUT }}
                   className="text-center py-10"
                 >
                   <div className="w-16 h-16 rounded-full gradient-berry flex items-center justify-center mx-auto mb-5">
@@ -285,6 +300,10 @@ export default function Events() {
               ) : (
                 <motion.form
                   key="form"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.35, ease: EASE_OUT }}
                   onSubmit={handleSubmit}
                   className="space-y-4"
                   aria-label="Event enquiry form"

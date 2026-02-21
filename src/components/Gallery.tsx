@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { X, Instagram, ZoomIn } from 'lucide-react'
 
 // Placeholder gallery items — swap with real product photos
@@ -25,6 +25,7 @@ interface GalleryItem {
 
 function PlaceholderImage({ item, onClick }: { item: GalleryItem; onClick: () => void }) {
   const [hovered, setHovered] = useState(false)
+  const prefersReducedMotion = useReducedMotion()
 
   return (
     <motion.div
@@ -36,8 +37,8 @@ function PlaceholderImage({ item, onClick }: { item: GalleryItem; onClick: () =>
       role="button"
       aria-label={`View ${item.label} – ${item.sub}`}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
-      whileHover={{ scale: 1.01 }}
-      transition={{ duration: 0.3 }}
+      whileHover={prefersReducedMotion ? undefined : { scale: 1.02, y: -4 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
     >
       {/* Placeholder colored block (replace with <img> when photos ready) */}
       <div
@@ -53,7 +54,13 @@ function PlaceholderImage({ item, onClick }: { item: GalleryItem; onClick: () =>
           style={{ background: item.color }}
           aria-hidden="true"
         />
-        <span className="relative text-5xl mb-3 select-none">{item.emoji}</span>
+        <motion.span
+          className="relative text-5xl mb-3 select-none"
+          animate={prefersReducedMotion ? undefined : { y: [0, -6, 0], rotate: [0, 2, 0] }}
+          transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          {item.emoji}
+        </motion.span>
         <span className="relative text-xs font-bold tracking-widest uppercase text-[#2D1225]/30">
           Photo Placeholder
         </span>
@@ -116,17 +123,18 @@ export default function Gallery() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.8 }}
           className="grid grid-cols-2 md:grid-cols-4 auto-rows-[180px] gap-4"
         >
           {GALLERY.map((item, i) => (
             <motion.div
               key={item.id}
+              layoutId={`gallery-card-${item.id}`}
               className={item.w}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.06 }}
+              transition={{ duration: 0.55, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
             >
               <PlaceholderImage item={item} onClick={() => setSelected(item)} />
             </motion.div>
@@ -179,9 +187,10 @@ export default function Gallery() {
               <X size={18} />
             </motion.button>
             <motion.div
-              initial={{ scale: 0.85, opacity: 0 }}
+              layoutId={`gallery-card-${selected.id}`}
+              initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.85, opacity: 0 }}
+              exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
               className="max-w-lg w-full relative"
               onClick={(e) => e.stopPropagation()}
