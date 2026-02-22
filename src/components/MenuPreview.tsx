@@ -269,7 +269,7 @@ export default function MenuPreview() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.7 }}
-          className="flex flex-col items-start mb-14"
+          className="flex flex-col items-center lg:items-start mb-14"
         >
           <div className="flex items-center gap-2 mb-4">
             <img
@@ -285,7 +285,7 @@ export default function MenuPreview() {
             </span>
           </div>
           <div className="flex flex-col md:flex-row md:items-end justify-between w-full gap-6">
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] leading-tight">
+            <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] leading-tight text-center md:text-left">
               Pure Naughty. <br />
               <span className="text-shimmer">Seriously Good.</span>
             </h2>

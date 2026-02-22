@@ -43,7 +43,7 @@ export default function About() {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <div className="flex items-center gap-2 mb-6">
+              <div className="flex items-center justify-center lg:justify-start gap-2 mb-6">
                 <img
                   src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
                   alt=""
@@ -58,13 +58,13 @@ export default function About() {
               </div>
 
 
-              <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] mb-6 leading-tight">
+              <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] mb-6 leading-tight text-center lg:text-left">
                 Cape Town's First <br />
                 Strawberries & <br />
                 <span className="text-shimmer">Chocolate on Tap.</span>
               </h2>
 
-              <div className="space-y-4 text-[#2D1225]/60 leading-relaxed">
+              <div className="space-y-4 text-[#2D1225]/60 leading-relaxed text-center lg:text-left">
                 <p>
                   Naughty Berry started with a simple obsession: why settle for basic desserts when you can have something extraordinary? We took the world's most romantic combination, fresh strawberries and premium chocolate, and made it accessible to everyone.
                 </p>
@@ -76,7 +76,7 @@ export default function About() {
                 </p>
               </div>
 
-              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <div className="mt-8 flex flex-col sm:flex-row gap-3 items-center lg:items-start">
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}

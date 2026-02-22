@@ -158,17 +158,53 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
         <WaveDivider variant="hero" fill={isNaughtyMode ? 'rgba(255,45,156,0.18)' : '#FFF0F6'} height={64} />
       </div>
 
-
+      {/* ── Mobile: full-bleed strawberry image background ── */}
+      <div className="lg:hidden absolute inset-0 z-[1] overflow-hidden" aria-hidden="true">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.88 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+          className="absolute inset-0 flex items-start justify-center pt-36"
+          style={{ y: prefersReducedMotion ? 0 : imageY }}
+        >
+          <motion.div
+            animate={{ y: [0, -20, -7, -16, 0], rotate: [0, 1.4, -0.4, 0.9, 0] }}
+            transition={{ duration: 7, ease: 'easeInOut', repeat: Infinity, repeatType: 'loop' }}
+            className="w-[85%] max-w-[380px]"
+          >
+            <img
+              src="/3d-delicious-seasonal-fruits.png"
+              alt=""
+              className="w-full h-auto object-contain select-none"
+              style={{
+                filter: isNaughtyMode
+                  ? 'drop-shadow(0 30px 60px rgba(255,45,156,0.45)) drop-shadow(0 8px 20px rgba(122,27,120,0.40))'
+                  : 'drop-shadow(0 30px 60px rgba(232,23,109,0.35)) drop-shadow(0 8px 20px rgba(192,16,87,0.25))',
+              }}
+              draggable={false}
+            />
+          </motion.div>
+        </motion.div>
+        {/* Gradient scrim — image shows through top half, fades to bg at bottom for text legibility */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: isNaughtyMode
+              ? 'linear-gradient(to bottom, rgba(14,0,16,0.08) 0%, rgba(14,0,16,0.18) 35%, rgba(14,0,16,0.78) 62%, rgba(14,0,16,0.97) 100%)'
+              : 'linear-gradient(to bottom, rgba(253,232,239,0.05) 0%, rgba(253,232,239,0.18) 32%, rgba(253,232,239,0.82) 62%, rgba(253,232,239,0.98) 100%)',
+          }}
+        />
+      </div>
 
       {/* ── Navbar spacer + main split ── */}
-      <div className="relative z-10 flex-1 flex flex-col lg:flex-row items-center max-w-7xl mx-auto w-full px-8 lg:px-16 pt-24 pb-6 gap-12 lg:gap-0">
+      <div className="relative z-10 flex-1 flex flex-col lg:flex-row items-center max-w-7xl mx-auto w-full px-8 lg:px-16 pt-24 pb-12 lg:pb-6 gap-12 lg:gap-0">
 
         {/* ── LEFT: copy ── */}
         <motion.div
           variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
           initial="hidden"
           animate="visible"
-          className="flex-1 flex flex-col items-start justify-center order-2 lg:order-1 max-w-xl"
+          className="lg:flex-1 flex flex-col items-center lg:items-start justify-center mt-auto lg:mt-0 order-1 lg:order-1 max-w-xl w-full pb-0 lg:pb-0"
         >
 
           {/* Eyebrow pill */}
@@ -189,7 +225,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
           {/* Headline */}
           <motion.h1
             variants={reveal}
-            className={`font-display font-black text-5xl md:text-6xl xl:text-7xl leading-[0.92] mb-6 ${
+            className={`font-display font-black text-5xl md:text-6xl xl:text-7xl leading-[0.92] mb-6 text-center lg:text-left ${
               isNaughtyMode ? 'text-white' : 'text-[#2D1225]'
             }`}
           >
@@ -221,7 +257,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
           {/* Divider */}
           <motion.div
             variants={reveal}
-            className="w-16 h-[3px] rounded-full mb-6 origin-left"
+            className="w-16 h-[3px] rounded-full mb-6 origin-center lg:origin-left"
             style={{
               background: isNaughtyMode
                 ? 'linear-gradient(90deg, #FF2D9C, #9F3BFF)'
@@ -232,7 +268,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
           {/* Sub */}
           <motion.p
             variants={reveal}
-            className={`text-base md:text-lg leading-relaxed mb-8 max-w-sm ${
+            className={`text-base md:text-lg leading-relaxed mb-8 max-w-sm text-center lg:text-left ${
               isNaughtyMode ? 'text-white/70' : 'text-[#7A3B5E]'
             }`}
           >
@@ -244,7 +280,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
           {/* CTAs */}
           <motion.div
             variants={reveal}
-            className="flex flex-col sm:flex-row gap-3"
+            className="flex flex-col sm:flex-row gap-3 items-center lg:items-start"
           >
             <motion.button
               whileHover={{ scale: 1.04, boxShadow: '0 8px 40px rgba(232,23,109,0.40)' }}
@@ -275,7 +311,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
           {/* Social proof */}
           <motion.div
             variants={reveal}
-            className={`flex items-center gap-3 mt-10 px-4 py-3 rounded-2xl border w-fit ${
+            className={`flex items-center gap-3 mt-10 px-4 py-3 rounded-2xl border w-fit mx-auto lg:mx-0 ${
               isNaughtyMode ? 'border-white/15 bg-black/30 backdrop-blur-sm' : 'border-[#F9BDD4] bg-white/60'
             }`}
           >
@@ -303,8 +339,8 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
           </motion.div>
         </motion.div>
 
-        {/* ── RIGHT: floating strawberry image ── */}
-        <div className="flex-1 flex items-center justify-center order-1 lg:order-2 w-full">
+        {/* ── RIGHT: floating strawberry image (desktop only — mobile uses absolute bg above) ── */}
+        <div className="hidden lg:flex flex-1 items-center justify-center lg:order-2 w-full">
           <motion.div
             initial={{ opacity: 0, scale: 0.85, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}

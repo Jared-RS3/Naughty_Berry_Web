@@ -87,7 +87,7 @@ export default function LoadingScreen({ onComplete }: Props) {
         muted
         loop
         playsInline
-        className="absolute inset-0 w-full h-full object-cover scale-110"
+        className="absolute inset-0 w-full h-full object-cover scale-100"
         style={{ filter: 'brightness(0.28) saturate(1.4)' }}
       />
 

@@ -48,7 +48,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
         role="navigation"
         aria-label="Main navigation"
       >
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 h-20 md:h-16 flex items-center justify-between">
           {/* Logo */}
           <a
             href="#top"
@@ -236,7 +236,7 @@ function NaughtyBerryLogo() {
     <img
       src="/naughty-berry-logo.png"
       alt="Naughty Berry"
-      className="h-10 w-auto object-contain"
+      className="h-14 md:h-10 w-auto object-contain"
     />
   )
 }
