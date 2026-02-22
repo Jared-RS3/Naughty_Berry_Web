@@ -1,6 +1,11 @@
 import { useRef } from 'react'
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { ArrowDown, Sparkles } from 'lucide-react'
+import WaveDivider from './WaveDivider'
+
+type HeroProps = {
+  isNaughtyMode: boolean
+}
 
 // Decorative floating dot coords (% of section)
 const DOTS = [
@@ -13,7 +18,13 @@ const DOTS = [
   { x: '22%', y: '44%', size: 4,  delay: 0.3 },
 ]
 
-export default function Hero() {
+const HERO_BERRY_ACCENTS = [
+  { x: '3%', y: '10%', size: 72, delay: 0.1, rotate: -12 },
+  { x: '86%', y: '22%', size: 58, delay: 0.45, rotate: 11 },
+  { x: '77%', y: '84%', size: 66, delay: 0.25, rotate: -7 },
+]
+
+export default function Hero({ isNaughtyMode }: HeroProps) {
   const heroRef = useRef<HTMLElement | null>(null)
   const prefersReducedMotion = useReducedMotion()
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
@@ -39,26 +50,67 @@ export default function Hero() {
       ref={heroRef}
       id="top"
       className="relative min-h-screen w-full overflow-hidden flex flex-col"
-      style={{ background: 'linear-gradient(160deg, #FDE8EF 0%, #FFF0F6 45%, #FDE8EF 100%)' }}
+      style={{
+        background: isNaughtyMode
+          ? 'radial-gradient(ellipse at 74% 52%, #A80E52 0%, #530328 32%, #0E0010 66%)'
+          : 'linear-gradient(160deg, #FDE8EF 0%, #FFF0F6 45%, #FDE8EF 100%)',
+      }}
       aria-label="Hero — Naughty Berry"
     >
       {/* ── Decorative blobs ── */}
       <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
         {/* top-right warm glow */}
         <motion.div
-          className="absolute -top-[15%] -right-[10%] w-[55vw] h-[55vw] rounded-full blur-[120px] opacity-40"
-          style={{ y: prefersReducedMotion ? 0 : glowY, background: 'radial-gradient(circle, #FFC8DC, transparent 65%)' }}
+          className="absolute -top-[5%] right-[8%] w-[58vw] h-[58vw] rounded-full blur-[40px]"
+          style={{
+            y: prefersReducedMotion ? 0 : glowY,
+            opacity: isNaughtyMode ? 0.72 : 0.4,
+            background: isNaughtyMode
+              ? 'radial-gradient(circle, #E8176D 0%, #9A0D46 10%, transparent 58%)'
+              : 'radial-gradient(circle, #FFC8DC, transparent 65%)',
+          }}
         />
         {/* bottom-left warm glow */}
         <motion.div
-          className="absolute -bottom-[10%] -left-[8%] w-[40vw] h-[40vw] rounded-full blur-[100px] opacity-30"
-          style={{ y: prefersReducedMotion ? 0 : glowY, background: 'radial-gradient(circle, #F78FB3, transparent 65%)' }}
+          className="absolute -bottom-[10%] -left-[8%] w-[40vw] h-[40vw] rounded-full blur-[55px]"
+          style={{
+            y: prefersReducedMotion ? 0 : glowY,
+            opacity: isNaughtyMode ? 0.45 : 0.3,
+            background: isNaughtyMode
+              ? 'radial-gradient(circle, #5C094A, transparent 65%)'
+              : 'radial-gradient(circle, #F78FB3, transparent 65%)',
+          }}
         />
         {/* centre subtle pink */}
         <motion.div
           className="absolute top-[30%] left-[35%] w-[40vw] h-[40vw] rounded-full blur-[140px] opacity-20"
-          style={{ y: prefersReducedMotion ? 0 : dotsY, background: 'radial-gradient(circle, #E8176D, transparent 60%)' }}
+          style={{
+            y: prefersReducedMotion ? 0 : dotsY,
+            background: isNaughtyMode
+              ? 'radial-gradient(circle, #FF1E95, transparent 58%)'
+              : 'radial-gradient(circle, #E8176D, transparent 60%)',
+          }}
         />
+
+        {isNaughtyMode && (
+          <>
+            {/* Core bright spotlight — matches the reference right-side glow */}
+            <div
+              className="absolute top-[10%] right-[2%] w-[52vw] h-[80vh] pointer-events-none"
+              style={{
+                background: 'radial-gradient(ellipse at 60% 42%, rgba(232,23,109,0.65) 0%, rgba(168,14,82,0.30) 34%, transparent 62%)',
+                filter: 'blur(22px)',
+              }}
+            />
+            {/* Secondary deep-pink pulse on image area */}
+            <motion.div
+              className="absolute top-[20%] right-[18%] w-[30vw] h-[30vw] rounded-full blur-[32px]"
+              style={{ background: 'radial-gradient(circle, rgba(255,43,140,0.48) 0%, transparent 68%)' }}
+              animate={prefersReducedMotion ? undefined : { scale: [0.9, 1.08, 0.93], opacity: [0.5, 0.85, 0.55] }}
+              transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          </>
+        )}
 
         {/* Floating decorative dots */}
         {DOTS.map((d, i) => (
@@ -70,7 +122,9 @@ export default function Hero() {
               top: d.y,
               width: d.size,
               height: d.size,
-              background: 'linear-gradient(135deg, #E8176D, #FF6BAD)',
+              background: isNaughtyMode
+                ? 'linear-gradient(135deg, #FF2D9C, #9F3BFF)'
+                : 'linear-gradient(135deg, #E8176D, #FF6BAD)',
               opacity: 0.22,
             }}
             animate={{ y: [0, -10, 0], scale: [1, 1.15, 1] }}
@@ -78,22 +132,36 @@ export default function Hero() {
           />
         ))}
 
-        {/* Wavy pink border stripe across the bottom */}
-        <svg
-          className="absolute bottom-0 left-0 w-full"
-          viewBox="0 0 1440 60"
-          preserveAspectRatio="none"
-          style={{ opacity: 0.15 }}
-        >
-          <path
-            d="M0,30 C240,0 480,60 720,30 C960,0 1200,60 1440,30 L1440,60 L0,60 Z"
-            fill="#E8176D"
+        {HERO_BERRY_ACCENTS.map((berry, i) => (
+          <motion.img
+            key={`hero-berry-${i}`}
+            src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+            alt=""
+            aria-hidden="true"
+            className="absolute hidden md:block select-none"
+            style={{
+              left: berry.x,
+              top: berry.y,
+              width: berry.size,
+              height: 'auto',
+              rotate: `${berry.rotate}deg`,
+              opacity: isNaughtyMode ? 0.68 : 0.36,
+              filter: isNaughtyMode ? 'drop-shadow(0 8px 16px rgba(255,45,156,0.35))' : 'drop-shadow(0 8px 16px rgba(232,23,109,0.22))',
+            }}
+            animate={prefersReducedMotion ? undefined : { y: [0, -7, 0], rotate: [berry.rotate, berry.rotate + 2, berry.rotate] }}
+            transition={{ duration: 3.8 + i * 0.5, repeat: Infinity, delay: berry.delay, ease: 'easeInOut' }}
+            draggable={false}
           />
-        </svg>
+        ))}
+
+        {/* Animated wave divider → MenuPreview */}
+        <WaveDivider variant="hero" fill={isNaughtyMode ? 'rgba(255,45,156,0.18)' : '#FFF0F6'} height={64} />
       </div>
 
+
+
       {/* ── Navbar spacer + main split ── */}
-      <div className="relative z-10 flex-1 flex flex-col lg:flex-row items-center max-w-7xl mx-auto w-full px-8 lg:px-16 pt-28 pb-16 gap-12 lg:gap-0">
+      <div className="relative z-10 flex-1 flex flex-col lg:flex-row items-center max-w-7xl mx-auto w-full px-8 lg:px-16 pt-24 pb-6 gap-12 lg:gap-0">
 
         {/* ── LEFT: copy ── */}
         <motion.div
@@ -106,10 +174,14 @@ export default function Hero() {
           {/* Eyebrow pill */}
           <motion.div
             variants={reveal}
-            className="flex items-center gap-2 mb-7 px-4 py-1.5 rounded-full border border-[#F9BDD4] bg-white/70"
+            className={`flex items-center gap-2 mb-7 px-4 py-1.5 rounded-full border ${
+              isNaughtyMode
+                ? 'border-[#FF2D9C]/40 bg-black/30 backdrop-blur-sm'
+                : 'border-[#F9BDD4] bg-white/70'
+            }`}
           >
-            <Sparkles size={12} className="text-[#E8176D]" />
-            <span className="text-[11px] font-bold tracking-[0.28em] uppercase text-[#E8176D]">
+            <Sparkles size={12} className={isNaughtyMode ? 'text-[#FF4DAE]' : 'text-[#E8176D]'} />
+            <span className={`text-[11px] font-bold tracking-[0.28em] uppercase ${isNaughtyMode ? 'text-[#FF4DAE]' : 'text-[#E8176D]'}`}>
               Cape Town's First
             </span>
           </motion.div>
@@ -117,23 +189,31 @@ export default function Hero() {
           {/* Headline */}
           <motion.h1
             variants={reveal}
-            className="font-display font-black text-5xl md:text-6xl xl:text-7xl leading-[0.92] text-[#2D1225] mb-6"
+            className={`font-display font-black text-5xl md:text-6xl xl:text-7xl leading-[0.92] mb-6 ${
+              isNaughtyMode ? 'text-white' : 'text-[#2D1225]'
+            }`}
           >
             Strawberries.
             <br />
-            <span
-              className="inline-block"
-              style={{
-                background: 'linear-gradient(90deg, #E8176D 0%, #C01057 50%, #E8176D 100%)',
-                backgroundSize: '200% auto',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                animation: 'shimmer 3s linear infinite',
-              }}
-            >
-              Chocolate.
-            </span>
+            {isNaughtyMode ? (
+              <span className="inline-block" style={{ color: '#FF2D8C' }}>
+                Chocolate.
+              </span>
+            ) : (
+              <span
+                className="inline-block"
+                style={{
+                  background: 'linear-gradient(90deg, #E8176D 0%, #C01057 50%, #E8176D 100%)',
+                  backgroundSize: '200% auto',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  animation: 'shimmer 3s linear infinite',
+                }}
+              >
+                Chocolate.
+              </span>
+            )}
             <br />
             On&nbsp;Tap.
           </motion.h1>
@@ -142,17 +222,23 @@ export default function Hero() {
           <motion.div
             variants={reveal}
             className="w-16 h-[3px] rounded-full mb-6 origin-left"
-            style={{ background: 'linear-gradient(90deg, #E8176D, #FF6BAD)' }}
+            style={{
+              background: isNaughtyMode
+                ? 'linear-gradient(90deg, #FF2D9C, #9F3BFF)'
+                : 'linear-gradient(90deg, #E8176D, #FF6BAD)',
+            }}
           />
 
           {/* Sub */}
           <motion.p
             variants={reveal}
-            className="text-[#7A3B5E] text-base md:text-lg leading-relaxed mb-8 max-w-sm"
+            className={`text-base md:text-lg leading-relaxed mb-8 max-w-sm ${
+              isNaughtyMode ? 'text-white/70' : 'text-[#7A3B5E]'
+            }`}
           >
             Pop-ups, markets &amp; private events across Cape Town.
             <br />
-            <span className="text-[#7A3B5E]/60 text-sm">Find us this weekend.</span>
+            <span className={`text-sm ${isNaughtyMode ? 'text-white/45' : 'text-[#7A3B5E]/60'}`}>Follow us to find where we are this weekend.</span>
           </motion.p>
 
           {/* CTAs */}
@@ -164,7 +250,11 @@ export default function Hero() {
               whileHover={{ scale: 1.04, boxShadow: '0 8px 40px rgba(232,23,109,0.40)' }}
               whileTap={{ scale: 0.97 }}
               onClick={scrollToEvents}
-              className="px-8 py-4 rounded-full gradient-berry text-white font-bold text-sm tracking-widest uppercase shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-[#E8176D] focus:ring-offset-2 focus:ring-offset-[#FDE8EF] motion-sheen"
+              className={`px-8 py-4 rounded-full text-white font-bold text-sm tracking-widest uppercase shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 motion-sheen ${
+                isNaughtyMode
+                  ? 'bg-[#E8176D] hover:bg-[#FF2D9C] focus:ring-[#FF2D9C] focus:ring-offset-black'
+                  : 'gradient-berry focus:ring-[#E8176D] focus:ring-offset-[#FDE8EF]'
+              }`}
             >
               Book Us for an Event
             </motion.button>
@@ -172,7 +262,11 @@ export default function Hero() {
               whileHover={{ scale: 1.04, borderColor: '#E8176D', color: '#E8176D' }}
               whileTap={{ scale: 0.97 }}
               onClick={scrollToMenu}
-              className="px-8 py-4 rounded-full border-2 border-[#F9BDD4] text-[#7A3B5E] font-bold text-sm tracking-widest uppercase bg-white hover:border-[#E8176D] hover:text-[#E8176D] transition-all"
+              className={`px-8 py-4 rounded-full border-2 font-bold text-sm tracking-widest uppercase transition-all ${
+                isNaughtyMode
+                  ? 'border-white/30 text-white bg-transparent hover:border-white/60'
+                  : 'border-[#F9BDD4] text-[#7A3B5E] bg-white hover:border-[#E8176D] hover:text-[#E8176D]'
+              }`}
             >
               View Menu
             </motion.button>
@@ -181,24 +275,30 @@ export default function Hero() {
           {/* Social proof */}
           <motion.div
             variants={reveal}
-            className="flex items-center gap-3 mt-10 px-4 py-3 rounded-2xl border border-[#F9BDD4] bg-white/60 w-fit"
+            className={`flex items-center gap-3 mt-10 px-4 py-3 rounded-2xl border w-fit ${
+              isNaughtyMode ? 'border-white/15 bg-black/30 backdrop-blur-sm' : 'border-[#F9BDD4] bg-white/60'
+            }`}
           >
             <div className="flex -space-x-2">
               {['#E8176D', '#C01057', '#FF6BAD'].map((c, i) => (
                 <div
                   key={i}
                   className="w-7 h-7 rounded-full border-2 border-white"
-                  style={{ background: `radial-gradient(circle at 35% 35%, ${c}cc, ${c}66)` }}
+                  style={{
+                    background: isNaughtyMode
+                      ? `radial-gradient(circle at 35% 35%, ${['#E8176D', '#C01057', '#FF6BAD'][i]}dd, ${['#E8176D', '#C01057', '#FF6BAD'][i]}66)`
+                      : `radial-gradient(circle at 35% 35%, ${c}cc, ${c}66)`,
+                  }}
                 />
               ))}
             </div>
             <div>
               <div className="flex gap-0.5 mb-0.5">
                 {[...Array(5)].map((_, i) => (
-                  <span key={i} className="text-[#E8176D] text-xs">★</span>
+                  <span key={i} className={`text-xs ${isNaughtyMode ? 'text-[#FF4DAE]' : 'text-[#E8176D]'}`}>★</span>
                 ))}
               </div>
-              <span className="text-[#7A3B5E]/70 text-xs tracking-wide">Loved across Cape Town</span>
+              <span className={`text-xs tracking-wide ${isNaughtyMode ? 'text-white/60' : 'text-[#7A3B5E]/70'}`}>Loved across Cape Town pop-ups</span>
             </div>
           </motion.div>
         </motion.div>
@@ -212,20 +312,16 @@ export default function Hero() {
             className="relative w-full max-w-[520px]"
             style={{ y: prefersReducedMotion ? 0 : imageY, rotate: prefersReducedMotion ? 0 : imageRotate }}
           >
-            <motion.div
-              className="absolute inset-[10%] rounded-full border border-[#E8176D]/20"
-              animate={prefersReducedMotion ? undefined : { rotate: 360 }}
-              transition={{ duration: 28, ease: 'linear', repeat: Infinity }}
-            />
-            {/* Pink card halo behind image */}
-            <div
-              className="absolute inset-[4%] rounded-full blur-[60px] opacity-50 pointer-events-none"
-              style={{ background: 'radial-gradient(circle, #FFC8DC, transparent 70%)' }}
-            />
+
+
             {/* Hot-pink glow bloom at bottom */}
             <div
               className="absolute bottom-[2%] left-[20%] right-[20%] h-[30%] rounded-full blur-[55px] opacity-60 pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse, #E8176D 0%, #C01057 50%, transparent 80%)' }}
+              style={{
+                background: isNaughtyMode
+                  ? 'radial-gradient(ellipse, #FF2D9C 0%, #7A1B78 50%, transparent 80%)'
+                  : 'radial-gradient(ellipse, #E8176D 0%, #C01057 50%, transparent 80%)',
+              }}
             />
 
             {/* Continuous float + sway */}
@@ -243,7 +339,9 @@ export default function Hero() {
                 className="relative w-full h-auto object-contain select-none"
                 style={{
                   filter:
-                    'drop-shadow(0 30px 60px rgba(232,23,109,0.30)) drop-shadow(0 8px 20px rgba(192,16,87,0.20))',
+                    isNaughtyMode
+                      ? 'drop-shadow(0 30px 60px rgba(255,45,156,0.40)) drop-shadow(0 8px 20px rgba(122,27,120,0.35))'
+                      : 'drop-shadow(0 30px 60px rgba(232,23,109,0.30)) drop-shadow(0 8px 20px rgba(192,16,87,0.20))',
                 }}
                 draggable={false}
               />
@@ -254,11 +352,13 @@ export default function Hero() {
               initial={{ opacity: 0, scale: 0.7, rotate: -8 }}
               animate={{ opacity: 1, scale: 1, rotate: -6 }}
               transition={{ duration: 0.7, delay: 0.9, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute top-[10%] -right-4 md:right-0 px-4 py-2 rounded-2xl border border-[#F9BDD4] bg-white shadow-lg text-center"
+              className={`absolute top-[10%] -right-4 md:right-0 px-4 py-2 rounded-2xl border shadow-lg text-center ${
+                isNaughtyMode ? 'border-white/20 bg-black/50 backdrop-blur-md text-white' : 'border-[#F9BDD4] bg-white'
+              }`}
             >
-              <p className="text-[10px] font-bold tracking-widest uppercase text-[#E8176D]">🔥 Viral</p>
-              <p className="text-[11px] font-bold text-[#2D1225] whitespace-nowrap">Dubai Choc</p>
-              <p className="text-[11px] font-bold text-[#2D1225]">Strawberries</p>
+              <p className={`text-[10px] font-bold tracking-widest uppercase ${isNaughtyMode ? 'text-[#FF4DAE]' : 'text-[#E8176D]'}`}>🔥 Viral</p>
+              <p className={`text-[11px] font-bold whitespace-nowrap ${isNaughtyMode ? 'text-white' : 'text-[#2D1225]'}`}>Dubai Choc</p>
+              <p className={`text-[11px] font-bold ${isNaughtyMode ? 'text-white' : 'text-[#2D1225]'}`}>Strawberries</p>
             </motion.div>
           </motion.div>
         </div>
@@ -269,7 +369,9 @@ export default function Hero() {
       <motion.div
         animate={{ y: [0, 8, 0], opacity: [0.4, 1, 0.4] }}
         transition={{ repeat: Infinity, duration: 2.2 }}
-        className="relative z-10 flex flex-col items-center pb-8 text-[#E8176D]/40 pointer-events-none"
+        className={`relative z-10 flex flex-col items-center pb-8 pointer-events-none ${
+          isNaughtyMode ? 'text-[#FF66BE]/60' : 'text-[#E8176D]/40'
+        }`}
         aria-hidden="true"
       >
         <span className="text-[10px] tracking-[0.25em] uppercase mb-2">Scroll to explore</span>

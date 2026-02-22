@@ -42,7 +42,7 @@ export default function Footer() {
                 Let's Talk <span className="text-shimmer">Sweet.</span>
               </h2>
               <p className="text-[#2D1225]/50 text-lg">
-                For event bookings, press enquiries, or just to say hi — we love hearing from you.
+                For event bookings, press enquiries, or just to say hi, we love hearing from you.
               </p>
             </motion.div>
 

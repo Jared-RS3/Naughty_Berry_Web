@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence, useMotionValue, useSpring, useReducedMotion } from 'framer-motion'
+import WaveDivider from './WaveDivider'
 import { Download, Star, Flame, Heart, Zap, Coffee } from 'lucide-react'
 
 export const MENU_CATEGORIES = [
@@ -233,12 +234,12 @@ function MenuItemCard({ name, desc, price, tag, accent, index }: MenuCardProps) 
 
         <div className="flex items-center justify-between">
           <span className="font-bold text-lg" style={{ color: accent }}>{price}</span>
-          <motion.div
+          {/* <motion.div
             animate={{ scaleX: hovered ? 1 : 0.3, opacity: hovered ? 1 : 0 }}
             className="text-[10px] uppercase tracking-widest font-bold text-[#E8176D]"
           >
             Add to order →
-          </motion.div>
+          </motion.div> */}
         </div>
       </div>
     </motion.div>
@@ -271,6 +272,13 @@ export default function MenuPreview() {
           className="flex flex-col items-start mb-14"
         >
           <div className="flex items-center gap-2 mb-4">
+            <img
+              src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+              alt=""
+              aria-hidden="true"
+              className="w-6 h-6 object-contain opacity-85"
+              draggable={false}
+            />
             <span className="w-8 h-[1px] bg-[#E8176D]" />
             <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#E8176D]">
               The Menu
@@ -383,8 +391,15 @@ export default function MenuPreview() {
               href="https://www.instagram.com/naughtyberrycpt"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3 rounded-full gradient-berry text-white text-sm font-bold hover:shadow-[0_0_20px_rgba(232,23,109,0.4)] transition-all"
+              className="px-6 py-3 rounded-full gradient-berry text-white text-sm font-bold hover:shadow-[0_0_20px_rgba(232,23,109,0.4)] transition-all inline-flex items-center gap-2"
             >
+              <img
+                src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+                alt=""
+                aria-hidden="true"
+                className="w-4 h-4 object-contain"
+                draggable={false}
+              />
               Order via Instagram
             </a>
             <a
@@ -396,6 +411,7 @@ export default function MenuPreview() {
           </div>
         </motion.div>
       </div>
+      <WaveDivider variant="menu" fill="#FFF0F6" height={56} />
     </section>
   )
 }

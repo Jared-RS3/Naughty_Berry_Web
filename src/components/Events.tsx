@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import WaveDivider from './WaveDivider'
 import { Users, Star, Crown, CheckCircle } from 'lucide-react'
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
@@ -69,7 +70,7 @@ const OCCASIONS = [
   '🏢 Corporate Events',
   '🎓 Graduations',
   '💜 Baby Showers',
-  '🍾 Year-Ends',
+  '🍾 Year Ends',
   '💃 Girls Night',
   '🎉 Any Celebration',
 ]
@@ -137,17 +138,23 @@ export default function Events() {
           className="text-center mb-16"
         >
           <div className="flex items-center justify-center gap-2 mb-4">
+            <img
+              src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+              alt=""
+              aria-hidden="true"
+              className="w-5 h-5 object-contain opacity-85"
+              draggable={false}
+            />
             <span className="w-8 h-[1px] bg-[#E8176D]" />
             <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#E8176D]">
               Events & Catering
             </span>
-            <span className="w-8 h-[1px] bg-[#E8176D]" />
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] mb-4">
             We Cater for <br /><span className="text-shimmer">Any Occasion.</span>
           </h2>
           <p className="text-[#7A3B5E] text-lg max-w-xl mx-auto">
-            From intimate birthdays to full-scale weddings — Naughty Berry brings the chocolate fountain vibes without the mess. Just the good stuff.
+            From intimate birthdays to full scale weddings, Naughty Berry brings the chocolate fountain vibes without the mess. Just the good stuff.
           </p>
         </motion.div>
 
@@ -262,7 +269,7 @@ export default function Events() {
         </div>
 
         {/* Event Inquiry Form */}
-        <motion.div
+        {/* <motion.div
           id="event-form"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -358,17 +365,40 @@ export default function Events() {
                     disabled={loading}
                     whileHover={loading ? {} : { scale: 1.02 }}
                     whileTap={loading ? {} : { scale: 0.98 }}
-                    className="w-full py-4 rounded-full gradient-berry text-white font-semibold text-sm tracking-widest uppercase mt-2 disabled:opacity-60 transition-all focus:outline-none focus:ring-2 focus:ring-[#E8176D] focus:ring-offset-2 focus:ring-offset-[#FFF0F6]"
+                    className="w-full py-4 rounded-full gradient-berry text-white font-semibold text-sm tracking-widest uppercase mt-2 disabled:opacity-60 transition-all focus:outline-none focus:ring-2 focus:ring-[#E8176D] focus:ring-offset-2 focus:ring-offset-[#FFF0F6] inline-flex items-center justify-center gap-2"
                     aria-label="Submit event enquiry"
                   >
+                    <img
+                      src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+                      alt=""
+                      aria-hidden="true"
+                      className="w-4 h-4 object-contain"
+                      draggable={false}
+                    />
                     {loading ? 'Sending...' : 'Send My Enquiry 🍓'}
                   </motion.button>
                 </motion.form>
               )}
             </AnimatePresence>
           </div>
-        </motion.div>
+        </motion.div> */}
+        <div className="lg:col-span-3 animate-slide-in-right" id="form">
+            <div className="w-full h-full shadow-xl rounded-3xl overflow-hidden border border-gray-200">
+              <iframe
+                src="https://airtable.com/embed/appIfLyWzGV0npV6U/pagEgThqjTZEQCLFY/form"
+                frameBorder="0"
+                width="100%"
+                height="733"
+                className="rounded-3xl"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                }}
+              ></iframe>
+            </div>
+          </div>
       </div>
+      <WaveDivider variant="events" fill="#FDE8EF" height={64} />
     </section>
   )
 }

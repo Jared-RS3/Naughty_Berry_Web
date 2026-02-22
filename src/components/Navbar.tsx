@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Instagram, Menu, X } from 'lucide-react'
 
+type NavbarProps = {
+  isNaughtyMode: boolean
+  onToggleNaughtyMode: () => void
+}
+
 const links = [
   { label: 'Menu', href: '#menu' },
   { label: 'Events', href: '#events' },
@@ -11,7 +16,7 @@ const links = [
   { label: 'Contact', href: '#contact' },
 ]
 
-export default function Navbar() {
+export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -35,7 +40,9 @@ export default function Navbar() {
         transition={{ duration: 0.6, ease: 'easeOut' }}
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
           scrolled
-            ? 'backdrop-blur-xl bg-white/90 border-b border-[#F9BDD4] shadow-lg shadow-pink-100/60'
+            ? isNaughtyMode
+              ? 'backdrop-blur-xl bg-[#220A2C]/85 border-b border-[#8D2E7A]/70 shadow-lg shadow-fuchsia-900/35'
+              : 'backdrop-blur-xl bg-white/90 border-b border-[#F9BDD4] shadow-lg shadow-pink-100/60'
             : 'bg-transparent'
         }`}
         role="navigation"
@@ -58,7 +65,11 @@ export default function Navbar() {
               <li key={label}>
                 <button
                   onClick={() => handleNavClick(href)}
-                  className="text-[13px] font-bold tracking-widest uppercase text-[#7A3B5E] hover:text-[#E8176D] transition-colors duration-200 cursor-pointer"
+                  className={`text-[13px] font-bold tracking-widest uppercase transition-colors duration-200 cursor-pointer ${
+                    isNaughtyMode
+                      ? 'text-[#FFD4F0] hover:text-[#FF4DAE]'
+                      : 'text-[#7A3B5E] hover:text-[#E8176D]'
+                  }`}
                   aria-label={`Navigate to ${label}`}
                 >
                   {label}
@@ -74,7 +85,11 @@ export default function Navbar() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Naughty Berry on Instagram"
-              className="hidden md:flex items-center justify-center w-9 h-9 rounded-full text-[#7A3B5E] hover:text-[#E8176D] transition-colors duration-200"
+              className={`hidden md:flex items-center justify-center w-9 h-9 rounded-full transition-colors duration-200 ${
+                isNaughtyMode
+                  ? 'text-[#FFD4F0] hover:text-[#FF4DAE]'
+                  : 'text-[#7A3B5E] hover:text-[#E8176D]'
+              }`}
             >
               <Instagram size={18} strokeWidth={1.5} />
             </a>
@@ -82,8 +97,26 @@ export default function Navbar() {
             <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
+              onClick={onToggleNaughtyMode}
+              className={`hidden md:flex items-center px-5 py-2 text-[12px] tracking-widest uppercase font-bold rounded-full border transition-all duration-250 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                isNaughtyMode
+                  ? 'bg-[#FF2D9C] text-white border-[#FF8FD0] shadow-[0_0_28px_rgba(255,45,156,0.45)] focus:ring-[#FF2D9C] focus:ring-offset-[#220A2C]'
+                  : 'bg-white/90 text-[#7A3B5E] border-[#F9BDD4] hover:border-[#E8176D] hover:text-[#E8176D] focus:ring-[#E8176D] focus:ring-offset-white'
+              }`}
+              aria-label="Get Naughty mode"
+            >
+              Dark
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => handleNavClick('#events')}
-              className="hidden md:flex items-center px-5 py-2 text-[12px] tracking-widest uppercase font-bold rounded-full gradient-berry text-white transition-all duration-200 hover:shadow-[0_0_24px_rgba(232,23,109,0.5)] focus:outline-none focus:ring-2 focus:ring-[#E8176D] focus:ring-offset-2 focus:ring-offset-white"
+              className={`hidden md:flex items-center px-5 py-2 text-[12px] tracking-widest uppercase font-bold rounded-full text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                isNaughtyMode
+                  ? 'bg-gradient-to-r from-[#FF2D9C] to-[#7A1B78] hover:shadow-[0_0_28px_rgba(255,45,156,0.45)] focus:ring-[#FF2D9C] focus:ring-offset-[#220A2C]'
+                  : 'gradient-berry hover:shadow-[0_0_24px_rgba(232,23,109,0.5)] focus:ring-[#E8176D] focus:ring-offset-white'
+              }`}
               aria-label="Book an event"
             >
               Book Event
@@ -91,7 +124,11 @@ export default function Navbar() {
 
             {/* Mobile hamburger */}
             <button
-              className="md:hidden flex items-center justify-center w-10 h-10 text-[#7A3B5E] hover:text-[#E8176D] transition-colors"
+              className={`md:hidden flex items-center justify-center w-10 h-10 transition-colors ${
+                isNaughtyMode
+                  ? 'text-[#FFD4F0] hover:text-[#FF4DAE]'
+                  : 'text-[#7A3B5E] hover:text-[#E8176D]'
+              }`}
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-expanded={mobileOpen}
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
@@ -110,7 +147,11 @@ export default function Navbar() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-y-0 right-0 z-40 w-72 bg-white/95 backdrop-blur-xl border-l border-[#F9BDD4] flex flex-col pt-20 px-8 pb-10"
+            className={`fixed inset-y-0 right-0 z-40 w-72 backdrop-blur-xl border-l flex flex-col pt-20 px-8 pb-10 ${
+              isNaughtyMode
+                ? 'bg-[#220A2C]/95 border-[#8D2E7A]/70'
+                : 'bg-white/95 border-[#F9BDD4]'
+            }`}
             role="dialog"
             aria-modal="true"
             aria-label="Mobile navigation"
@@ -125,7 +166,11 @@ export default function Navbar() {
                 >
                   <button
                     onClick={() => handleNavClick(href)}
-                    className="text-[22px] font-display font-bold text-[#2D1225] hover:text-[#E8176D] transition-colors cursor-pointer"
+                    className={`text-[22px] font-display font-bold transition-colors cursor-pointer ${
+                      isNaughtyMode
+                        ? 'text-[#FFE4F5] hover:text-[#FF4DAE]'
+                        : 'text-[#2D1225] hover:text-[#E8176D]'
+                    }`}
                   >
                     {label}
                   </button>
@@ -135,8 +180,20 @@ export default function Navbar() {
 
             <div className="mt-auto flex flex-col gap-4">
               <button
+                onClick={onToggleNaughtyMode}
+                className={`w-full py-3 rounded-full font-semibold text-sm tracking-widest uppercase border ${
+                  isNaughtyMode
+                    ? 'bg-[#FF2D9C] border-[#FF8FD0] text-white'
+                    : 'bg-white border-[#F9BDD4] text-[#7A3B5E]'
+                }`}
+              >
+                Get Naughty
+              </button>
+              <button
                 onClick={() => handleNavClick('#events')}
-                className="w-full py-3 rounded-full gradient-berry text-white font-semibold text-sm tracking-widest uppercase"
+                className={`w-full py-3 rounded-full text-white font-semibold text-sm tracking-widest uppercase ${
+                  isNaughtyMode ? 'bg-gradient-to-r from-[#FF2D9C] to-[#7A1B78]' : 'gradient-berry'
+                }`}
               >
                 Book Event
               </button>
@@ -144,7 +201,9 @@ export default function Navbar() {
                 href="https://www.instagram.com/naughtyberrycpt"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[#7A3B5E] text-sm"
+                className={`flex items-center gap-2 text-sm ${
+                  isNaughtyMode ? 'text-[#FFD4F0]' : 'text-[#7A3B5E]'
+                }`}
               >
                 <Instagram size={16} />
                 @naughtyberrycpt

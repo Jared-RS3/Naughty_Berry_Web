@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { MapPin, Clock, Calendar, Instagram, ExternalLink } from 'lucide-react'
+import WaveDivider from './WaveDivider'
 
 const SCHEDULE = [
   {
@@ -50,6 +51,13 @@ export default function FindUs() {
           className="mb-16"
         >
           <div className="flex items-center gap-2 mb-4">
+            <img
+              src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+              alt=""
+              aria-hidden="true"
+              className="w-5 h-5 object-contain opacity-85"
+              draggable={false}
+            />
             <span className="w-8 h-[1px] bg-[#E8176D]" />
             <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[#E8176D]">
               Find Us
@@ -184,6 +192,7 @@ export default function FindUs() {
           </div>
         </motion.div>
       </div>
+      <WaveDivider variant="findus" fill="#FFF0F6" height={60} />
     </section>
   )
 }

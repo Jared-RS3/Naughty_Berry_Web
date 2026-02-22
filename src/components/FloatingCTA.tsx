@@ -49,7 +49,7 @@ export default function FloatingCTA() {
                 </motion.button>
 
                 {/* WhatsApp (placeholder — add number when available) */}
-                <motion.a
+                {/* <motion.a
                   whileHover={{ scale: 1.04, x: -4 }}
                   whileTap={{ scale: 0.97 }}
                   href="https://wa.me/27000000000?text=Hi%20Naughty%20Berry!%20I%27d%20like%20to%20enquire%20about%20an%20event."
@@ -61,7 +61,7 @@ export default function FloatingCTA() {
                 >
                   <MessageCircle size={15} />
                   WhatsApp Us
-                </motion.a>
+                </motion.a> */}
               </motion.div>
             )}
           </AnimatePresence>
@@ -71,10 +71,17 @@ export default function FloatingCTA() {
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.94 }}
             onClick={() => setExpanded((p) => !p)}
-            className="w-14 h-14 rounded-full gradient-berry flex items-center justify-center text-white shadow-xl animate-pulse-glow focus:outline-none focus:ring-2 focus:ring-[#E8176D] focus:ring-offset-2 focus:ring-offset-[#FDE8EF]"
+            className="relative w-14 h-14 rounded-full gradient-berry flex items-center justify-center text-white shadow-xl animate-pulse-glow focus:outline-none focus:ring-2 focus:ring-[#E8176D] focus:ring-offset-2 focus:ring-offset-[#FDE8EF]"
             aria-expanded={expanded}
             aria-label={expanded ? 'Close quick actions' : 'Open quick actions'}
           >
+            <img
+              src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+              alt=""
+              aria-hidden="true"
+              className="absolute -top-2 -left-2 w-5 h-5 object-contain"
+              draggable={false}
+            />
             <motion.div
               animate={{ rotate: expanded ? 45 : 0 }}
               transition={{ duration: 0.2 }}

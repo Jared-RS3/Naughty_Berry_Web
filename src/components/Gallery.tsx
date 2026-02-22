@@ -1,26 +1,28 @@
 import { useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import WaveDivider from './WaveDivider'
 import { X, Instagram, ZoomIn } from 'lucide-react'
 
 // Placeholder gallery items — swap with real product photos
 const GALLERY = [
-  { id: 1, w: 'col-span-1 row-span-2', label: 'Classic Cup', sub: 'The signature', color: '#E8176D', emoji: '🍓' },
-  { id: 2, w: 'col-span-1 row-span-1', label: 'Brownie Cup', sub: 'Pure indulgence', color: '#8B4513', emoji: '🍫' },
-  { id: 3, w: 'col-span-1 row-span-1', label: 'Dubai Chocolate', sub: 'The viral one', color: '#E8176D', emoji: '✨' },
-  { id: 4, w: 'col-span-2 row-span-1', label: 'Market Day', sub: 'Cape Town pop-up', color: '#9B59B6', emoji: '🎪' },
-  { id: 5, w: 'col-span-1 row-span-1', label: 'Chocolate Dip', sub: 'Hand-crafted', color: '#E8176D', emoji: '🍬' },
-  { id: 6, w: 'col-span-1 row-span-2', label: 'Strawberry Box', sub: 'Gift-ready', color: '#E8176D', emoji: '🎁' },
-  { id: 7, w: 'col-span-1 row-span-1', label: 'Event Setup', sub: 'Wedding catering', color: '#2D6A4F', emoji: '💍' },
-  { id: 8, w: 'col-span-1 row-span-1', label: 'Team in Action', sub: 'Behind the scenes', color: '#E8176D', emoji: '👩‍🍳' },
+  { id: 1, label: 'Classic Cup',     sub: 'The signature',      color: '#E8176D', emoji: '🍓', img: '/original.jpg',    tall: true  },
+  { id: 2, label: 'Brownie Cup',     sub: 'Pure indulgence',    color: '#8B4513', emoji: '🍫', img: '/brownie.jpg',     tall: false },
+  { id: 3, label: 'Dubai Chocolate', sub: 'The viral one',      color: '#E8176D', emoji: '✨', img: '/dubai.jpg',       tall: false },
+  { id: 4, label: 'Market Day',      sub: 'Cape Town pop-up',   color: '#9B59B6', emoji: '🎪', img: '/market.jpg',     tall: false },
+  { id: 5, label: 'Chocolate Dip',   sub: 'Hand-crafted',       color: '#E8176D', emoji: '🍬', img: '/brownie.jpg',    tall: true  },
+  { id: 6, label: 'Strawberry Box',  sub: 'Gift-ready',         color: '#E8176D', emoji: '🎁', img: '/strawberry.jpg', tall: false },
+  { id: 7, label: 'Event Setup',     sub: 'Wedding catering',   color: '#2D6A4F', emoji: '💍', img: '/setup.jpg',      tall: false },
+  { id: 8, label: 'Team in Action',  sub: 'Behind the scenes',  color: '#E8176D', emoji: '👩‍🍳', img: '/team.jpg',     tall: true  },
 ]
 
 interface GalleryItem {
   id: number
-  w: string
   label: string
   sub: string
   color: string
   emoji: string
+  img?: string
+  tall?: boolean
 }
 
 function PlaceholderImage({ item, onClick }: { item: GalleryItem; onClick: () => void }) {
@@ -29,7 +31,8 @@ function PlaceholderImage({ item, onClick }: { item: GalleryItem; onClick: () =>
 
   return (
     <motion.div
-      className={`${item.w} relative overflow-hidden rounded-2xl cursor-pointer group`}
+      className="w-full relative overflow-hidden rounded-2xl cursor-pointer group"
+      style={{ aspectRatio: item.tall ? '3 / 4' : '4 / 3' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={onClick}
@@ -37,40 +40,47 @@ function PlaceholderImage({ item, onClick }: { item: GalleryItem; onClick: () =>
       role="button"
       aria-label={`View ${item.label} – ${item.sub}`}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
-      whileHover={prefersReducedMotion ? undefined : { scale: 1.02, y: -4 }}
+      whileHover={prefersReducedMotion ? undefined : { scale: 1.03 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/* Placeholder colored block (replace with <img> when photos ready) */}
-      <div
-        className="w-full h-full min-h-[160px] relative flex flex-col items-center justify-center"
-        style={{
-          background: `linear-gradient(135deg, ${item.color}25 0%, #FDE8EF 100%)`,
-          border: `1px solid ${item.color}20`,
-        }}
-      >
-        {/* Decorative bg circles */}
-        <div
-          className="absolute w-32 h-32 rounded-full opacity-20 blur-2xl"
-          style={{ background: item.color }}
-          aria-hidden="true"
+      {item.img ? (
+        <img
+          src={item.img}
+          alt={item.label}
+          className="absolute inset-0 w-full h-full object-cover"
+          draggable={false}
         />
-        <motion.span
-          className="relative text-5xl mb-3 select-none"
-          animate={prefersReducedMotion ? undefined : { y: [0, -6, 0], rotate: [0, 2, 0] }}
-          transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
+      ) : (
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center"
+          style={{
+            background: `linear-gradient(135deg, ${item.color}25 0%, #FDE8EF 100%)`,
+            border: `1px solid ${item.color}20`,
+          }}
         >
-          {item.emoji}
-        </motion.span>
-        <span className="relative text-xs font-bold tracking-widest uppercase text-[#2D1225]/30">
-          Photo Placeholder
-        </span>
-      </div>
+          <div
+            className="absolute w-32 h-32 rounded-full opacity-20 blur-2xl"
+            style={{ background: item.color }}
+            aria-hidden="true"
+          />
+          <motion.span
+            className="relative text-5xl mb-3 select-none"
+            animate={prefersReducedMotion ? undefined : { y: [0, -6, 0], rotate: [0, 2, 0] }}
+            transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            {item.emoji}
+          </motion.span>
+          <span className="relative text-xs font-bold tracking-widest uppercase text-[#2D1225]/30">
+            Photo Placeholder
+          </span>
+        </div>
+      )}
 
       {/* Hover overlay */}
       <motion.div
         animate={{ opacity: hovered ? 1 : 0 }}
         className="absolute inset-0 flex flex-col items-center justify-center"
-        style={{ background: `${item.color}CC`, backdropFilter: 'blur(4px)' }}
+        style={{ background: `${item.color}BB`, backdropFilter: 'blur(4px)' }}
       >
         <ZoomIn size={28} className="text-white mb-2" />
         <p className="font-display font-bold text-white text-lg">{item.label}</p>
@@ -96,6 +106,13 @@ export default function Gallery() {
         >
           <div>
             <div className="flex items-center gap-2 mb-4">
+              <img
+                src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+                alt=""
+                aria-hidden="true"
+                className="w-5 h-5 object-contain opacity-85"
+                draggable={false}
+              />
               <span className="w-8 h-[1px] bg-[#E8176D]" />
               <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[#E8176D]">
                 Gallery
@@ -118,23 +135,22 @@ export default function Gallery() {
           </a>
         </motion.div>
 
-        {/* Masonry-style Grid */}
+        {/* Masonry columns grid */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="grid grid-cols-2 md:grid-cols-4 auto-rows-[180px] gap-4"
+          className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-0"
         >
           {GALLERY.map((item, i) => (
             <motion.div
               key={item.id}
-              layoutId={`gallery-card-${item.id}`}
-              className={item.w}
+              className="break-inside-avoid mb-4"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.55, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.55, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
             >
               <PlaceholderImage item={item} onClick={() => setSelected(item)} />
             </motion.div>
@@ -149,9 +165,6 @@ export default function Gallery() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mt-12 text-center"
         >
-          <p className="text-[#2D1225]/30 text-xs tracking-[0.2em] uppercase mb-4">
-            Replace placeholder images with your product photos
-          </p>
           <a
             href="https://www.instagram.com/naughtyberrycpt"
             target="_blank"
@@ -195,6 +208,14 @@ export default function Gallery() {
               className="max-w-lg w-full relative"
               onClick={(e) => e.stopPropagation()}
             >
+              {selected.img ? (
+                <img
+                  src={selected.img}
+                  alt={selected.label}
+                  className="w-full max-h-[70vh] object-cover rounded-3xl"
+                  draggable={false}
+                />
+              ) : (
               <div
                 className="w-full h-80 rounded-3xl flex flex-col items-center justify-center"
                 style={{
@@ -207,6 +228,7 @@ export default function Gallery() {
                   Add your photo here
                 </span>
               </div>
+              )}
               <div className="mt-4 text-center">
                 <h3 className="font-display text-2xl font-bold text-[#2D1225]">{selected.label}</h3>
                 <p className="text-[#2D1225]/50 text-sm mt-1">{selected.sub}</p>
@@ -215,6 +237,7 @@ export default function Gallery() {
           </motion.div>
         )}
       </AnimatePresence>
+      <WaveDivider variant="gallery" fill="#FDE8EF" height={60} />
     </section>
   )
 }
