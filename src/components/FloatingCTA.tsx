@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, Calendar, X } from 'lucide-react'
+import { Calendar, X } from 'lucide-react'
 
 export default function FloatingCTA() {
   const [visible, setVisible] = useState(false)

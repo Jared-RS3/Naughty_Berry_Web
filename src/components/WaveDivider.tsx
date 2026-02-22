@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion'
-import { useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
+import type { Transition } from 'framer-motion'
 
 /**
  * Animated wave section divider.

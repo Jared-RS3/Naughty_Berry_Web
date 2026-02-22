@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import WaveDivider from './WaveDivider'
 import { Users, Star, Crown, CheckCircle } from 'lucide-react'
 
@@ -75,45 +74,7 @@ const OCCASIONS = [
   '🎉 Any Celebration',
 ]
 
-const BUDGET_RANGES = [
-  'Under R2 500',
-  'R2 500 – R5 000',
-  'R5 000 – R10 000',
-  'R10 000+',
-  'Flexible / Not sure',
-]
-
-interface FormData {
-  name: string
-  phone: string
-  email: string
-  date: string
-  location: string
-  guests: string
-  budget: string
-  notes: string
-}
-
 export default function Events() {
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [form, setForm] = useState<FormData>({
-    name: '', phone: '', email: '', date: '', location: '', guests: '', budget: '', notes: '',
-  })
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setForm((p) => ({ ...p, [e.target.name]: e.target.value }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    await new Promise((r) => setTimeout(r, 1200))
-    setLoading(false)
-    setSubmitted(true)
-    // In production: POST to backend / Formspree / EmailJS
-  }
-
   return (
     <section id="events" className="py-24 lg:py-32 relative overflow-hidden bg-[#FFF0F6]">
       {/* Background */}
@@ -400,37 +361,5 @@ export default function Events() {
       </div>
       <WaveDivider variant="events" fill="#FDE8EF" height={64} />
     </section>
-  )
-}
-
-function FormField({
-  label, name, value, onChange, type = 'text', required, placeholder, min,
-}: {
-  label: string
-  name: string
-  value: string
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  type?: string
-  required?: boolean
-  placeholder?: string
-  min?: string
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-            <label htmlFor={`field-${name}`} className="text-[11px] font-bold tracking-widest uppercase text-[#7A3B5E]">
-        {label}
-      </label>
-      <input
-        id={`field-${name}`}
-        type={type}
-        name={name}
-        value={value}
-        onChange={onChange}
-        required={required}
-        placeholder={placeholder}
-        min={min}
-        className="w-full px-4 py-3 rounded-xl bg-white border border-[#F9BDD4] text-[#2D1225] text-sm focus:outline-none focus:border-[#E8176D]/60 focus:ring-1 focus:ring-[#E8176D]/40 transition-all placeholder:text-[#2D1225]/25"
-      />
-    </div>
   )
 }
