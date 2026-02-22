@@ -26,15 +26,12 @@ interface GalleryItem {
 }
 
 function PlaceholderImage({ item, onClick }: { item: GalleryItem; onClick: () => void }) {
-  const [hovered, setHovered] = useState(false)
   const prefersReducedMotion = useReducedMotion()
 
   return (
     <motion.div
       className="w-full relative overflow-hidden rounded-2xl cursor-pointer group"
       style={{ aspectRatio: item.tall ? '3 / 4' : '4 / 3' }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       onClick={onClick}
       tabIndex={0}
       role="button"
@@ -47,6 +44,7 @@ function PlaceholderImage({ item, onClick }: { item: GalleryItem; onClick: () =>
         <img
           src={item.img}
           alt={item.label}
+          loading="lazy"
           className="absolute inset-0 w-full h-full object-cover"
           draggable={false}
         />
@@ -63,29 +61,27 @@ function PlaceholderImage({ item, onClick }: { item: GalleryItem; onClick: () =>
             style={{ background: item.color }}
             aria-hidden="true"
           />
-          <motion.span
-            className="relative text-5xl mb-3 select-none"
-            animate={prefersReducedMotion ? undefined : { y: [0, -6, 0], rotate: [0, 2, 0] }}
-            transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
+          <span
+            className={`relative text-5xl mb-3 select-none ${prefersReducedMotion ? '' : 'animate-float-soft'}`}
+            style={{ animationDuration: '3.6s' }}
           >
             {item.emoji}
-          </motion.span>
+          </span>
           <span className="relative text-xs font-bold tracking-widest uppercase text-[#2D1225]/30">
             Photo Placeholder
           </span>
         </div>
       )}
 
-      {/* Hover overlay */}
-      <motion.div
-        animate={{ opacity: hovered ? 1 : 0 }}
-        className="absolute inset-0 flex flex-col items-center justify-center"
+      {/* Hover overlay — CSS transition, no JS state */}
+      <div
+        className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{ background: `${item.color}BB`, backdropFilter: 'blur(4px)' }}
       >
         <ZoomIn size={28} className="text-white mb-2" />
         <p className="font-display font-bold text-white text-lg">{item.label}</p>
         <p className="text-white/70 text-xs">{item.sub}</p>
-      </motion.div>
+      </div>
     </motion.div>
   )
 }

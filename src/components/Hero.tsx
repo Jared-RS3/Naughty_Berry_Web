@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { ArrowDown, Sparkles } from 'lucide-react'
 import WaveDivider from './WaveDivider'
@@ -30,20 +30,18 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
 
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 80, damping: 20, mass: 0.2 })
-  const glowY = useTransform(smoothProgress, [0, 1], [0, 90])
-  const dotsY = useTransform(smoothProgress, [0, 1], [0, 40])
   const imageY = useTransform(smoothProgress, [0, 1], [0, 55])
   const imageRotate = useTransform(smoothProgress, [0, 1], [0, -2])
 
-  const reveal = {
+  const reveal = useMemo(() => ({
     hidden: { opacity: 0, y: prefersReducedMotion ? 0 : 24 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.75, ease: [0.22, 1, 0.36, 1] as const } },
-  }
+  }), [prefersReducedMotion])
 
-  const scrollToEvents = () =>
-    document.querySelector('#events')?.scrollIntoView({ behavior: 'smooth' })
-  const scrollToMenu = () =>
-    document.querySelector('#menu')?.scrollIntoView({ behavior: 'smooth' })
+  const scrollToEvents = useCallback(() =>
+    document.querySelector('#events')?.scrollIntoView({ behavior: 'smooth' }), [])
+  const scrollToMenu = useCallback(() =>
+    document.querySelector('#menu')?.scrollIntoView({ behavior: 'smooth' }), [])
 
   return (
     <section
@@ -59,11 +57,10 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
     >
       {/* ── Decorative blobs ── */}
       <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
-        {/* top-right warm glow */}
-        <motion.div
+        {/* top-right warm glow — static, no JS animation */}
+        <div
           className="absolute -top-[5%] right-[8%] w-[58vw] h-[58vw] rounded-full blur-[40px]"
           style={{
-            y: prefersReducedMotion ? 0 : glowY,
             opacity: isNaughtyMode ? 0.72 : 0.4,
             background: isNaughtyMode
               ? 'radial-gradient(circle, #E8176D 0%, #9A0D46 10%, transparent 58%)'
@@ -71,10 +68,9 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
           }}
         />
         {/* bottom-left warm glow */}
-        <motion.div
+        <div
           className="absolute -bottom-[10%] -left-[8%] w-[40vw] h-[40vw] rounded-full blur-[55px]"
           style={{
-            y: prefersReducedMotion ? 0 : glowY,
             opacity: isNaughtyMode ? 0.45 : 0.3,
             background: isNaughtyMode
               ? 'radial-gradient(circle, #5C094A, transparent 65%)'
@@ -82,10 +78,9 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
           }}
         />
         {/* centre subtle pink */}
-        <motion.div
+        <div
           className="absolute top-[30%] left-[35%] w-[40vw] h-[40vw] rounded-full blur-[140px] opacity-20"
           style={{
-            y: prefersReducedMotion ? 0 : dotsY,
             background: isNaughtyMode
               ? 'radial-gradient(circle, #FF1E95, transparent 58%)'
               : 'radial-gradient(circle, #E8176D, transparent 60%)',
@@ -105,18 +100,18 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
             {/* Secondary deep-pink pulse on image area */}
             <motion.div
               className="absolute top-[20%] right-[18%] w-[30vw] h-[30vw] rounded-full blur-[32px]"
-              style={{ background: 'radial-gradient(circle, rgba(255,43,140,0.48) 0%, transparent 68%)' }}
+              style={{ background: 'radial-gradient(circle, rgba(255,43,140,0.48) 0%, transparent 68%)', willChange: 'transform, opacity' }}
               animate={prefersReducedMotion ? undefined : { scale: [0.9, 1.08, 0.93], opacity: [0.5, 0.85, 0.55] }}
               transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
             />
           </>
         )}
 
-        {/* Floating decorative dots */}
-        {DOTS.map((d, i) => (
-          <motion.div
+        {/* Floating decorative dots — CSS animation, desktop only */}
+        {!prefersReducedMotion && DOTS.map((d, i) => (
+          <div
             key={i}
-            className="absolute rounded-full"
+            className="absolute rounded-full hidden md:block animate-float-soft"
             style={{
               left: d.x,
               top: d.y,
@@ -126,19 +121,20 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
                 ? 'linear-gradient(135deg, #FF2D9C, #9F3BFF)'
                 : 'linear-gradient(135deg, #E8176D, #FF6BAD)',
               opacity: 0.22,
+              animationDuration: `${3.5 + i * 0.4}s`,
+              animationDelay: `${d.delay}s`,
             }}
-            animate={{ y: [0, -10, 0], scale: [1, 1.15, 1] }}
-            transition={{ duration: 3.5 + i * 0.4, repeat: Infinity, delay: d.delay, ease: 'easeInOut' }}
           />
         ))}
 
-        {HERO_BERRY_ACCENTS.map((berry, i) => (
-          <motion.img
+        {/* Berry accents — CSS animation, desktop only */}
+        {!prefersReducedMotion && HERO_BERRY_ACCENTS.map((berry, i) => (
+          <img
             key={`hero-berry-${i}`}
             src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
             alt=""
             aria-hidden="true"
-            className="absolute hidden md:block select-none"
+            className="absolute hidden md:block select-none animate-berry-float"
             style={{
               left: berry.x,
               top: berry.y,
@@ -147,9 +143,9 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
               rotate: `${berry.rotate}deg`,
               opacity: isNaughtyMode ? 0.68 : 0.36,
               filter: isNaughtyMode ? 'drop-shadow(0 8px 16px rgba(255,45,156,0.35))' : 'drop-shadow(0 8px 16px rgba(232,23,109,0.22))',
+              animationDuration: `${3.8 + i * 0.5}s`,
+              animationDelay: `${berry.delay}s`,
             }}
-            animate={prefersReducedMotion ? undefined : { y: [0, -7, 0], rotate: [berry.rotate, berry.rotate + 2, berry.rotate] }}
-            transition={{ duration: 3.8 + i * 0.5, repeat: Infinity, delay: berry.delay, ease: 'easeInOut' }}
             draggable={false}
           />
         ))}
@@ -165,12 +161,10 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
           className="absolute inset-0 flex items-start justify-center pt-36"
-          style={{ y: prefersReducedMotion ? 0 : imageY }}
         >
-          <motion.div
-            animate={{ y: [0, -20, -7, -16, 0], rotate: [0, 1.4, -0.4, 0.9, 0] }}
-            transition={{ duration: 7, ease: 'easeInOut', repeat: Infinity, repeatType: 'loop' }}
-            className="w-[85%] max-w-[380px]"
+          <div
+            className={`w-[85%] max-w-[380px] ${prefersReducedMotion ? '' : 'animate-berry-float'}`}
+            style={{ animationDuration: '5s' }}
           >
             <img
               src="/3d-delicious-seasonal-fruits.png"
@@ -183,7 +177,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
               }}
               draggable={false}
             />
-          </motion.div>
+          </div>
         </motion.div>
         {/* Gradient scrim — image shows through top half, fades to bg at bottom for text legibility */}
         <div
@@ -346,7 +340,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
             className="relative w-full max-w-[520px]"
-            style={{ y: prefersReducedMotion ? 0 : imageY, rotate: prefersReducedMotion ? 0 : imageRotate }}
+            style={{ y: prefersReducedMotion ? 0 : imageY, rotate: prefersReducedMotion ? 0 : imageRotate, willChange: prefersReducedMotion ? 'auto' : 'transform' }}
           >
 
 
@@ -361,13 +355,9 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
             />
 
             {/* Continuous float + sway */}
-            <motion.div
-              animate={{
-                y: [0, -20, -7, -16, 0],
-                rotate: [0, 1.4, -0.4, 0.9, 0],
-              }}
-              transition={{ duration: 7, ease: 'easeInOut', repeat: Infinity, repeatType: 'loop' }}
-              className="relative"
+            <div
+              className={`relative ${prefersReducedMotion ? '' : 'animate-berry-float'}`}
+              style={{ animationDuration: '6s' }}
             >
               <img
                 src="/3d-delicious-seasonal-fruits.png"
@@ -381,7 +371,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
                 }}
                 draggable={false}
               />
-            </motion.div>
+            </div>
 
             {/* Floating badge */}
             <motion.div

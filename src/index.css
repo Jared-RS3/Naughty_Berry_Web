@@ -218,6 +218,23 @@ a { text-decoration: none; color: inherit; }
   animation: shimmer 3s linear infinite;
 }
 
+/* ─── Wave divider animations (CSS-driven, compositor thread) ─── */
+@keyframes wave-back {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes wave-front {
+  from { transform: translateX(-25%); }
+  to   { transform: translateX(-75%); }
+}
+
+/* ─── Berry float (CSS-driven) ───────────────── */
+@keyframes berry-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-8px) rotate(1.5deg); }
+}
+.animate-berry-float { animation: berry-float 4s ease-in-out infinite; }
+
 /* ─── Scrollbar ────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #FDE8EF; }

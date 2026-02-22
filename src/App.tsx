@@ -1,16 +1,18 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import LoadingScreen from './components/LoadingScreen'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
-import MenuPreview from './components/MenuPreview'
-import Events from './components/Events'
-import FindUs from './components/FindUs'
-import Gallery from './components/Gallery'
-import Testimonials from './components/Testimonials'
-import About from './components/About'
-import Footer from './components/Footer'
-import FloatingCTA from './components/FloatingCTA'
+
+// All below-fold sections split into separate chunks — only downloaded when needed
+const About       = lazy(() => import('./components/About'))
+const MenuPreview = lazy(() => import('./components/MenuPreview'))
+const Events      = lazy(() => import('./components/Events'))
+const FindUs      = lazy(() => import('./components/FindUs'))
+const Testimonials= lazy(() => import('./components/Testimonials'))
+const Gallery     = lazy(() => import('./components/Gallery'))
+const Footer      = lazy(() => import('./components/Footer'))
+const FloatingCTA = lazy(() => import('./components/FloatingCTA'))
 
 function App() {
   const [loaded, setLoaded] = useState(false)
@@ -19,7 +21,7 @@ function App() {
   const [showTransition, setShowTransition] = useState(false)
   const transitionTimeoutRef = useRef<number | null>(null)
 
-  const handleToggleNaughtyMode = () => {
+  const handleToggleNaughtyMode = useCallback(() => {
     setShowTransition(true)
     setIsNaughtyMode((prev) => !prev)
     setTransitionKey((prev) => prev + 1)
@@ -32,7 +34,7 @@ function App() {
       setShowTransition(false)
       transitionTimeoutRef.current = null
     }, 980)
-  }
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -85,26 +87,19 @@ function App() {
       </AnimatePresence>
 
       <main id="main-content">
-        <Suspense fallback={
-          <div className="flex items-center justify-center min-h-screen bg-[#FDE8EF]">
-            <div className="text-[#E8176D] text-sm tracking-widest uppercase animate-pulse">
-              Loading Naughty Berry…
-            </div>
-          </div>
-        }>
+        <Suspense fallback={null}>
           <Hero isNaughtyMode={isNaughtyMode} />
         </Suspense>
-
-        <About />
-        <MenuPreview />
-        <Events />
-        <FindUs />
-        <Testimonials />
-        <Gallery />
-        <Footer />
+        <Suspense fallback={null}><About /></Suspense>
+        <Suspense fallback={null}><MenuPreview /></Suspense>
+        <Suspense fallback={null}><Events /></Suspense>
+        <Suspense fallback={null}><FindUs /></Suspense>
+        <Suspense fallback={null}><Testimonials /></Suspense>
+        <Suspense fallback={null}><Gallery /></Suspense>
+        <Suspense fallback={null}><Footer /></Suspense>
       </main>
 
-      <FloatingCTA />
+      <Suspense fallback={null}><FloatingCTA /></Suspense>
       </motion.div>
     </>
   )

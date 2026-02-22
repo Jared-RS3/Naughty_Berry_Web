@@ -154,7 +154,6 @@ interface MenuCardProps {
 }
 
 function MenuItemCard({ name, desc, price, tag, accent, index }: MenuCardProps) {
-  const [hovered, setHovered] = useState(false)
   const prefersReducedMotion = useReducedMotion()
   const rotateX = useMotionValue(0)
   const rotateY = useMotionValue(0)
@@ -166,47 +165,35 @@ function MenuItemCard({ name, desc, price, tag, accent, index }: MenuCardProps) 
     const rect = event.currentTarget.getBoundingClientRect()
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
-    const xPct = x / rect.width
-    const yPct = y / rect.height
-    rotateY.set((xPct - 0.5) * 8)
-    rotateX.set((0.5 - yPct) * 8)
+    rotateY.set(((x / rect.width) - 0.5) * 8)
+    rotateX.set((0.5 - (y / rect.height)) * 8)
   }
 
-  const resetTilt = () => {
-    rotateX.set(0)
-    rotateY.set(0)
-  }
+  const resetTilt = () => { rotateX.set(0); rotateY.set(0) }
 
   return (
     <motion.div
       variants={CARD_VARIANTS}
-      onMouseEnter={() => setHovered(true)}
       onMouseMove={onMove}
-      onMouseLeave={() => {
-        setHovered(false)
-        resetTilt()
-      }}
+      onMouseLeave={resetTilt}
       whileHover={prefersReducedMotion ? undefined : { y: -8 }}
-      className="relative pink-card rounded-2xl p-5 transition-all duration-300 overflow-hidden group bg-white"
+      className="relative pink-card rounded-2xl p-5 transition-all duration-300 overflow-hidden group bg-white border border-[#F9BDD4] hover:border-[#E8176D]/40"
       style={{
         rotateX: prefersReducedMotion ? 0 : smoothRotateX,
         rotateY: prefersReducedMotion ? 0 : smoothRotateY,
         transformPerspective: 900,
         transformStyle: 'preserve-3d',
-        boxShadow: hovered ? `0 20px 36px ${accent}30, 0 8px 18px rgba(0,0,0,0.06)` : '0 2px 12px rgba(0,0,0,0.06)',
-        borderColor: hovered ? `${accent}50` : '#F9BDD4',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
       }}
     >
-      {/* Hover glow */}
-      <motion.div
-        animate={{ opacity: hovered ? 1 : 0 }}
-        className="absolute inset-0 pointer-events-none"
+      {/* Hover glow — CSS group-hover */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{ background: `radial-gradient(circle at 50% 0%, ${accent}12, transparent 60%)` }}
       />
 
-      <motion.div
-        animate={{ opacity: hovered ? 1 : 0.45 }}
-        className="absolute -inset-[1px] pointer-events-none motion-aurora"
+      <div
+        className="absolute -inset-[1px] pointer-events-none motion-aurora opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{ borderRadius: 'inherit' }}
       />
 
