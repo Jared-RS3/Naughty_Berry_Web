@@ -392,7 +392,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
       </div>
 
       {/* ── Scroll hint ── */}
-      <motion.div
+      {/* <motion.div
         animate={{ y: [0, 8, 0], opacity: [0.4, 1, 0.4] }}
         transition={{ repeat: Infinity, duration: 2.2 }}
         className={`relative z-10 flex flex-col items-center pb-8 pointer-events-none ${
@@ -402,7 +402,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
       >
         <span className="text-[10px] tracking-[0.25em] uppercase mb-2">Scroll to explore</span>
         <ArrowDown size={14} />
-      </motion.div>
+      </motion.div> */}
     </section>
   )
 }

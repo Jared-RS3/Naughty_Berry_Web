@@ -99,7 +99,7 @@ function App() {
         <Suspense fallback={null}><Footer /></Suspense>
       </main>
 
-      <Suspense fallback={null}><FloatingCTA /></Suspense>
+      {/* <Suspense fallback={null}><FloatingCTA /></Suspense> */}
       </motion.div>
     </>
   )
