@@ -64,9 +64,13 @@ export default function FindUs() {
 
         {/* Schedule Cards */}
         {error && (
-          <p className="text-center text-[#E8176D]/70 text-sm mb-14">
-            Could not load schedule — check back on Instagram for this week's locations.
-          </p>
+          <div className="text-center mb-14 space-y-1">
+            <p className="text-[#E8176D]/80 text-sm font-medium">Could not load schedule from Airtable.</p>
+            <p className="text-[#2D1225]/40 text-xs font-mono">{error}</p>
+            <p className="text-[#2D1225]/40 text-xs">
+              Set <span className="font-mono">VITE_AIRTABLE_TOKEN</span> in Netlify environment variables and redeploy.
+            </p>
+          </div>
         )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-14">
           {loading
