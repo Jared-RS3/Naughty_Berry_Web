@@ -4,7 +4,7 @@ import WaveDivider from './WaveDivider'
 import { usePopupSchedule } from '../hooks/usePopupSchedule'
 
 export default function FindUs() {
-  const { schedule, loading } = usePopupSchedule()
+  const { schedule, loading, error } = usePopupSchedule()
 
   return (
     <section id="findus" className="py-24 lg:py-32 relative overflow-hidden bg-[#FDE8EF]">
@@ -63,6 +63,11 @@ export default function FindUs() {
         </motion.div>
 
         {/* Schedule Cards */}
+        {error && (
+          <p className="text-center text-[#E8176D]/70 text-sm mb-14">
+            Could not load schedule — check back on Instagram for this week's locations.
+          </p>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-14">
           {loading
             ? Array.from({ length: 3 }).map((_, i) => (
@@ -72,7 +77,7 @@ export default function FindUs() {
                 />
               ))
             : null}
-          {!loading && schedule.map((slot, i) => (
+          {!loading && !error && schedule.map((slot, i) => (
             <motion.div
               key={slot.day}
               initial={{ opacity: 0, y: 30 }}
