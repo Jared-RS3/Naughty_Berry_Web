@@ -1,35 +1,11 @@
 import { motion } from 'framer-motion'
 import { MapPin, Clock, Calendar, Instagram, ExternalLink } from 'lucide-react'
 import WaveDivider from './WaveDivider'
-
-const SCHEDULE = [
-  {
-    day: 'Friday',
-    date: 'Updated weekly',
-    location: 'Follow @naughtyberrycpt for exact location',
-    area: 'Cape Town CBD Area',
-    time: '17:00 – 21:00',
-    confirmed: false,
-  },
-  {
-    day: 'Saturday',
-    date: 'Updated weekly',
-    location: 'Cape Town Market / Pop-up TBC',
-    area: 'Atlantic Seaboard / Southern Suburbs',
-    time: '10:00 – 16:00',
-    confirmed: false,
-  },
-  {
-    day: 'Sunday',
-    date: 'Updated weekly',
-    location: 'Neighbourhood Market / Design Fair',
-    area: 'Cape Town area TBC',
-    time: '09:00 – 14:00',
-    confirmed: false,
-  },
-]
+import { usePopupSchedule } from '../hooks/usePopupSchedule'
 
 export default function FindUs() {
+  const { schedule, loading } = usePopupSchedule()
+
   return (
     <section id="findus" className="py-24 lg:py-32 relative overflow-hidden bg-[#FDE8EF]">
       {/* Background stripe */}
@@ -88,7 +64,15 @@ export default function FindUs() {
 
         {/* Schedule Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-14">
-          {SCHEDULE.map((slot, i) => (
+          {loading
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white border border-[#F9BDD4] rounded-2xl p-7 animate-pulse h-52"
+                />
+              ))
+            : null}
+          {!loading && schedule.map((slot, i) => (
             <motion.div
               key={slot.day}
               initial={{ opacity: 0, y: 30 }}
