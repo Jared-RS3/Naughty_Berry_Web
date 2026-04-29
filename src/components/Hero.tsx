@@ -334,7 +334,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
         </motion.div>
 
         {/* ── RIGHT: floating strawberry image (desktop only — mobile uses absolute bg above) ── */}
-        <div className="hidden lg:flex flex-1 items-center justify-center lg:order-2 w-full">
+        <div className="hidden lg:flex flex-1 items-center justify-end lg:order-2 w-full pr-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.85, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
