@@ -6,25 +6,25 @@ const VALUES = [
   {
     icon: Heart,
     title: 'Made with Love',
-    desc: 'Every single cup is prepared by hand. No gimmicks, no shortcuts. Just premium ingredients, real strawberries and proper chocolate.',
+    desc: 'Each cup is carefully prepared by hand and completed in front of you, combining freshness with a fun, interactive experience. From the first pour to the final touch, it\'s all about great flavour, quality ingredients, and a little bit of showmanship and, of course, lots of love.',
     color: '#E8176D',
   },
   {
     icon: Zap,
-    title: 'Premium Always',
-    desc: 'We use Belgian chocolate, fresh Cape Town strawberries and real cream. Because life is too short for average desserts.',
+    title: 'Sweet, Simple, Premium',
+    desc: 'We use premium chocolate and locally sourced strawberries, because we believe dessert should always feel a little more exciting than the usual.',
     color: '#E8176D',
   },
   {
     icon: Users,
-    title: 'Community First',
-    desc: 'We started at local Cape Town markets. The community built Naughty Berry and we show up for it every single weekend.',
+    title: 'The Naughty Berry Club',
+    desc: 'Naughty Berry started with just one table, a chocolate melter, and a big dream at local Cape Town markets. From those humble beginnings, our community showed up for us in the best way possible and helped turn that dream into something much bigger. Because of their support, we\'ve grown into three trailers, each one built on the same love for strawberries, chocolate, and shared moments that started it all. Our community is the backbone of everything we do, and the Naughty Berry Club continues to grow every day, one cup, one smile, and one pop-up at a time.',
     color: '#9B59B6',
   },
   {
     icon: MapPin,
-    title: 'Cape Town Proud',
-    desc: 'Born and raised in the Mother City. We\'re here to put Cape Town\'s dessert scene on the map. One strawberry at a time.',
+    title: 'From Cape Town, with Love',
+    desc: 'Proudly rooted in the Mother City, we\'re here to add a little more fun, colour, and sweetness to Cape Town\'s dessert scene one strawberry at a time.',
     color: '#2D6A4F',
   },
 ]
@@ -66,13 +66,13 @@ export default function About() {
 
               <div className="space-y-4 text-[#2D1225]/60 leading-relaxed text-center lg:text-left">
                 <p>
-                  Naughty Berry started with a simple obsession: why settle for basic desserts when you can have something extraordinary? We took the world's most romantic combination, fresh strawberries and premium chocolate, and made it accessible to everyone.
+                  Naughty Berry is all about fun, flavour, and community. Inspired by our love for strawberries, chocolate, and everything pink, we brought it all together to create an experience that's playful, welcoming, and a little bit indulgent.
                 </p>
                 <p>
-                  Every weekend you'll find us at Cape Town's best markets and pop-ups, serving handcrafted dessert cups and chocolate dipped strawberries made fresh right in front of you. No preservatives, no shortcuts. Just real ingredients and real flavour.
+                  At the heart of Naughty Berry is connection, from our friendly, energetic team to the way we engage with every customer. We're not just serving desserts, we're creating moments. Think fresh, juicy locally sourced strawberries topped with smooth, premium chocolate, poured right in front of you and served with a smile.
                 </p>
                 <p className="text-[#2D1225]/80 font-medium">
-                  We're also available for private functions and events across Cape Town. Whether it's a wedding, a birthday or a year end celebration, we bring the Naughty Berry experience right to you.
+                  We pop up on select dates at markets and events, with all upcoming locations shared on our website and social media pages. We also bring the Naughty Berry experience to any occasion, from weddings and year-end functions to baby showers, birthdays, and private parties. Naughty Berry adds a pop of fun, colour, and exceptional service to every event.
                 </p>
               </div>
 
@@ -103,7 +103,7 @@ export default function About() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-5"
+              className="flex flex-col gap-4"
             >
               {VALUES.map((v, i) => {
                 const Icon = v.icon
@@ -114,16 +114,18 @@ export default function About() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: i * 0.1 }}
-                    className="bg-white border border-[#F9BDD4] rounded-2xl rounded-2xl p-6 hover:border-[#F9BDD4] transition-all duration-300 group"
+                    className="bg-white border border-[#F9BDD4] rounded-2xl p-5 hover:border-[#E8176D]/30 transition-all duration-300 flex gap-4 items-start"
                   >
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
                       style={{ background: `${v.color}20`, border: `1px solid ${v.color}30` }}
                     >
                       <Icon size={18} style={{ color: v.color }} />
                     </div>
-                    <h3 className="font-display font-bold text-lg text-[#2D1225] mb-2">{v.title}</h3>
-                    <p className="text-[#2D1225]/50 text-sm leading-relaxed">{v.desc}</p>
+                    <div>
+                      <h3 className="font-display font-bold text-base text-[#2D1225] mb-1">{v.title}</h3>
+                      <p className="text-[#2D1225]/50 text-sm leading-relaxed">{v.desc}</p>
+                    </div>
                   </motion.div>
                 )
               })}

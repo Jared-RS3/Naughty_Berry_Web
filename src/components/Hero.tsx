@@ -266,9 +266,9 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
               isNaughtyMode ? 'text-white/70' : 'text-[#7A3B5E]'
             }`}
           >
-            Pop-ups, markets &amp; private events across Cape Town.
+            Pop-ups, Markets &amp; Private Events across Cape Town.
             <br />
-            <span className={`text-sm ${isNaughtyMode ? 'text-white/45' : 'text-[#7A3B5E]/60'}`}>Follow us to find where we are this weekend.</span>
+            <span className={`text-sm ${isNaughtyMode ? 'text-white/45' : 'text-[#7A3B5E]/60'}`}>Follow us to find out where we are this weekend.</span>
           </motion.p>
 
           {/* CTAs */}

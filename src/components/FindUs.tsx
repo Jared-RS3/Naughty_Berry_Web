@@ -5,7 +5,7 @@ import WaveDivider from './WaveDivider'
 const SCHEDULE = [
   {
     day: 'Friday',
-    date: 'Update weekly',
+    date: 'Updated weekly',
     location: 'Follow @naughtyberrycpt for exact location',
     area: 'Cape Town CBD Area',
     time: '17:00 – 21:00',
@@ -13,7 +13,7 @@ const SCHEDULE = [
   },
   {
     day: 'Saturday',
-    date: 'Update weekly',
+    date: 'Updated weekly',
     location: 'Cape Town Market / Pop-up TBC',
     area: 'Atlantic Seaboard / Southern Suburbs',
     time: '10:00 – 16:00',
@@ -21,7 +21,7 @@ const SCHEDULE = [
   },
   {
     day: 'Sunday',
-    date: 'Update weekly',
+    date: 'Updated weekly',
     location: 'Neighbourhood Market / Design Fair',
     area: 'Cape Town area TBC',
     time: '09:00 – 14:00',
