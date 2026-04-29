@@ -20,8 +20,8 @@ const DOTS = [
 
 const HERO_BERRY_ACCENTS = [
   { x: '3%', y: '10%', size: 72, delay: 0.1, rotate: -12 },
-  { x: '86%', y: '22%', size: 58, delay: 0.45, rotate: 11 },
-  { x: '77%', y: '84%', size: 66, delay: 0.25, rotate: -7 },
+  // { x: '86%', y: '22%', size: 58, delay: 0.45, rotate: 11 },
+  // { x: '77%', y: '84%', size: 66, delay: 0.25, rotate: -7 },
 ]
 
 export default function Hero({ isNaughtyMode }: HeroProps) {

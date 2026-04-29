@@ -177,7 +177,7 @@ function MenuItemCard({ name, desc, price, tag, accent, index }: MenuCardProps) 
       onMouseMove={onMove}
       onMouseLeave={resetTilt}
       whileHover={prefersReducedMotion ? undefined : { y: -8 }}
-      className="relative pink-card rounded-2xl p-5 transition-all duration-300 overflow-hidden group bg-white border border-[#F9BDD4] hover:border-[#E8176D]/40"
+      className="relative pink-card rounded-2xl p-5 transition-all duration-300 overflow-hidden group bg-white border border-[#F9BDD4] hover:border-[#E8176D]/40 flex flex-col"
       style={{
         rotateX: prefersReducedMotion ? 0 : smoothRotateX,
         rotateY: prefersReducedMotion ? 0 : smoothRotateY,
@@ -206,27 +206,23 @@ function MenuItemCard({ name, desc, price, tag, accent, index }: MenuCardProps) 
         0{index + 1}
       </span>
 
-      <div className="relative z-10">
-        {tag && (
-          <span
-            className="inline-block px-2 py-0.5 text-[9px] font-bold tracking-[0.12em] uppercase rounded-full mb-2"
-            style={{ background: `${accent}20`, color: accent, border: `1px solid ${accent}40` }}
-          >
-            {tag}
-          </span>
-        )}
+      <div className="relative z-10 flex flex-col h-full">
+        <div className="flex-1">
+          {tag && (
+            <span
+              className="inline-block px-2 py-0.5 text-[9px] font-bold tracking-[0.12em] uppercase rounded-full mb-2"
+              style={{ background: `${accent}20`, color: accent, border: `1px solid ${accent}40` }}
+            >
+              {tag}
+            </span>
+          )}
 
-        <h3 className="font-head font-bold text-lg text-[#2D1225] mb-1 leading-snug">{name}</h3>
-        <p className="text-[#7A3B5E]/70 text-sm leading-relaxed mb-4">{desc}</p>
+          <h3 className="font-head font-bold text-lg text-[#2D1225] mb-1 leading-snug">{name}</h3>
+          <p className="text-[#7A3B5E]/70 text-sm leading-relaxed">{desc}</p>
+        </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#F9BDD4]">
           <span className="font-bold text-lg" style={{ color: accent }}>{price}</span>
-          {/* <motion.div
-            animate={{ scaleX: hovered ? 1 : 0.3, opacity: hovered ? 1 : 0 }}
-            className="text-[10px] uppercase tracking-widest font-bold text-[#E8176D]"
-          >
-            Add to order →
-          </motion.div> */}
         </div>
       </div>
     </motion.div>
@@ -316,7 +312,7 @@ export default function MenuPreview() {
                 className="relative isolate overflow-hidden flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#FFF0F6]"
                 style={{
                   background: 'rgba(232,23,109,0.08)',
-                  color: isActive ? '#fff' : '#7A3B5E',
+                  color: isActive ? '#fff' : '#E8176D',
                   borderColor: isActive ? cat.color : '#F9BDD4',
                   border: '1.5px solid',
                   boxShadow: isActive ? `0 0 20px ${cat.color}44` : 'none',
@@ -378,7 +374,8 @@ export default function MenuPreview() {
               href="https://www.instagram.com/naughtyberrycpt"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3 rounded-full gradient-berry text-white text-sm font-bold hover:shadow-[0_0_20px_rgba(232,23,109,0.4)] transition-all inline-flex items-center gap-2"
+              className="px-6 py-3 rounded-full gradient-berry text-sm font-bold hover:shadow-[0_0_20px_rgba(232,23,109,0.4)] transition-all inline-flex items-center gap-2"
+              style={{ color: '#fff' }}
             >
               <img
                 src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"

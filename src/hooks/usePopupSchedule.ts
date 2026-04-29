@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react'
 
 export interface ScheduleSlot {
-  day: string
+  eventName: string
   date: string
+  day: string
   location: string
   area: string
-  time: string
-  confirmed: boolean
+  startTime: string
+  endTime: string
+  instagramStatus: string
+  instagramAccount: string
+  notes: string
+  isThisWeek: boolean
 }
 
 const BASE_ID = 'appIfLyWzGV0npV6U'
@@ -28,22 +33,31 @@ export function usePopupSchedule() {
     }
 
     fetch(
-      `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}?view=${VIEW_ID}&sort[0][field]=Order&sort[0][direction]=asc`,
+      `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}?view=${VIEW_ID}`,
       { headers: { Authorization: `Bearer ${token}` } }
     )
-      .then((r) => {
-        if (!r.ok) throw new Error(`Airtable API error ${r.status}: ${r.statusText}`)
+      .then(async (r) => {
+        if (!r.ok) {
+          const body = await r.json().catch(() => ({}))
+          const msg = body?.error?.message ?? r.statusText
+          throw new Error(`Airtable API error ${r.status}: ${msg}`)
+        }
         return r.json()
       })
       .then((data) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mapped = (data.records ?? []).map((r: any) => ({
-          day:       r.fields.Day       ?? '',
-          date:      r.fields.Date      ?? '',
-          location:  r.fields.Location  ?? '',
-          area:      r.fields.Area      ?? '',
-          time:      r.fields.Time      ?? '',
-          confirmed: r.fields.Confirmed ?? false,
+          eventName:        r.fields['Event Name']                 ?? '',
+          date:             r.fields['Date']                       ?? '',
+          day:              r.fields['Day of Week']                ?? '',
+          location:         r.fields['Venue / Location']           ?? '',
+          area:             r.fields['Area']                       ?? '',
+          startTime:        r.fields['Start Time']                 ?? '',
+          endTime:          r.fields['End Time']                   ?? '',
+          instagramStatus:  r.fields['Instagram Update Status']    ?? '',
+          instagramAccount: r.fields['Instagram Account to Follow'] ?? '',
+          notes:            r.fields['Notes']                      ?? '',
+          isThisWeek:       r.fields["Is This Week's Event?"]      ?? false,
         }))
         if (mapped.length === 0) throw new Error('No records returned from Airtable')
         setSchedule(mapped)
