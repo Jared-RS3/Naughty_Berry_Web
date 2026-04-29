@@ -12,7 +12,6 @@ const FindUs      = lazy(() => import('./components/FindUs'))
 const Testimonials= lazy(() => import('./components/Testimonials'))
 const Gallery     = lazy(() => import('./components/Gallery'))
 const Footer      = lazy(() => import('./components/Footer'))
-const FloatingCTA = lazy(() => import('./components/FloatingCTA'))
 
 function App() {
   const [loaded, setLoaded] = useState(false)
