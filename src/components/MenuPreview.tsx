@@ -301,7 +301,7 @@ export default function MenuPreview() {
             </span>
           </div>
           <div className="flex flex-col md:flex-row md:items-end justify-between w-full gap-6">
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] leading-tight text-center md:text-left">
+            <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] leading-tight text-center md:text-left w-full md:w-auto">
               Pure Naughty. <br />
               <span className="text-shimmer">Seriously Good.</span>
             </h2>
@@ -311,7 +311,7 @@ export default function MenuPreview() {
               href="/naughty-berry-menu.pdf"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-3 border-2 border-[#E8176D]/40 rounded-full text-[#E8176D] text-sm font-bold hover:bg-[#E8176D]/10 transition-all self-start"
+              className="flex items-center gap-2 px-5 py-3 border-2 border-[#E8176D]/40 rounded-full text-[#E8176D] text-sm font-bold hover:bg-[#E8176D]/10 transition-all self-center md:self-start"
               aria-label="Download menu PDF"
             >
               <Download size={14} />
@@ -326,7 +326,7 @@ export default function MenuPreview() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="flex gap-2 flex-wrap mb-10"
+          className="flex gap-2 flex-wrap mb-10 justify-center md:justify-start"
           role="tablist"
           aria-label="Menu categories"
         >

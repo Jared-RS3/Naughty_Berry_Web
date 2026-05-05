@@ -109,7 +109,7 @@ export default function Gallery() {
                 Gallery
               </span>
             </div>
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] leading-tight">
+            <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] leading-tight text-center md:text-left">
               Fresh Off the <br />
               <span className="text-shimmer">Chocolate Drizzle.</span>
             </h2>

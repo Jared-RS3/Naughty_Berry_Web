@@ -111,7 +111,7 @@ export default function Events() {
               Events & Catering
             </span>
           </div>
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] mb-4">
+          <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] mb-4 text-center md:text-left">
             We Cater for <br /><span className="text-shimmer">Any Occasion.</span>
           </h2>
           <p className="text-[#7A3B5E] text-lg max-w-xl mx-auto">

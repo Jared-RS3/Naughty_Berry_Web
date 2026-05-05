@@ -63,7 +63,7 @@ export default function FindUs() {
           </div>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] mb-3 leading-tight">
+              <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] mb-3 leading-tight text-center md:text-left">
                 This Weekend's <br />
                 <span className="text-shimmer">Pop-up Schedule.</span>
               </h2>
