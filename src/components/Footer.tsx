@@ -30,18 +30,18 @@ export default function Footer() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="max-w-lg"
+              className="max-w-lg w-full"
             >
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center justify-center lg:justify-start gap-2 mb-4">
                 <span className="w-8 h-[1px] bg-[#E8176D]" />
                 <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[#E8176D]">
                   Get in Touch
                 </span>
               </div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] mb-4">
+              <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] mb-4 text-center lg:text-left">
                 Let's Talk <span className="text-shimmer">Sweet.</span>
               </h2>
-              <p className="text-[#2D1225]/50 text-lg">
+              <p className="text-[#2D1225]/50 text-lg text-center lg:text-left">
                 For event bookings, press enquiries, or just to say hi, we love hearing from you.
               </p>
             </motion.div>

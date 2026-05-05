@@ -48,7 +48,7 @@ export default function FindUs() {
           transition={{ duration: 0.7 }}
           className="mb-16"
         >
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
             <img
               src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
               alt=""
@@ -67,7 +67,7 @@ export default function FindUs() {
                 This Weekend's <br />
                 <span className="text-shimmer">Pop-up Schedule.</span>
               </h2>
-              <p className="text-[#2D1225]/50 text-lg max-w-lg">
+              <p className="text-[#2D1225]/50 text-lg max-w-lg text-center md:text-left">
                 We roam Cape Town every weekend. Locations are updated every Thursday on Instagram.
               </p>
             </div>
@@ -75,7 +75,7 @@ export default function FindUs() {
               href="https://www.instagram.com/naughtyberrycpt"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-3 rounded-full border border-[#E8176D]/40 text-[#E8176D] text-sm font-medium hover:bg-[#E8176D]/10 transition-all self-start shrink-0"
+              className="flex items-center gap-2 px-5 py-3 rounded-full border border-[#E8176D]/40 text-[#E8176D] text-sm font-medium hover:bg-[#E8176D]/10 transition-all self-center md:self-start shrink-0"
               aria-label="Follow Naughty Berry on Instagram for pop-up locations"
             >
               <Instagram size={14} />

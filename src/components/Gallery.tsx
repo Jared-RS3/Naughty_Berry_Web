@@ -95,8 +95,8 @@ export default function Gallery() {
           transition={{ duration: 0.7 }}
           className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12"
         >
-          <div>
-            <div className="flex items-center gap-2 mb-4">
+          <div className="w-full md:w-auto">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
               <img
                 src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
                 alt=""
@@ -118,7 +118,7 @@ export default function Gallery() {
             href="https://www.instagram.com/naughtyberrycpt"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 self-start shrink-0 text-[#2D1225]/50 text-sm hover:text-[#E8176D] transition-colors"
+            className="flex items-center gap-2 self-center md:self-start shrink-0 text-[#2D1225]/50 text-sm hover:text-[#E8176D] transition-colors"
             aria-label="See more on Instagram"
           >
             <Instagram size={16} />
