@@ -1,18 +1,22 @@
 import { useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import WaveDivider from './WaveDivider'
-import { X, Instagram, ZoomIn } from 'lucide-react'
+import { X, Instagram } from 'lucide-react'
 
-// Placeholder gallery items — swap with real product photos
 const GALLERY = [
-  { id: 1, label: 'Classic Cup',     sub: 'The signature',      color: '#E8176D', emoji: '🍓', img: '/original.jpg',    tall: true  },
-  { id: 2, label: 'Brownie Cup',     sub: 'Pure indulgence',    color: '#8B4513', emoji: '🍫', img: '/brownie.jpg',     tall: false },
-  { id: 3, label: 'Dubai Chocolate', sub: 'The viral one',      color: '#E8176D', emoji: '✨', img: '/dubai.jpg',       tall: false },
-  { id: 4, label: 'Market Day',      sub: 'Cape Town pop-up',   color: '#9B59B6', emoji: '🎪', img: '/market.jpg',     tall: false },
-  { id: 5, label: 'Chocolate Dip',   sub: 'Hand-crafted',       color: '#E8176D', emoji: '🍬', img: '/brownie.jpg',    tall: true  },
-  { id: 6, label: 'Strawberry Box',  sub: 'Gift-ready',         color: '#E8176D', emoji: '🎁', img: '/strawberry.jpg', tall: false },
-  { id: 7, label: 'Event Setup',     sub: 'Wedding catering',   color: '#2D6A4F', emoji: '💍', img: '/setup.jpg',      tall: false },
-  { id: 8, label: 'Team in Action',  sub: 'Behind the scenes',  color: '#E8176D', emoji: '👩‍🍳', img: '/team.jpg',     tall: true  },
+  { id: 1,  label: 'Chocolate Pour',    sub: 'Hand-crafted',         color: '#E8176D', emoji: '🍫', img: '/chocolate-pour.jpg',   tall: true  },
+  { id: 2,  label: 'Choc Drip Night',   sub: 'Late night vibes',     color: '#2C1810', emoji: '🌙', img: '/choc-drip-night.jpg',  tall: false },
+  { id: 3,  label: 'Carry Bag',         sub: 'Gift-ready',           color: '#E8176D', emoji: '🎁', img: '/carry-bag.jpg',        tall: false },
+  { id: 4,  label: 'Iced Tea Trio',     sub: 'Sip with your crew',   color: '#9B59B6', emoji: '🧋', img: '/iced-tea-trio.jpg',    tall: false },
+  { id: 5,  label: 'Service Window',    sub: 'Straight to you',      color: '#E8176D', emoji: '🪟', img: '/service-window.jpg',   tall: true  },
+  { id: 6,  label: 'Iced Tea Sports',   sub: 'Refresh & refuel',     color: '#E8176D', emoji: '🏃', img: '/iced-tea-sports.jpg',  tall: false },
+  { id: 7,  label: 'Iced Tea Duo',      sub: 'Better together',      color: '#9B59B6', emoji: '🧋', img: '/iced-tea-duo.jpg',     tall: false },
+  { id: 8,  label: 'VEGA Cart',         sub: 'Cape Town pop-up',     color: '#E8176D', emoji: '🎪', img: '/vega-cart.jpg',        tall: true  },
+  { id: 9,  label: 'Nurses Day',        sub: 'Corporate catering',   color: '#2D6A4F', emoji: '💐', img: '/nurses-day.jpg',       tall: false },
+  { id: 10, label: 'Team Trailer',      sub: 'Behind the scenes',    color: '#E8176D', emoji: '👩‍🍳', img: '/team-trailer.jpg',  tall: false },
+  { id: 11, label: 'Trailer Night',     sub: 'Night market magic',   color: '#2C1810', emoji: '🌙', img: '/trailer-night.jpg',    tall: false },
+  { id: 12, label: 'Trailer Day',       sub: 'Come find us',         color: '#E8176D', emoji: '📍', img: '/trailer-day.jpg',      tall: true  },
+  { id: 13, label: 'Wedding Event',     sub: 'Special occasions',    color: '#9B59B6', emoji: '💍', img: '/wedding-event.jpg',    tall: false },
 ]
 
 interface GalleryItem {
@@ -30,12 +34,11 @@ function PlaceholderImage({ item, onClick }: { item: GalleryItem; onClick: () =>
 
   return (
     <motion.div
-      className="w-full relative overflow-hidden rounded-2xl cursor-pointer group"
-      style={{ aspectRatio: item.tall ? '3 / 4' : '4 / 3' }}
+      className="w-full overflow-hidden rounded-2xl cursor-pointer group"
       onClick={onClick}
       tabIndex={0}
       role="button"
-      aria-label={`View ${item.label} – ${item.sub}`}
+      aria-label={`View ${item.label}`}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
       whileHover={prefersReducedMotion ? undefined : { scale: 1.03 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
@@ -45,12 +48,12 @@ function PlaceholderImage({ item, onClick }: { item: GalleryItem; onClick: () =>
           src={item.img}
           alt={item.label}
           loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="w-full h-auto block"
           draggable={false}
         />
       ) : (
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center"
+          className="w-full h-48 flex flex-col items-center justify-center relative"
           style={{
             background: `linear-gradient(135deg, ${item.color}25 0%, #FDE8EF 100%)`,
             border: `1px solid ${item.color}20`,
@@ -73,15 +76,7 @@ function PlaceholderImage({ item, onClick }: { item: GalleryItem; onClick: () =>
         </div>
       )}
 
-      {/* Hover overlay — CSS transition, no JS state */}
-      <div
-        className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{ background: `${item.color}BB`, backdropFilter: 'blur(4px)' }}
-      >
-        <ZoomIn size={28} className="text-white mb-2" />
-        <p className="font-display font-bold text-white text-lg">{item.label}</p>
-        <p className="text-white/70 text-xs">{item.sub}</p>
-      </div>
+
     </motion.div>
   )
 }
@@ -137,12 +132,12 @@ export default function Gallery() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-0"
+          className="columns-2 md:columns-3 lg:columns-4 gap-6 space-y-0"
         >
           {GALLERY.map((item, i) => (
             <motion.div
               key={item.id}
-              className="break-inside-avoid mb-4"
+              className="break-inside-avoid mb-6"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

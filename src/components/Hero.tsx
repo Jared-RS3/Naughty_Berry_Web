@@ -220,32 +220,26 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
           <motion.h1
             variants={reveal}
             className={`font-display font-black text-5xl md:text-6xl xl:text-7xl leading-[0.92] mb-6 text-center lg:text-left ${
-              isNaughtyMode ? 'text-white' : 'text-[#2D1225]'
+              isNaughtyMode ? 'text-white' : ''
             }`}
           >
-            Strawberries.
+            {isNaughtyMode ? 'Strawberries.' : (
+              <span className="inline-block" style={{ color: '#E8176D' }}>Strawberries.</span>
+            )}
             <br />
             {isNaughtyMode ? (
               <span className="inline-block" style={{ color: '#FF2D8C' }}>
                 Chocolate.
               </span>
             ) : (
-              <span
-                className="inline-block"
-                style={{
-                  background: 'linear-gradient(90deg, #E8176D 0%, #C01057 50%, #E8176D 100%)',
-                  backgroundSize: '200% auto',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  animation: 'shimmer 3s linear infinite',
-                }}
-              >
+              <span className="inline-block" style={{ color: '#5C3320' }}>
                 Chocolate.
               </span>
             )}
             <br />
-            On&nbsp;Tap.
+            {isNaughtyMode ? 'On\u00a0Tap.' : (
+              <span className="inline-block" style={{ color: '#E8176D' }}>On&nbsp;Tap.</span>
+            )}
           </motion.h1>
 
           {/* Divider */}

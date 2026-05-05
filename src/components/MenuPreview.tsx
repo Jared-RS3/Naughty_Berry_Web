@@ -15,24 +15,28 @@ export const MENU_CATEGORIES = [
         desc: 'The original Naughty Berry experience. Fresh strawberries layered with smooth, premium chocolate poured over and finished in front of you for a simple, indulgent treat that never misses.',
         price: 'R75',
         tag: 'Fan Favourite',
+        photo: '/choc-drip-night.jpg',
       },
       {
         name: 'Naughty Brownie Cup',
         desc: 'Fresh strawberries paired with soft, rich brownie pieces, topped with silky premium chocolate poured right in front of you for the perfect mix of fudgy and fresh.',
         price: 'R75',
         tag: 'Best Seller',
+        photo: '/strawberry-drip.jpg',
       },
       {
         name: 'Dubai Cup',
         desc: 'A rich, indulgent blend of fresh strawberries, pistachio cream, and crunchy kunafa, finished with premium chocolate poured over in front of you for a bold, textured treat.',
         price: 'R95',
         tag: null,
+        photo: '/matcha-cup.jpg',
       },
       {
         name: 'Cream Cup',
         desc: 'Fresh strawberries paired with smooth, velvety cream for a light, fresh, and indulgent treat.',
         price: 'R95',
         tag: null,
+        photo: '/classic-cup.jpg',
       },
     ],
   },
@@ -151,9 +155,10 @@ interface MenuCardProps {
   tag: string | null
   accent: string
   index: number
+  photo?: string
 }
 
-function MenuItemCard({ name, desc, price, tag, accent, index }: MenuCardProps) {
+function MenuItemCard({ name, desc, price, tag, accent, index, photo }: MenuCardProps) {
   const prefersReducedMotion = useReducedMotion()
   const rotateX = useMotionValue(0)
   const rotateY = useMotionValue(0)
@@ -177,7 +182,7 @@ function MenuItemCard({ name, desc, price, tag, accent, index }: MenuCardProps) 
       onMouseMove={onMove}
       onMouseLeave={resetTilt}
       whileHover={prefersReducedMotion ? undefined : { y: -8 }}
-      className="relative pink-card rounded-2xl p-5 transition-all duration-300 overflow-hidden group bg-white border border-[#F9BDD4] hover:border-[#E8176D]/40 flex flex-col"
+      className="relative pink-card rounded-2xl transition-all duration-300 overflow-hidden group bg-white border border-[#F9BDD4] hover:border-[#E8176D]/40 flex flex-col"
       style={{
         rotateX: prefersReducedMotion ? 0 : smoothRotateX,
         rotateY: prefersReducedMotion ? 0 : smoothRotateY,
@@ -197,18 +202,46 @@ function MenuItemCard({ name, desc, price, tag, accent, index }: MenuCardProps) 
         style={{ borderRadius: 'inherit' }}
       />
 
-      {/* Number */}
-      <span
-        className="absolute top-4 right-5 text-[10px] font-bold tracking-widest opacity-20 font-display"
-        style={{ color: accent }}
-        aria-hidden="true"
-      >
-        0{index + 1}
-      </span>
-
-      <div className="relative z-10 flex flex-col h-full">
-        <div className="flex-1">
+      {/* Product photo */}
+      {photo ? (
+        <div className="relative overflow-hidden w-full h-56 flex-shrink-0">
+          <img
+            src={photo}
+            alt={name}
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            draggable={false}
+          />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white to-transparent pointer-events-none" />
           {tag && (
+            <span
+              className="absolute top-3 left-3 inline-block px-2.5 py-1 text-[9px] font-bold tracking-[0.12em] uppercase rounded-full"
+              style={{ background: 'rgba(255,255,255,0.92)', color: accent, border: `1px solid ${accent}40` }}
+            >
+              {tag}
+            </span>
+          )}
+          <span
+            className="absolute top-3 right-3 text-[10px] font-bold tracking-widest font-display"
+            style={{ color: 'rgba(255,255,255,0.85)', textShadow: '0 1px 6px rgba(0,0,0,0.35)' }}
+            aria-hidden="true"
+          >
+            0{index + 1}
+          </span>
+        </div>
+      ) : (
+        <span
+          className="absolute top-4 right-5 text-[10px] font-bold tracking-widest opacity-20 font-display"
+          style={{ color: accent }}
+          aria-hidden="true"
+        >
+          0{index + 1}
+        </span>
+      )}
+
+      <div className="relative z-10 flex flex-col flex-1 p-5">
+        <div className="flex-1">
+          {!photo && tag && (
             <span
               className="inline-block px-2 py-0.5 text-[9px] font-bold tracking-[0.12em] uppercase rounded-full mb-2"
               style={{ background: `${accent}20`, color: accent, border: `1px solid ${accent}40` }}
