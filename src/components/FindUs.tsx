@@ -260,7 +260,7 @@ export default function FindUs() {
                 Follow <span className="text-[#E8176D]">@naughtyberrycpt</span>
               </h3>
               <p className="text-[#2D1225]/50 mt-2">
-                Weekly location drops every Thursday. Reels, drips, and behind-the-scenes.
+                Every Monday, a new location drops with reels, moments, and behind the scenes.
               </p>
             </div>
             <a

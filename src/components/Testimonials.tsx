@@ -2,20 +2,50 @@ import { motion } from 'framer-motion'
 
 const TESTIMONIALS = [
   {
-    quote: "Honestly the best dessert cup I've ever had. The brownie cup hit differently. Send help.",
-    name: 'Leila M.',
-    handle: '@leilalovescpt',
+    quote: 'The strawberry cups look so yummy. Definitely a balanced diet.',
+    name: 'Quaanitah',
+    handle: '@quaanitah',
   },
   {
-    quote: 'Had Naughty Berry at my wedding and every single guest asked for the Instagram. 10/10.',
-    name: 'Tamsin O.',
-    handle: '@tamsinolivier',
+    quote: 'Isa can review it.',
+    name: 'Soraya Jacobs',
+    handle: '@_sorayajacobs',
   },
   {
-    quote: "The Dubai chocolate strawberries are INSANE. Can't stop thinking about them.",
-    name: 'Naledi P.',
-    handle: '@naledivibes',
+    quote: 'The strawberries are always so so fresh and juicy and chocolate is just too good 😊',
+    name: 'Milkshaikk',
+    handle: '@milkshaikk_',
   },
+  {
+    quote: 'My favourite sweet treat ever!!',
+    name: 'Milkshaikk',
+    handle: '@milkshaikk_',
+  },
+  {
+    quote: 'NEVER DISAPPOINTS! Always so fresh and tasty! ❤️',
+    name: 'Naailah H.',
+    handle: '@naailah_h',
+  },
+  {
+    quote: "Also, AMAZING service. Just chef's kiss 🤌",
+    name: 'Aadielah Solomon',
+    handle: '@aadielahsolomon',
+  },
+  {
+    quote: 'super friendly staff! strawberries & brownies are ALWAYS covered in a generous amount of chocolate 🥰',
+    name: 'Aadielah Solomon',
+    handle: '@aadielahsolomon',
+  },
+  {
+    quote: 'Most delicious strawberries I’ve ever tasted! 😋',
+    name: 'Ammaarah B.',
+    handle: '@ammaarah.b',
+  },
+  {
+    quote: 'It was an absolute pleasure having you as part of our wedding. Thank you for your wonderful service and yummy treats(as always) it was definitely a hit among the guests! 😊',
+    name: 'Ammaarah B.',
+    handle: '@ammaarah.b',
+  }
 ]
 
 export default function Testimonials() {
