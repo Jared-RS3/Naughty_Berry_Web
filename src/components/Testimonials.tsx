@@ -7,11 +7,6 @@ const TESTIMONIALS = [
     handle: '@quaanitah',
   },
   {
-    quote: 'Isa can review it.',
-    name: 'Soraya Jacobs',
-    handle: '@_sorayajacobs',
-  },
-  {
     quote: 'The strawberries are always so so fresh and juicy and chocolate is just too good 😊',
     name: 'Milkshaikk',
     handle: '@milkshaikk_',
@@ -38,8 +33,8 @@ const TESTIMONIALS = [
   },
   {
     quote: 'Most delicious strawberries I’ve ever tasted! 😋',
-    name: 'Ammaarah B.',
-    handle: '@ammaarah.b',
+    name: 'S Mia',
+    handle: ''
   },
   {
     quote: 'It was an absolute pleasure having you as part of our wedding. Thank you for your wonderful service and yummy treats(as always) it was definitely a hit among the guests! 😊',

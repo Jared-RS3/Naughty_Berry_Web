@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence, useMotionValue, useSpring, useReducedMotion } from 'framer-motion'
 import WaveDivider from './WaveDivider'
-import { Download, Star, Flame, Heart, Zap, Coffee } from 'lucide-react'
+import { Download, Star, Flame, Heart, Zap, Coffee, GlassWater } from 'lucide-react'
 
 export const MENU_CATEGORIES = [
   {
@@ -11,32 +11,47 @@ export const MENU_CATEGORIES = [
     color: '#E8143C',
     items: [
       {
-        name: 'Classic Cup',
-        desc: 'The original Naughty Berry experience. Fresh strawberries layered with smooth, premium chocolate poured over and finished in front of you for a simple, indulgent treat that never misses.',
+        name: 'Naughty Classic Cup',
+        desc: 'Fresh strawberries drenched in creamy milk chocolate, finished in front of you for a simple, indulgent treat that never misses.',
         price: 'R75',
         tag: 'Fan Favourite',
         photo: '/choc-drip-night.jpg',
       },
       {
         name: 'Naughty Brownie Cup',
-        desc: 'Fresh strawberries paired with soft, rich brownie pieces, topped with silky premium chocolate poured right in front of you for the perfect mix of fudgy and fresh.',
+        desc: 'Fresh strawberries with fudgey brownie bites, drenched in creamy milk chocolate for the perfect mix of fudgy and fresh.',
         price: 'R75',
         tag: 'Best Seller',
         photo: '/strawberry-drip.jpg',
       },
       {
-        name: 'Dubai Cup',
-        desc: 'A rich, indulgent blend of fresh strawberries, pistachio cream, and crunchy kunafa, finished with premium chocolate poured over in front of you for a bold, textured treat.',
+        name: 'Dubai Chocolate Strawberries',
+        desc: 'Our classic or brownie cup topped with our decadent kunafeh mixture of creamy pistachio cream and toasted kataifi pastry, drenched in creamy milk chocolate.',
         price: 'R95',
         tag: null,
         photo: '/matcha-cup.jpg',
       },
       {
-        name: 'Cream Cup',
-        desc: 'Fresh strawberries paired with smooth, velvety cream for a light, fresh, and indulgent treat.',
+        name: 'New Naughty Cream Cup',
+        desc: 'Fresh strawberries layered in a velvety sweetened cream, crowned with crunchy Lotus Biscoff crumbs.',
         price: 'R95',
-        tag: null,
+        tag: 'New',
         photo: '/classic-cup.jpg',
+      },
+    ],
+  },
+  {
+    id: 'iced-tea',
+    label: 'Iced Tea',
+    icon: GlassWater,
+    color: '#FF8C42',
+    items: [
+      {
+        name: 'Strawberry Peach Iced Tea',
+        desc: 'A smooth mix of sun-kissed strawberry and peach, served over ice. Simple, refreshing, and full of flavour.',
+        price: 'R45',
+        tag: 'New',
+        photo: '/iced-tea-duo.jpg',
       },
     ],
   },
@@ -309,7 +324,7 @@ export default function MenuPreview() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               href="/naughty-berry-menu.pdf"
-              target="_blank"
+              download="Naughty-Berry-Menu.pdf"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-5 py-3 border-2 border-[#E8176D]/40 rounded-full text-[#E8176D] text-sm font-bold hover:bg-[#E8176D]/10 transition-all self-center md:self-start"
               aria-label="Download menu PDF"
@@ -392,7 +407,7 @@ export default function MenuPreview() {
         </AnimatePresence>
 
         {/* Bottom CTA */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -426,7 +441,7 @@ export default function MenuPreview() {
               naughtyberryinfo@gmail.com
             </a>
           </div>
-        </motion.div>
+        </motion.div> */}
       </div>
       <WaveDivider variant="menu" fill="#FFF0F6" height={56} />
     </section>
