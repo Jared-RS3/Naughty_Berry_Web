@@ -33,13 +33,13 @@ const TESTIMONIALS = [
   },
   {
     quote: 'Most delicious strawberries I’ve ever tasted! 😋',
-    name: 'S Mia',
-    handle: ''
+    name: 'Ammaarah B.',
+    handle: '@ammaarah.b',
   },
   {
     quote: 'It was an absolute pleasure having you as part of our wedding. Thank you for your wonderful service and yummy treats(as always) it was definitely a hit among the guests! 😊',
-    name: 'Ammaarah B.',
-    handle: '@ammaarah.b',
+    name: 'S Mia',
+    handle: '',
   }
 ]
 
