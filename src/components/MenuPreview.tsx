@@ -132,19 +132,19 @@ export const MENU_CATEGORIES = [
     color: '#FF6BAD',
     items: [
       {
-        name: 'Small Platter (20 pax)',
+        name: 'Small Combo (20 pax)',
         desc: '20 chocolate strawberries + 20 classic cups, beautifully presented',
         price: 'R1 800',
         tag: 'Events',
       },
       {
-        name: 'Medium Platter (40 pax)',
+        name: 'Medium Combo (40 pax)',
         desc: '40 strawberries + 40 cups with mixed flavours, styled display',
         price: 'R3 200',
         tag: 'Events',
       },
       {
-        name: 'Large Platter (80 pax)',
+        name: 'Large Combo (80 pax)',
         desc: 'Full event service — 80 pax, custom flavours, styled setup, team on-site',
         price: 'From R5 500',
         tag: 'Premium',
