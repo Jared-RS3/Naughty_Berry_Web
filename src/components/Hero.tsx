@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useRef } from 'react'
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
-import { Sparkles } from 'lucide-react'
 import WaveDivider from './WaveDivider'
 
 type HeroProps = {
