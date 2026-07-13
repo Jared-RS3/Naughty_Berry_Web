@@ -108,7 +108,7 @@ export default function Events() {
             />
             <span className="w-8 h-[1px] bg-[#E8176D]" />
             <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#E8176D]">
-              Events & Catering
+              Events & CateringPackages
             </span>
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] mb-4 text-center md:text-left">

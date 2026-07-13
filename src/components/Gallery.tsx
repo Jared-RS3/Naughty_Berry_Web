@@ -4,15 +4,15 @@ import WaveDivider from './WaveDivider'
 import { X, Instagram } from 'lucide-react'
 
 const GALLERY = [
-  { id: 1,  label: 'Chocolate Pour',    sub: 'Hand-crafted',         color: '#E8176D', emoji: '🍫', img: '/chocolate-pour.jpg',   tall: true  },
+  // { id: 1,  label: 'Chocolate Pour',    sub: 'Hand-crafted',         color: '#E8176D', emoji: '🍫', img: '/chocolate-pour.jpg',   tall: true  },
   { id: 2,  label: 'Choc Drip Night',   sub: 'Late night vibes',     color: '#2C1810', emoji: '🌙', img: '/choc-drip-night.jpg',  tall: false },
   { id: 3,  label: 'Carry Bag',         sub: 'Gift-ready',           color: '#E8176D', emoji: '🎁', img: '/carry-bag.jpg',        tall: false },
   { id: 4,  label: 'Iced Tea Trio',     sub: 'Sip with your crew',   color: '#9B59B6', emoji: '🧋', img: '/iced-tea-trio.jpg',    tall: false },
   { id: 5,  label: 'Service Window',    sub: 'Straight to you',      color: '#E8176D', emoji: '🪟', img: '/service-window.jpg',   tall: true  },
   { id: 6,  label: 'Iced Tea Sports',   sub: 'Refresh & refuel',     color: '#E8176D', emoji: '🏃', img: '/iced-tea-sports.jpg',  tall: false },
   { id: 7,  label: 'Iced Tea Duo',      sub: 'Better together',      color: '#9B59B6', emoji: '🧋', img: '/iced-tea-duo.jpg',     tall: false },
-  { id: 8,  label: 'VEGA Cart',         sub: 'Cape Town pop-up',     color: '#E8176D', emoji: '🎪', img: '/vega-cart.jpg',        tall: true  },
-  { id: 9,  label: 'Nurses Day',        sub: 'Corporate catering',   color: '#2D6A4F', emoji: '💐', img: '/nurses-day.jpg',       tall: false },
+  // { id: 8,  label: 'VEGA Cart',         sub: 'Cape Town pop-up',     color: '#E8176D', emoji: '🎪', img: '/vega-cart.jpg',        tall: true  },
+  // { id: 9,  label: 'Nurses Day',        sub: 'Corporate catering',   color: '#2D6A4F', emoji: '💐', img: '/nurses-day.jpg',       tall: false },
   { id: 10, label: 'Team Trailer',      sub: 'Behind the scenes',    color: '#E8176D', emoji: '👩‍🍳', img: '/team-trailer.jpg',  tall: false },
   { id: 11, label: 'Trailer Night',     sub: 'Night market magic',   color: '#2C1810', emoji: '🌙', img: '/trailer-night.jpg',    tall: false },
   { id: 12, label: 'Trailer Day',       sub: 'Come find us',         color: '#E8176D', emoji: '📍', img: '/trailer-day.jpg',      tall: true  },

@@ -127,7 +127,7 @@ export const MENU_CATEGORIES = [
   // },
   {
     id: 'platters',
-    label: 'Packages',
+    label: 'Combos',
     icon: Star,
     color: '#FF6BAD',
     items: [
