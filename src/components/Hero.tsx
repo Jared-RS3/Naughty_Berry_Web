@@ -210,7 +210,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
                 : 'border-[#F9BDD4] bg-white/70'
             }`}
           >
-            <Sparkles size={12} className={isNaughtyMode ? 'text-[#FF4DAE]' : 'text-[#E8176D]'} />
+            {/* <Sparkles size={12} className={isNaughtyMode ? 'text-[#FF4DAE]' : 'text-[#E8176D]'} /> */}
             <span className={`text-[11px] font-bold tracking-[0.28em] uppercase ${isNaughtyMode ? 'text-[#FF4DAE]' : 'text-[#E8176D]'}`}>
               Cape Town's First
             </span>
