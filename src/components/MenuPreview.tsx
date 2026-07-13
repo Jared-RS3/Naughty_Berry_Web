@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence, useMotionValue, useSpring, useReducedMotion } from 'framer-motion'
 import WaveDivider from './WaveDivider'
-import { Download, Star, Flame, Heart, Zap, Coffee, GlassWater } from 'lucide-react'
+import { Download, Star, Coffee, GlassWater } from 'lucide-react'
 
 export const MENU_CATEGORIES = [
   {
