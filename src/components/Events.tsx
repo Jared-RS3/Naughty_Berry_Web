@@ -115,7 +115,7 @@ export default function Events() {
             We Cater for <br /><span className="text-shimmer">Any Occasion.</span>
           </h2>
           <p className="text-[#7A3B5E] text-lg max-w-xl mx-auto">
-            From intimate birthdays to full scale weddings, Naughty Berry brings the chocolate fountain vibes without the mess. Just the good stuff.
+            From intimate birthdays to full-scale weddings, Naughty Berry's signature chocolate taps brings fresh strawberries, flowing chocolate and little extra sweetness to every celebration.
           </p>
         </motion.div>
 
