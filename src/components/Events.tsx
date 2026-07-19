@@ -98,21 +98,26 @@ export default function Events() {
           transition={{ duration: 0.7 }}
           className="text-center mb-16"
         >
-          <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="flex items-center justify-center gap-3 mb-6">
             <img
               src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
               alt=""
               aria-hidden="true"
-              className="w-5 h-5 object-contain opacity-85"
+              className="w-6 h-6 object-contain opacity-85"
               draggable={false}
             />
-            <span className="w-8 h-[1px] bg-[#E8176D]" />
-            <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#E8176D]">
-              Events & CateringPackages
+            <span className="w-6 h-[1px] bg-[#E8176D]/60" />
+            <span className="text-[12px] font-bold tracking-[0.24em] uppercase text-[#E8176D]">
+              Events & Catering
             </span>
+            <span className="w-6 h-[1px] bg-[#E8176D]/60" />
           </div>
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] mb-4 text-center md:text-left">
-            We Cater for <br /><span className="text-shimmer">Any Occasion.</span>
+          <h2
+            className="uppercase leading-[1.04] text-[clamp(1.8rem,4.6vw,3.4rem)] mb-5"
+            style={{ fontFamily: "'Archivo Black', system-ui, sans-serif" }}
+          >
+            <span className="block text-[#E8176D]">We cater for</span>
+            <span className="block text-[#3B2116]">any occasion.</span>
           </h2>
           <p className="text-[#7A3B5E] text-lg max-w-xl mx-auto">
             From intimate birthdays to full-scale weddings, Naughty Berry's signature chocolate taps brings fresh strawberries, flowing chocolate and little extra sweetness to every celebration.
@@ -359,7 +364,7 @@ export default function Events() {
             </div>
           </div>
       </div>
-      <WaveDivider variant="events" fill="#FDE8EF" height={64} />
+      <WaveDivider variant="events" fill="#F6E3EB" height={64} />
     </section>
   )
 }

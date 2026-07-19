@@ -18,7 +18,7 @@ export default function Footer() {
   return (
     <>
       {/* ─── Contact ───────────────────── */}
-      <section id="contact" className="py-20 relative overflow-hidden border-t border-[#F9BDD4] bg-white">
+      <section id="contact" className="py-20 relative overflow-hidden border-t border-[#F9BDD4] bg-[#F6E3EB]">
         <div
           className="absolute inset-0 opacity-[0.04]"
           style={{ background: 'radial-gradient(ellipse at 20% 50%, #E8176D, transparent 60%)' }}
@@ -32,14 +32,25 @@ export default function Footer() {
               viewport={{ once: true }}
               className="max-w-lg w-full"
             >
-              <div className="flex items-center justify-center lg:justify-start gap-2 mb-4">
-                <span className="w-8 h-[1px] bg-[#E8176D]" />
-                <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[#E8176D]">
+              <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
+                <img
+                  src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+                  alt=""
+                  aria-hidden="true"
+                  className="w-6 h-6 object-contain opacity-85"
+                  draggable={false}
+                />
+                <span className="w-6 h-[1px] bg-[#E8176D]/60" />
+                <span className="text-[12px] font-bold tracking-[0.24em] uppercase text-[#E8176D]">
                   Get in Touch
                 </span>
               </div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] mb-4 text-center lg:text-left">
-                Let's Talk <span className="text-shimmer">Sweet.</span>
+              <h2
+                className="uppercase leading-[1.04] text-[clamp(1.8rem,4.2vw,3.2rem)] mb-4 text-center lg:text-left"
+                style={{ fontFamily: "'Archivo Black', system-ui, sans-serif" }}
+              >
+                <span className="text-[#E8176D]">Let's talk </span>
+                <span className="text-[#3B2116]">sweet.</span>
               </h2>
               <p className="text-[#2D1225]/50 text-lg text-center lg:text-left">
                 For event bookings, press enquiries, or just to say hi, we love hearing from you.

@@ -85,7 +85,7 @@ export default function Gallery() {
   const [selected, setSelected] = useState<GalleryItem | null>(null)
 
   return (
-    <section id="gallery" className="py-24 lg:py-32 relative overflow-hidden bg-[#FFF0F6]">
+    <section id="gallery" className="py-24 lg:py-32 relative overflow-hidden bg-[#F6E3EB]">
       <div className="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
         {/* Header */}
         <motion.div
@@ -93,32 +93,34 @@ export default function Gallery() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.7 }}
-          className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12"
+          className="text-center mb-12"
         >
-          <div className="w-full md:w-auto">
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
-              <img
-                src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
-                alt=""
-                aria-hidden="true"
-                className="w-5 h-5 object-contain opacity-85"
-                draggable={false}
-              />
-              <span className="w-8 h-[1px] bg-[#E8176D]" />
-              <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[#E8176D]">
-                Gallery
-              </span>
-            </div>
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] leading-tight text-center md:text-left">
-              Fresh Off the <br />
-              <span className="text-shimmer">Chocolate Drizzle.</span>
-            </h2>
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <img
+              src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+              alt=""
+              aria-hidden="true"
+              className="w-6 h-6 object-contain opacity-85"
+              draggable={false}
+            />
+            <span className="w-6 h-[1px] bg-[#E8176D]/60" />
+            <span className="text-[12px] font-bold tracking-[0.24em] uppercase text-[#E8176D]">
+              Gallery
+            </span>
+            <span className="w-6 h-[1px] bg-[#E8176D]/60" />
           </div>
+          <h2
+            className="uppercase leading-[1.04] text-[clamp(1.8rem,4.6vw,3.4rem)] mb-5"
+            style={{ fontFamily: "'Archivo Black', system-ui, sans-serif" }}
+          >
+            <span className="block text-[#E8176D]">Fresh off the</span>
+            <span className="block text-[#3B2116]">chocolate drizzle.</span>
+          </h2>
           <a
             href="https://www.instagram.com/naughtyberrycpt"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 self-center md:self-start shrink-0 text-[#2D1225]/50 text-sm hover:text-[#E8176D] transition-colors"
+            className="inline-flex items-center gap-2 text-[#2D1225]/50 text-sm hover:text-[#E8176D] transition-colors"
             aria-label="See more on Instagram"
           >
             <Instagram size={16} />
@@ -228,7 +230,7 @@ export default function Gallery() {
           </motion.div>
         )}
       </AnimatePresence>
-      <WaveDivider variant="gallery" fill="#FDE8EF" height={60} />
+      <WaveDivider variant="gallery" fill="#F6E3EB" height={60} />
     </section>
   )
 }

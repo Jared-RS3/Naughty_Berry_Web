@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import LoadingScreen from './components/LoadingScreen'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
+import ScrollCup from './components/ScrollCup'
 
 // All below-fold sections split into separate chunks — only downloaded when needed
 const About       = lazy(() => import('./components/About'))
@@ -51,7 +52,7 @@ function App() {
         initial={{ opacity: 0 }}
         animate={loaded ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 0.7, ease: 'easeOut' }}
-        className={`min-h-screen text-[#2D1225] overflow-x-hidden transition-[background-color] duration-700 ${
+        className={`min-h-screen text-[#2D1225] transition-[background-color] duration-700 ${
         isNaughtyMode ? 'bg-[#1B0823]' : 'bg-[#FDE8EF]'
       }`}
     >
@@ -64,6 +65,9 @@ function App() {
       </a>
 
       <Navbar isNaughtyMode={isNaughtyMode} onToggleNaughtyMode={handleToggleNaughtyMode} />
+
+      {/* Shared strawberry cup that flies hero → story → reviews → menu on scroll */}
+      <ScrollCup />
 
       <AnimatePresence>
         {showTransition && (
@@ -90,10 +94,10 @@ function App() {
           <Hero isNaughtyMode={isNaughtyMode} />
         </Suspense>
         <Suspense fallback={null}><About /></Suspense>
+        <Suspense fallback={null}><Testimonials /></Suspense>
         <Suspense fallback={null}><MenuPreview /></Suspense>
         <Suspense fallback={null}><Events /></Suspense>
         <Suspense fallback={null}><FindUs /></Suspense>
-        <Suspense fallback={null}><Testimonials /></Suspense>
         <Suspense fallback={null}><Gallery /></Suspense>
         <Suspense fallback={null}><Footer /></Suspense>
       </main>

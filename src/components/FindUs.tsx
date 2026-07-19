@@ -29,7 +29,7 @@ export default function FindUs() {
   }
 
   return (
-    <section id="findus" className="py-24 lg:py-32 relative overflow-hidden bg-[#FDE8EF]">
+    <section id="findus" className="py-24 lg:py-32 relative overflow-hidden bg-[#F6E3EB]">
       {/* Background stripe */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.03]"
@@ -48,34 +48,36 @@ export default function FindUs() {
           transition={{ duration: 0.7 }}
           className="mb-16"
         >
-          <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
+          <div className="flex items-center justify-center gap-3 mb-6">
             <img
               src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
               alt=""
               aria-hidden="true"
-              className="w-5 h-5 object-contain opacity-85"
+              className="w-6 h-6 object-contain opacity-85"
               draggable={false}
             />
-            <span className="w-8 h-[1px] bg-[#E8176D]" />
-            <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[#E8176D]">
+            <span className="w-6 h-[1px] bg-[#E8176D]/60" />
+            <span className="text-[12px] font-bold tracking-[0.24em] uppercase text-[#E8176D]">
               Find Us
             </span>
+            <span className="w-6 h-[1px] bg-[#E8176D]/60" />
           </div>
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold text-[#2D1225] mb-3 leading-tight text-center md:text-left">
-                This Weekend's <br />
-                <span className="text-shimmer">Pop-up Schedule.</span>
-              </h2>
-              <p className="text-[#2D1225]/50 text-lg max-w-lg text-center md:text-left">
-                We roam Cape Town every weekend. Locations are updated every Thursday on Instagram.
-              </p>
-            </div>
+          <div className="text-center">
+            <h2
+              className="uppercase leading-[1.04] text-[clamp(1.8rem,4.6vw,3.4rem)] mb-4"
+              style={{ fontFamily: "'Archivo Black', system-ui, sans-serif" }}
+            >
+              <span className="block text-[#E8176D]">This weekend's</span>
+              <span className="block text-[#3B2116]">pop-up schedule.</span>
+            </h2>
+            <p className="text-[#2D1225]/50 text-lg max-w-lg mx-auto">
+              We roam Cape Town every weekend. Locations are updated every Thursday on Instagram.
+            </p>
             <a
               href="https://www.instagram.com/naughtyberrycpt"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-3 rounded-full border border-[#E8176D]/40 text-[#E8176D] text-sm font-medium hover:bg-[#E8176D]/10 transition-all self-center md:self-start shrink-0"
+              className="inline-flex items-center gap-2 px-5 py-3 mt-6 rounded-full border border-[#E8176D]/40 text-[#E8176D] text-sm font-medium hover:bg-[#E8176D]/10 transition-all"
               aria-label="Follow Naughty Berry on Instagram for pop-up locations"
             >
               <Instagram size={14} />
@@ -277,7 +279,7 @@ export default function FindUs() {
           </div>
         </motion.div>
       </div>
-      <WaveDivider variant="findus" fill="#FFF0F6" height={60} />
+      <WaveDivider variant="findus" fill="#F6E3EB" height={60} />
     </section>
   )
 }

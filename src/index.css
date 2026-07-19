@@ -44,8 +44,11 @@
   --color-white:        #FFFFFF;
 
   /* Fonts */
-  --font-display: 'Hoss Round', 'Fredoka One', cursive;
-  --font-head:    'Hoss Round', 'Fredoka One', cursive;
+  /* NOTE: /public/fonts/HossRound-*.woff2 are not in the repo, so 'Hoss Round'
+     never loads. Fall back to Nunito (loaded via Google Fonts) instead of
+     `cursive`, which rendered as an unintended italic script. */
+  --font-display: 'Hoss Round', 'Nunito', system-ui, sans-serif;
+  --font-head:    'Hoss Round', 'Nunito', system-ui, sans-serif;
   --font-body:    'Nunito', system-ui, sans-serif;
 
   /* Radii */
@@ -234,6 +237,14 @@ a { text-decoration: none; color: inherit; }
   50%       { transform: translateY(-8px) rotate(1.5deg); }
 }
 .animate-berry-float { animation: berry-float 4s ease-in-out infinite; }
+
+/* ─── ScrollCup (flying cup) statics ───────────────
+   While the fixed flying cup is active (lg + motion OK), the per-section
+   static cups hide underneath it; the menu's centre cup only appears once
+   the flyer has docked there. !important beats framer-motion inline opacity. */
+html.fly-cup-on .cup-static { opacity: 0 !important; }
+.cup-menu-center { transition: opacity 0.25s ease; }
+html.fly-cup-on:not(.fly-cup-docked) .cup-menu-center { opacity: 0; }
 
 /* ─── Scrollbar ────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
