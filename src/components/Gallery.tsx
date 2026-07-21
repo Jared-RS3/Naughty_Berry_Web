@@ -40,7 +40,7 @@ export default function Gallery() {
   return (
     <section
       id="gallery"
-      className="py-24 lg:py-32 relative overflow-hidden bg-[#F6E3EB] scroll-mt-20"
+      className="py-24 lg:py-32 relative overflow-hidden bg-[#FFDCEA] scroll-mt-20"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
         <SectionHeading
@@ -59,7 +59,7 @@ export default function Gallery() {
               type="button"
               onClick={() => setSelected(item)}
               aria-label={`View ${item.label}`}
-              className="block w-full break-inside-avoid mb-6 rounded-[22px] overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8176D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F6E3EB]"
+              className="block w-full break-inside-avoid mb-6 rounded-[22px] overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8176D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFDCEA]"
               style={{ boxShadow: '0 18px 40px rgba(180, 40, 95, 0.12)' }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}

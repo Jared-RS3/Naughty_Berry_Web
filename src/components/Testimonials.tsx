@@ -199,7 +199,7 @@ export default function Testimonials() {
   return (
     <section
       className="relative"
-      style={{ background: '#F6E3EB' }}
+      style={{ background: '#FFDCEA' }}
       aria-label="Reviews — what Cape Town says"
     >
       {/* ── Desktop: tall run with a pinned full-screen stage ── */}

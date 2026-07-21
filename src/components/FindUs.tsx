@@ -39,7 +39,7 @@ export default function FindUs() {
   return (
     <section
       id="findus"
-      className="py-24 lg:py-32 relative overflow-hidden bg-[#F6E3EB] scroll-mt-20"
+      className="py-24 lg:py-32 relative overflow-hidden bg-[#FFDCEA] scroll-mt-20"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
         <SectionHeading

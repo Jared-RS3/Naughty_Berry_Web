@@ -26,7 +26,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
         copy: 'rgba(255, 214, 236, 0.82)',
       }
     : {
-        bg: '#F6E3EB',
+        bg: '#FFDCEA',
         pink: '#E8176D',
         brown: '#3B2116',
         copy: '#7A3B5E',

@@ -71,7 +71,7 @@ export default function FloatingCTA() {
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.94 }}
             onClick={() => setExpanded((p) => !p)}
-            className="relative w-14 h-14 rounded-full gradient-berry flex items-center justify-center text-white shadow-xl animate-pulse-glow focus:outline-none focus:ring-2 focus:ring-[#E8176D] focus:ring-offset-2 focus:ring-offset-[#FDE8EF]"
+            className="relative w-14 h-14 rounded-full gradient-berry flex items-center justify-center text-white shadow-xl animate-pulse-glow focus:outline-none focus:ring-2 focus:ring-[#E8176D] focus:ring-offset-2 focus:ring-offset-[#FFDCEA]"
             aria-expanded={expanded}
             aria-label={expanded ? 'Close quick actions' : 'Open quick actions'}
           >

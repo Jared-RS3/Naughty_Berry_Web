@@ -31,14 +31,19 @@
 }
 
 @theme {
-  /* ── Naughty Berry Brand Colors ── */
-  --color-pink-bg:      #FDE8EF;
-  --color-pink-light:   #FFC8DC;
-  --color-pink-mid:     #F78FB3;
+  /* ── Naughty Berry Brand Colors ──
+     The page pink is deliberately saturated, not a dusty blush: it sits on the
+     same hue as the berry (#E8176D) so the whole site reads as one colour at
+     three strengths — page, accent, ink. Desaturating it toward grey-pink is
+     what made the old palette look washed out, so keep chroma up if you tune
+     these. Cream (#FFF9ED) cards are what break the pink into panels. */
+  --color-pink-bg:      #FFDCEA;
+  --color-pink-light:   #FFB8D5;
+  --color-pink-mid:     #FF7FB0;
   --color-pink-hot:     #E8176D;
   --color-pink-deep:    #C01057;
   --color-pink-card:    #FFF0F6;
-  --color-pink-border:  #F9BDD4;
+  --color-pink-border:  #FFB8D2;
   --color-text-dark:    #2D1225;
   --color-text-mid:     #7A3B5E;
   --color-white:        #FFFFFF;
@@ -96,13 +101,13 @@
   background: linear-gradient(135deg, #E8176D 0%, #C01057 100%);
 }
 .gradient-pink-soft {
-  background: linear-gradient(160deg, #FDE8EF 0%, #FFC8DC 100%);
+  background: linear-gradient(160deg, #FFDCEA 0%, #FFB8D5 100%);
 }
 .gradient-hero {
-  background: linear-gradient(160deg, #FDE8EF 0%, #F9C8D8 50%, #FFC8DC 100%);
+  background: linear-gradient(160deg, #FFDCEA 0%, #FFC6E0 50%, #FFB8D5 100%);
 }
 .gradient-section-alt {
-  background: linear-gradient(160deg, #FFF0F6 0%, #FDE8EF 100%);
+  background: linear-gradient(160deg, #FFF0F6 0%, #FFDCEA 100%);
 }
 .gradient-hot-pink {
   background: linear-gradient(135deg, #E8176D 0%, #FF6BAD 100%);
@@ -118,7 +123,7 @@
 /* ─── Pink card ────────────────────────────────── */
 .pink-card {
   background: #FFF0F6;
-  border: 1.5px solid #F9BDD4;
+  border: 1.5px solid #FFB8D2;
   border-radius: 1.5rem;
 }
 
@@ -334,7 +339,7 @@ html.nb-intro .nb-flyer { opacity: 0 !important; }
 
 /* ─── Scrollbar ────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #FDE8EF; }
+::-webkit-scrollbar-track { background: #FFDCEA; }
 ::-webkit-scrollbar-thumb { background: #E8176D; border-radius: 9999px; }
 
 /* ─── Reduced motion ───────────────────────────── */

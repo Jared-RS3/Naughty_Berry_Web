@@ -8,7 +8,7 @@ import { Download, Star, Coffee, GlassWater, ArrowLeft, ArrowRight } from 'lucid
  * `decor` are the card's own corner illustrations (strawberries, chocolate
  * swirls, brownies, pistachios, biscuits) cropped into /menu-decor/, and
  * `glow` seats the centre cup. The wash blends back into the site pink
- * (#F6E3EB) at the section edges so neighbouring sections stay seamless.
+ * (#FFDCEA) at the section edges so neighbouring sections stay seamless.
  */
 export type CupTheme = {
   id: string
@@ -379,7 +379,7 @@ function CupCarousel({
           href="/naughty-berry-menu.pdf"
           download="Naughty-Berry-Menu.pdf"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-full text-[#E8176D] text-sm font-bold shadow-[0_8px_22px_rgba(112,45,80,0.20)] ring-1 ring-[#F9BDD4] hover:bg-[#FFF0F6] hover:shadow-[0_10px_26px_rgba(232,23,109,0.28)] transition-all whitespace-nowrap"
+          className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-full text-[#E8176D] text-sm font-bold shadow-[0_8px_22px_rgba(112,45,80,0.20)] ring-1 ring-[#FFB8D2] hover:bg-[#FFF0F6] hover:shadow-[0_10px_26px_rgba(232,23,109,0.28)] transition-all whitespace-nowrap"
           aria-label="Download menu PDF"
         >
           <Download size={13} />
@@ -413,7 +413,7 @@ export default function MenuPreview() {
   }, [warm])
 
   return (
-    <section ref={sectionRef} id="menu" className="scroll-mt-20 md:scroll-mt-16 py-14 lg:py-16 relative overflow-hidden bg-[#F6E3EB]">
+    <section ref={sectionRef} id="menu" className="scroll-mt-20 md:scroll-mt-16 py-14 lg:py-16 relative overflow-hidden bg-[#FFDCEA]">
       {/* Flavour backdrop — the reference card's colours and corner artwork.
           On switch, the new world wipes out from behind the cup in an
           expanding circle while the decor pops in staggered; the old layer
@@ -475,7 +475,7 @@ export default function MenuPreview() {
               className="absolute inset-0"
               style={{
                 background:
-                  'linear-gradient(180deg, #F6E3EB 0%, transparent 11%, transparent 89%, #F6E3EB 100%)',
+                  'linear-gradient(180deg, #FFDCEA 0%, transparent 11%, transparent 89%, #FFDCEA 100%)',
               }}
             />
           </motion.div>
@@ -556,7 +556,7 @@ export default function MenuPreview() {
                 style={{
                   background: 'rgba(232,23,109,0.08)',
                   color: isActive ? '#fff' : '#E8176D',
-                  borderColor: isActive ? '#E8176D' : '#F9BDD4',
+                  borderColor: isActive ? '#E8176D' : '#FFB8D2',
                   border: '1.5px solid',
                   boxShadow: isActive ? '0 0 20px rgba(232,23,109,0.27)' : 'none',
                 }}

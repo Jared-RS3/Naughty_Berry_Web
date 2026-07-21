@@ -213,7 +213,7 @@ export default function About() {
   // its opacity here: useTransform(progress, [0.86, 0.96], [0, 1]).
 
   return (
-    <section id="about" className="relative bg-[#F6E3EB]">
+    <section id="about" className="relative bg-[#FFDCEA]">
       {/* ── Desktop: tall run with a pinned full-screen stage ── */}
       <div
         ref={runRef}

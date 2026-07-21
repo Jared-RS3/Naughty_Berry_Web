@@ -52,7 +52,7 @@ export default function StoryPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#F6E3EB] text-[#2D1225]">
+    <div className="min-h-screen bg-[#FFDCEA] text-[#2D1225]">
       {/* Back */}
       <div className="max-w-3xl mx-auto px-6 pt-10">
         <a

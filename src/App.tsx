@@ -6,6 +6,7 @@ import Hero from './components/Hero'
 import ScrollCup from './components/ScrollCup'
 
 // All below-fold sections split into separate chunks — only downloaded when needed
+const NextStop    = lazy(() => import('./components/NextStop'))
 const About       = lazy(() => import('./components/About'))
 const MenuPreview = lazy(() => import('./components/MenuPreview'))
 const Events      = lazy(() => import('./components/Events'))
@@ -74,7 +75,7 @@ function HomePage() {
 
       <div
         className={`min-h-screen text-[#2D1225] transition-[background-color] duration-700 ${
-        isNaughtyMode ? 'bg-[#1B0823]' : 'bg-[#FDE8EF]'
+        isNaughtyMode ? 'bg-[#1B0823]' : 'bg-[#FFDCEA]'
       }`}
     >
       {/* Skip to main content for accessibility */}
@@ -102,7 +103,7 @@ function HomePage() {
               background:
                 isNaughtyMode
                   ? 'radial-gradient(circle at 88% 8%, rgba(255, 53, 162, 0.48), rgba(107, 33, 168, 0.78) 38%, rgba(27, 8, 35, 0.98) 74%)'
-                  : 'radial-gradient(circle at 88% 8%, rgba(255, 200, 220, 0.8), rgba(253, 232, 239, 0.85) 42%, rgba(255, 255, 255, 0.95) 76%)',
+                  : 'radial-gradient(circle at 88% 8%, rgba(255, 184, 213, 0.8), rgba(255, 220, 234, 0.85) 42%, rgba(255, 255, 255, 0.95) 76%)',
               mixBlendMode: 'screen',
             }}
             aria-hidden="true"
@@ -114,6 +115,7 @@ function HomePage() {
         <Suspense fallback={null}>
           <Hero isNaughtyMode={isNaughtyMode} loaded={revealed} />
         </Suspense>
+        <Suspense fallback={null}><NextStop /></Suspense>
         <Suspense fallback={null}><About /></Suspense>
         <Suspense fallback={null}><Testimonials /></Suspense>
         <Suspense fallback={null}><MenuPreview /></Suspense>

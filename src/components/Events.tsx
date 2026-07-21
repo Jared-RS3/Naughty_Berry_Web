@@ -80,7 +80,7 @@ export default function Events() {
   return (
     <section
       id="events"
-      className="py-24 lg:py-32 relative overflow-hidden bg-[#F6E3EB] scroll-mt-20"
+      className="py-24 lg:py-32 relative overflow-hidden bg-[#FFDCEA] scroll-mt-20"
     >
       {/* Checkerboard — the one patterned surface on the page, faded out at the
           edges so the cards still sit on clean pink. */}
@@ -187,7 +187,7 @@ export default function Events() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={toForm}
-                  className={`mt-9 w-full py-3.5 rounded-full text-[12px] font-bold tracking-[0.18em] uppercase transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F6E3EB] focus-visible:ring-[#E8176D] ${
+                  className={`mt-9 w-full py-3.5 rounded-full text-[12px] font-bold tracking-[0.18em] uppercase transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFDCEA] focus-visible:ring-[#E8176D] ${
                     featured
                       ? 'bg-white text-[#E8176D] hover:bg-[#FFF0F6]'
                       : 'bg-[#E8176D] text-white hover:bg-[#C01057]'

@@ -58,7 +58,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
           scrolled
             ? isNaughtyMode
               ? 'bg-[#241030] border-b border-[#8D2E7A]/70 shadow-lg shadow-fuchsia-900/35'
-              : 'bg-[#F7E6EC] border-b border-[#F1C4D6] shadow-lg shadow-pink-100/60'
+              : 'bg-[#FFE6F0] border-b border-[#FFC2DA] shadow-lg shadow-pink-100/60'
             : 'bg-transparent'
         }`}
         role="navigation"
@@ -122,7 +122,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
               className={`hidden md:flex items-center px-6 py-2.5 text-[12px] tracking-[0.16em] uppercase font-bold rounded-full text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 isNaughtyMode
                   ? 'bg-gradient-to-r from-[#FF2D9C] to-[#7A1B78] hover:shadow-[0_0_28px_rgba(255,45,156,0.45)] focus:ring-[#FF2D9C] focus:ring-offset-[#220A2C]'
-                  : 'bg-[#C9366B] hover:bg-[#E8176D] hover:shadow-[0_0_24px_rgba(232,23,109,0.4)] focus:ring-[#E8176D] focus:ring-offset-[#F6E3EB]'
+                  : 'bg-[#C9366B] hover:bg-[#E8176D] hover:shadow-[0_0_24px_rgba(232,23,109,0.4)] focus:ring-[#E8176D] focus:ring-offset-[#FFDCEA]'
               }`}
               aria-label="View the menu"
             >
@@ -153,7 +153,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
             className={`fixed inset-y-0 right-0 z-40 w-72 backdrop-blur-xl border-l flex flex-col pt-20 px-8 pb-10 ${
               isNaughtyMode
                 ? 'bg-[#220A2C]/95 border-[#8D2E7A]/70'
-                : 'bg-[#F6E3EB]/95 border-[#F1C4D6]'
+                : 'bg-[#FFDCEA]/95 border-[#FFC2DA]'
             }`}
             role="dialog"
             aria-modal="true"
@@ -187,7 +187,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
                 className={`w-full py-3 rounded-full font-semibold text-sm tracking-widest uppercase border ${
                   isNaughtyMode
                     ? 'bg-[#FF2D9C] border-[#FF8FD0] text-white'
-                    : 'bg-white border-[#F9BDD4] text-[#7A3B5E]'
+                    : 'bg-white border-[#FFB8D2] text-[#7A3B5E]'
                 }`}
               >
                 {isNaughtyMode ? 'Light Mode' : 'Get Naughty'}

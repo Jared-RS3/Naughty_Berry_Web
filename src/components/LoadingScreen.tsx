@@ -234,7 +234,7 @@ export default function LoadingScreen({ onReveal, onDone }: Props) {
     <div className="fixed inset-0 z-[999] overflow-hidden pointer-events-none" aria-hidden="true">
       {/* Beat 2's backdrop, underneath everything — the brand layer sits on top
           of it and clears to reveal it. */}
-      <motion.div className="absolute inset-0 bg-[#F6E3EB]" style={{ opacity: veilOpacity }} />
+      <motion.div className="absolute inset-0 bg-[#FFDCEA]" style={{ opacity: veilOpacity }} />
 
       {/* ── Beat 1: film + mark ── */}
       <motion.div className="absolute inset-0" style={{ opacity: brandOpacity }}>
