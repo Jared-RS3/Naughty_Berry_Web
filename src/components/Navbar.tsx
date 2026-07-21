@@ -49,11 +49,16 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
         initial={{ y: -80 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
+        /* Solid, not translucent-with-blur. A backdrop-filter on a fixed,
+           full-width bar forces the browser to re-blur the strip behind it on
+           every single scroll frame — it was the largest raster cost on the
+           page. At 90% opacity the blur was barely readable anyway, so an
+           opaque bar looks the same and costs nothing to scroll past. */
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
           scrolled
             ? isNaughtyMode
-              ? 'backdrop-blur-xl bg-[#220A2C]/85 border-b border-[#8D2E7A]/70 shadow-lg shadow-fuchsia-900/35'
-              : 'backdrop-blur-xl bg-[#F6E3EB]/90 border-b border-[#F1C4D6] shadow-lg shadow-pink-100/60'
+              ? 'bg-[#241030] border-b border-[#8D2E7A]/70 shadow-lg shadow-fuchsia-900/35'
+              : 'bg-[#F7E6EC] border-b border-[#F1C4D6] shadow-lg shadow-pink-100/60'
             : 'bg-transparent'
         }`}
         role="navigation"

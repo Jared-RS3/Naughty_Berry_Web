@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion'
-import WaveDivider from './WaveDivider'
-import { Users, Star, Crown, CheckCircle } from 'lucide-react'
+import SectionHeading from './SectionHeading'
+import { Users, Star, Crown, Check } from 'lucide-react'
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
+
+const BERRY = '#E8176D'
 
 const PACKAGES = [
   {
@@ -11,7 +13,6 @@ const PACKAGES = [
     name: 'Signature',
     subtitle: 'Up to 30 guests',
     price: 'From R2 500',
-    color: '#E8176D',
     features: [
       '30 chocolate strawberries',
       '30 dessert cups (mixed)',
@@ -28,7 +29,6 @@ const PACKAGES = [
     name: 'Indulgent',
     subtitle: 'Up to 60 guests',
     price: 'From R4 500',
-    color: '#FF6BAD',
     featured: true,
     features: [
       '60 chocolate strawberries',
@@ -40,7 +40,7 @@ const PACKAGES = [
       'Naughty Berry team on-site',
       'Custom menu cards',
     ],
-    cta: 'Most Popular',
+    cta: 'Enquire Now',
   },
   {
     id: 'large',
@@ -48,7 +48,6 @@ const PACKAGES = [
     name: 'Premium',
     subtitle: '80+ guests / Weddings',
     price: 'Custom Quote',
-    color: '#9B59B6',
     features: [
       'Unlimited strawberries & cups',
       'Full custom flavour menu',
@@ -64,74 +63,50 @@ const PACKAGES = [
 ]
 
 const OCCASIONS = [
-  '💍 Weddings',
-  '🎂 Birthdays',
-  '🏢 Corporate Events',
-  '🎓 Graduations',
-  '💜 Baby Showers',
-  '🍾 Year Ends',
-  '💃 Girls Night',
-  '🎉 Any Celebration',
+  'Weddings',
+  'Birthdays',
+  'Corporate Events',
+  'Graduations',
+  'Baby Showers',
+  'Year Ends',
+  'Girls Night',
+  'Any Celebration',
 ]
 
 export default function Events() {
+  const toForm = () =>
+    document.getElementById('event-form')?.scrollIntoView({ behavior: 'smooth' })
+
   return (
-    <section id="events" className="py-24 lg:py-32 relative overflow-hidden bg-[#FFF0F6]">
-      {/* Background */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden="true" />
+    <section
+      id="events"
+      className="py-24 lg:py-32 relative overflow-hidden bg-[#F6E3EB] scroll-mt-20"
+    >
+      {/* Checkerboard — the one patterned surface on the page, faded out at the
+          edges so the cards still sit on clean pink. */}
       <div
-        className="absolute inset-0 opacity-[0.04] pointer-events-none"
-        style={{
-          backgroundImage: 'linear-gradient(45deg, #E8176D 25%, transparent 25%, transparent 75%, #E8143C 75%), linear-gradient(45deg, #E8176D 25%, transparent 25%, transparent 75%, #E8143C 75%)',
-          backgroundSize: '60px 60px',
-          backgroundPosition: '0 0, 30px 30px',
-        }}
         aria-hidden="true"
+        className="nb-checker absolute inset-0 pointer-events-none"
+        style={{
+          WebkitMaskImage:
+            'radial-gradient(120% 78% at 50% 42%, black 0%, rgba(0,0,0,0.55) 46%, transparent 82%)',
+          maskImage:
+            'radial-gradient(120% 78% at 50% 42%, black 0%, rgba(0,0,0,0.55) 46%, transparent 82%)',
+        }}
       />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.7 }}
-          className="text-center mb-16"
-        >
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <img
-              src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
-              alt=""
-              aria-hidden="true"
-              className="w-6 h-6 object-contain opacity-85"
-              draggable={false}
-            />
-            <span className="w-6 h-[1px] bg-[#E8176D]/60" />
-            <span className="text-[12px] font-bold tracking-[0.24em] uppercase text-[#E8176D]">
-              Events & Catering
-            </span>
-            <span className="w-6 h-[1px] bg-[#E8176D]/60" />
-          </div>
-          <h2
-            className="uppercase leading-[1.04] text-[clamp(1.8rem,4.6vw,3.4rem)] mb-5"
-            style={{ fontFamily: "'Archivo Black', system-ui, sans-serif" }}
-          >
-            <span className="block text-[#E8176D]">We cater for</span>
-            <span className="block text-[#3B2116]">any occasion.</span>
-          </h2>
-          <p className="text-[#7A3B5E] text-lg max-w-xl mx-auto">
-            From intimate birthdays to full-scale weddings, Naughty Berry's signature chocolate taps brings fresh strawberries, flowing chocolate and little extra sweetness to every celebration.
-          </p>
-        </motion.div>
+        <SectionHeading
+          eyebrow="Events & Catering"
+          word="EVENTS"
+          title={['','']}
+          // title={['We cater for', 'any occasion.']}
+          lead="From intimate birthdays to full-scale weddings, our signature chocolate taps bring fresh strawberries, flowing chocolate and a little extra sweetness to every celebration."
+          className="mb-14"
+        />
 
-        {/* Occasions strip */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.15, ease: EASE_OUT }}
-          className="flex flex-wrap justify-center gap-2 mb-16"
-        >
+        {/* Occasions */}
+        <div className="flex flex-wrap justify-center gap-2.5 mb-16">
           {OCCASIONS.map((o, i) => (
             <motion.span
               key={o}
@@ -139,93 +114,85 @@ export default function Events() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.04 * i, ease: EASE_OUT }}
-              whileHover={{ y: -2, scale: 1.02 }}
-              className="px-4 py-2 text-sm text-[#7A3B5E] bg-white border border-[#F9BDD4] rounded-full"
+              className="nb-pill px-5 py-2.5 text-[13px] font-semibold text-[#7A3B5E]"
             >
               {o}
             </motion.span>
           ))}
-        </motion.div>
+        </div>
 
         {/* Packages */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 items-start">
           {PACKAGES.map((pkg, i) => {
             const Icon = pkg.icon
+            const featured = !!pkg.featured
             return (
               <motion.div
                 key={pkg.id}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                whileHover={{ y: -10, scale: 1.01 }}
-                transition={{ duration: 0.65, delay: i * 0.1, ease: EASE_OUT }}
-                className={`relative rounded-3xl p-8 overflow-hidden ${pkg.featured ? '' : 'bg-white border border-[#F9BDD4]'}`}
-                style={pkg.featured ? {
-                  background: "linear-gradient(145deg, #FFF0F6 0%, #FDE8EF 100%)",
-                  border: `1px solid ${pkg.color}44`,
-                  boxShadow: `0 0 40px ${pkg.color}22, 0 8px 32px rgba(232,23,109,0.08)`,
-                } : {}}
+                whileHover={{ y: -8 }}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: EASE_OUT }}
+                className={`relative p-8 ${featured ? 'nb-card-berry' : 'nb-card'}`}
               >
-                <motion.div
-                  className="absolute inset-0 pointer-events-none motion-aurora"
-                  initial={{ opacity: 0.28 }}
-                  whileHover={{ opacity: 0.6 }}
-                />
-
-                {pkg.featured && (
-                  <div
-                    className="absolute top-0 inset-x-0 h-1 rounded-t-3xl"
-                    style={{ background: `linear-gradient(90deg, transparent, ${pkg.color}, transparent)` }}
-                  />
+                {featured && (
+                  <span className="absolute top-8 right-8 text-[10px] font-bold tracking-[0.18em] uppercase text-white/70">
+                    Most Popular
+                  </span>
                 )}
 
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
-                  style={{ background: `${pkg.color}20`, border: `1px solid ${pkg.color}40` }}
+                <Icon
+                  size={22}
+                  strokeWidth={2}
+                  style={{ color: featured ? '#fff' : BERRY }}
+                  aria-hidden="true"
+                />
+
+                <h3
+                  className="mt-6 uppercase text-2xl leading-none"
+                  style={{
+                    fontFamily: "'Archivo Black', system-ui, sans-serif",
+                    color: featured ? '#fff' : '#3B2116',
+                  }}
                 >
-                  <Icon size={20} style={{ color: pkg.color }} />
-                </div>
+                  {pkg.name}
+                </h3>
+                <p className={`mt-2 text-sm ${featured ? 'text-white/70' : 'text-[#7A3B5E]/70'}`}>
+                  {pkg.subtitle}
+                </p>
+                <p
+                  className="mt-5 text-2xl font-bold"
+                  style={{ color: featured ? '#fff' : BERRY }}
+                >
+                  {pkg.price}
+                </p>
 
-                <div className="mb-1 flex items-center gap-2">
-                  <h3 className="font-display text-2xl font-bold text-[#2D1225]">{pkg.name}</h3>
-                  {pkg.featured && (
-                    <span
-                      className="text-[9px] px-2 py-0.5 rounded-full font-bold tracking-widest uppercase"
-                      style={{ background: pkg.color, color: '#fff' }}
-                    >
-                      Popular
-                    </span>
-                  )}
-                </div>
-                <p className="text-[#2D1225]/40 text-sm mb-1">{pkg.subtitle}</p>
-                <p className="font-bold text-2xl mb-6" style={{ color: pkg.color }}>{pkg.price}</p>
-
-                <ul className="space-y-3 mb-8">
+                <ul className={`mt-7 space-y-3 ${featured ? 'text-white/85' : 'text-[#7A3B5E]'}`}>
                   {pkg.features.map((f) => (
-                    <li key={f} className="flex items-start gap-3 text-sm text-[#7A3B5E]">
-                      <CheckCircle size={14} className="mt-0.5 shrink-0" style={{ color: pkg.color }} />
+                    <li key={f} className="flex items-start gap-3 text-sm leading-snug">
+                      <Check
+                        size={14}
+                        strokeWidth={3}
+                        className="mt-[3px] shrink-0"
+                        style={{ color: featured ? '#fff' : BERRY }}
+                        aria-hidden="true"
+                      />
                       {f}
                     </li>
                   ))}
                 </ul>
 
                 <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => {
-                    document.getElementById('event-form')?.scrollIntoView({ behavior: 'smooth' })
-                  }}
-                  className="w-full py-3 rounded-full text-sm font-semibold tracking-widest uppercase transition-all focus:outline-none"
-                  style={pkg.featured ? {
-                    background: `linear-gradient(135deg, ${pkg.color} 0%, #C01057 100%)`,
-                    color: '#fff',
-                    boxShadow: `0 0 20px ${pkg.color}44`,
-                  } : {
-                    border: `1px solid ${pkg.color}40`,
-                    color: pkg.color,
-                    background: `${pkg.color}10`,
-                  }}
-                  aria-label={`Enquire about ${pkg.name} package`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={toForm}
+                  className={`mt-9 w-full py-3.5 rounded-full text-[12px] font-bold tracking-[0.18em] uppercase transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F6E3EB] focus-visible:ring-[#E8176D] ${
+                    featured
+                      ? 'bg-white text-[#E8176D] hover:bg-[#FFF0F6]'
+                      : 'bg-[#E8176D] text-white hover:bg-[#C01057]'
+                  }`}
+                  aria-label={`Enquire about the ${pkg.name} package`}
                 >
                   {pkg.cta}
                 </motion.button>
@@ -234,137 +201,40 @@ export default function Events() {
           })}
         </div>
 
-        {/* Event Inquiry Form */}
-        {/* <motion.div
+        {/* Enquiry form */}
+        <motion.div
           id="event-form"
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 32 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: EASE_OUT }}
-          className="max-w-2xl mx-auto"
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.7, ease: EASE_OUT }}
+          className="scroll-mt-24"
         >
-          <div className="bg-white border border-[#F9BDD4] rounded-3xl p-8 md:p-12 motion-sheen">
-            <h3 className="font-display text-3xl font-bold text-[#2D1225] mb-2">
-              Let's Make It Sweet.
+          <div className="text-center mb-8">
+            <h3
+              className="uppercase leading-[1.05] text-[clamp(1.5rem,3.4vw,2.5rem)]"
+              style={{ fontFamily: "'Archivo Black', system-ui, sans-serif" }}
+            >
+              <span className="text-[#E8176D]">Let’s make it </span>
+              <span className="text-[#3B2116]">sweet.</span>
             </h3>
-            <p className="text-[#2D1225]/50 text-sm mb-8">
-              Fill in the details below and we'll get back to you within 24 hours.
+            <p className="mt-3 text-[#7A3B5E]">
+              Tell us about your event and we’ll come back to you within 24 hours.
             </p>
-
-            <AnimatePresence mode="wait">
-              {submitted ? (
-                <motion.div
-                  key="success"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.55, ease: EASE_OUT }}
-                  className="text-center py-10"
-                >
-                  <div className="w-16 h-16 rounded-full gradient-berry flex items-center justify-center mx-auto mb-5">
-                    <CheckCircle size={28} className="text-white" />
-                  </div>
-                  <h4 className="font-display text-2xl font-bold text-[#2D1225] mb-2">
-                    We've got your details!
-                  </h4>
-                  <p className="text-[#2D1225]/50 text-sm max-w-xs mx-auto">
-                    Expect a reply from us within 24 hours. We can't wait to make your event extra naughty. 🍓
-                  </p>
-                </motion.div>
-              ) : (
-                <motion.form
-                  key="form"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.35, ease: EASE_OUT }}
-                  onSubmit={handleSubmit}
-                  className="space-y-4"
-                  aria-label="Event enquiry form"
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField label="Your Name" name="name" value={form.name} onChange={handleChange} required placeholder="Jane Doe" />
-                    <FormField label="Phone Number" name="phone" value={form.phone} type="tel" onChange={handleChange} required placeholder="+27 82 000 0000" />
-                  </div>
-                  <FormField label="Email Address" name="email" value={form.email} type="email" onChange={handleChange} required placeholder="jane@email.com" />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField label="Event Date" name="date" value={form.date} type="date" onChange={handleChange} required min={new Date().toISOString().split('T')[0]} />
-                    <FormField label="Venue / Location" name="location" value={form.location} onChange={handleChange} required placeholder="Cape Town, venue name..." />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField label="Estimated Guests" name="guests" value={form.guests} type="number" onChange={handleChange} required placeholder="e.g. 50" min="1" />
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-semibold tracking-widest uppercase text-[#2D1225]/50">
-                        Budget Range
-                      </label>
-                      <select
-                        name="budget"
-                        value={form.budget}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#F9BDD4] text-[#2D1225] text-sm focus:outline-none focus:border-[#E8176D]/60 focus:ring-1 focus:ring-[#E8176D]/40 transition-all appearance-none"
-                        aria-label="Select budget range"
-                      >
-                        <option value="">Select a range</option>
-                        {BUDGET_RANGES.map((r) => (
-                          <option key={r} value={r} className="bg-[#FFF0F6]">{r}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-semibold tracking-widest uppercase text-[#2D1225]/50">
-                      Notes (optional)
-                    </label>
-                    <textarea
-                      name="notes"
-                      value={form.notes}
-                      onChange={handleChange}
-                      rows={3}
-                      placeholder="Tell us about your event, theme, special requests..."
-                      className="w-full px-4 py-3 rounded-xl bg-white border border-[#F9BDD4] text-[#2D1225] text-sm resize-none focus:outline-none focus:border-[#E8176D]/60 focus:ring-1 focus:ring-[#E8176D]/40 transition-all placeholder:text-[#2D1225]/25"
-                      aria-label="Additional notes"
-                    />
-                  </div>
-
-                  <motion.button
-                    type="submit"
-                    disabled={loading}
-                    whileHover={loading ? {} : { scale: 1.02 }}
-                    whileTap={loading ? {} : { scale: 0.98 }}
-                    className="w-full py-4 rounded-full gradient-berry text-white font-semibold text-sm tracking-widest uppercase mt-2 disabled:opacity-60 transition-all focus:outline-none focus:ring-2 focus:ring-[#E8176D] focus:ring-offset-2 focus:ring-offset-[#FFF0F6] inline-flex items-center justify-center gap-2"
-                    aria-label="Submit event enquiry"
-                  >
-                    <img
-                      src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
-                      alt=""
-                      aria-hidden="true"
-                      className="w-4 h-4 object-contain"
-                      draggable={false}
-                    />
-                    {loading ? 'Sending...' : 'Send My Enquiry 🍓'}
-                  </motion.button>
-                </motion.form>
-              )}
-            </AnimatePresence>
           </div>
-        </motion.div> */}
-        <div className="lg:col-span-3 animate-slide-in-right" id="form">
-            <div className="w-full h-full shadow-xl rounded-3xl overflow-hidden border border-gray-200">
-              <iframe
-                src="https://airtable.com/embed/appIfLyWzGV0npV6U/pagEgThqjTZEQCLFY/form"
-                frameBorder="0"
-                width="100%"
-                height="733"
-                className="rounded-3xl"
-                style={{
-                  background: "transparent",
-                  border: "none",
-                }}
-              ></iframe>
-            </div>
+
+          <div className="nb-card overflow-hidden">
+            <iframe
+              title="Naughty Berry event enquiry form"
+              src="https://airtable.com/embed/appIfLyWzGV0npV6U/pagEgThqjTZEQCLFY/form"
+              width="100%"
+              height="733"
+              className="block w-full"
+              style={{ background: 'transparent', border: 'none' }}
+            />
           </div>
+        </motion.div>
       </div>
-      <WaveDivider variant="events" fill="#F6E3EB" height={64} />
     </section>
   )
 }

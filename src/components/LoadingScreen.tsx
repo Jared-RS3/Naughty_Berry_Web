@@ -1,249 +1,327 @@
-import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { motion, useAnimationFrame, useMotionValue, useReducedMotion } from 'framer-motion'
 
-const BERRY_POSITIONS = [
-  { top: '8%',  left: '6%',  size: 44, delay: 0     },
-  { top: '12%', left: '80%', size: 36, delay: 0.15  },
-  { top: '70%', left: '5%',  size: 52, delay: 0.25  },
-  { top: '75%', left: '82%', size: 38, delay: 0.1   },
-  { top: '40%', left: '2%',  size: 28, delay: 0.35  },
-  { top: '35%', left: '90%', size: 30, delay: 0.2   },
-  { top: '88%', left: '40%', size: 24, delay: 0.4   },
-  { top: '5%',  left: '48%', size: 20, delay: 0.3   },
+/**
+ * Intro — two beats.
+ *
+ *  1. BRAND. The film plays behind the Naughty Berry mark and a progress bar.
+ *     This beat exists to buy time, so it is also where the rest of the site is
+ *     fetched: the below-fold route chunks and the images the first two screens
+ *     need. It ends when that work is done, not on a fixed timer.
+ *  2. ZOOM. The cup fills the screen, then zooms out and lands exactly where the
+ *     hero cup lives while the headline rises in behind it.
+ *
+ * The zoom is a FLIP, not a cross-dissolve: the overlay cup is laid out directly
+ * on the hero anchor's own rect, then pushed out to full screen with a
+ * transform. Animating that transform back to identity lands it pixel-perfect on
+ * the real cup, and both are graded by the same `.cup-img` rule, so the hand-off
+ * is one continuous cup rather than a swap between two.
+ *
+ * Nothing but transform and opacity ever animates, and the flight is driven by a
+ * single rAF writing motion values — no React renders per frame — so the whole
+ * sequence stays on the compositor.
+ */
+
+const CUP_SRC = '/naughty-hero-cup.png'
+const LOGO_SRC = '/naughty-berry-logo.png'
+const FILM_SRC = '/2026-02-22T12-01-38_ultra_realistic_watermarked.mp4'
+const POSTER_SRC = '/loader-poster.jpg'
+const RATIO = 548 / 712 // natural w/h of the cup cut-out
+
+/** Where the printed Naughty Berry wordmark sits inside the cut-out, 0–1. */
+const LOGO_FOCUS = { x: 0.5, y: 0.57 }
+
+/** Beat 1: long enough to read the mark, short enough not to be a toll gate. */
+const BRAND_MIN_MS = 1500
+/** …and never hold the brand beat past this, however slow the network is. */
+const BRAND_MAX_MS = 4000
+/** Cross-fade from the film to the cup. */
+const SWAP_MS = 620
+/** Beat 2, and how long before its end the hand-off overlap starts. */
+const FLIGHT_MS = 1150
+const HANDOFF_MS = 260
+
+/** Fetched during beat 1 so the first two screens are warm on arrival. */
+const WARM_IMAGES = [CUP_SRC, '/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png']
+const WARM_CHUNKS = [
+  () => import('./About'),
+  () => import('./Testimonials'),
+  () => import('./MenuPreview'),
 ]
 
-// Blast berries shoot from center outward at exit — 14 evenly spaced angles
-const BLAST_BERRIES = [
-  { tx:   0,  ty: -180, size: 72, delay: 0,     rot: 320,  dur: 0.52 },
-  { tx:  90,  ty: -160, size: 56, delay: 0.03,  rot: -200, dur: 0.48 },
-  { tx: 170,  ty:  -80, size: 80, delay: 0.01,  rot: 260,  dur: 0.55 },
-  { tx: 195,  ty:   20, size: 52, delay: 0.05,  rot: -300, dur: 0.50 },
-  { tx: 160,  ty:  120, size: 68, delay: 0.02,  rot: 180,  dur: 0.53 },
-  { tx:  80,  ty:  175, size: 46, delay: 0.04,  rot: -240, dur: 0.49 },
-  { tx:   0,  ty:  185, size: 74, delay: 0,     rot: 220,  dur: 0.52 },
-  { tx: -85,  ty:  170, size: 58, delay: 0.03,  rot: -180, dur: 0.48 },
-  { tx:-165,  ty:  115, size: 82, delay: 0.01,  rot: 300,  dur: 0.55 },
-  { tx:-195,  ty:   15, size: 50, delay: 0.05,  rot: -260, dur: 0.50 },
-  { tx:-170,  ty:  -85, size: 66, delay: 0.02,  rot: 200,  dur: 0.53 },
-  { tx: -90,  ty: -160, size: 44, delay: 0.04,  rot: -320, dur: 0.49 },
-  { tx:  55,  ty: -170, size: 60, delay: 0.015, rot: 280,  dur: 0.51 },
-  { tx: -55,  ty:  178, size: 48, delay: 0.035, rot: -220, dur: 0.50 },
-]
-
-interface Props {
-  onComplete: () => void
+type Props = {
+  /** Fires as the zoom-out starts — the cue for the hero to animate in. */
+  onReveal: () => void
+  /** Fires once the overlay has handed off and can be unmounted. */
+  onDone: () => void
 }
 
-export default function LoadingScreen({ onComplete }: Props) {
+const preloadImage = (src: string) =>
+  new Promise<void>((resolve) => {
+    const img = new Image()
+    img.onload = img.onerror = () => resolve()
+    img.src = src
+    if (img.decode) img.decode().then(() => resolve(), () => resolve())
+  })
+
+export default function LoadingScreen({ onReveal, onDone }: Props) {
+  const prefersReducedMotion = useReducedMotion()
+  const [gone, setGone] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [phase, setPhase] = useState<'loading' | 'ready' | 'exit' | 'done'>('loading')
+  const cupRef = useRef<HTMLImageElement>(null)
 
-  /* ─── Drive progress bar ─────────────────────────────── */
-  useEffect(() => {
-    const start = performance.now()
-    const duration = 2600
+  // Flight channels. Motion values, so the animation never round-trips through
+  // React state.
+  const scale = useMotionValue(1)
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const cupOpacity = useMotionValue(0)
+  const brandOpacity = useMotionValue(1)
+  const veilOpacity = useMotionValue(1)
+  const markOpacity = useMotionValue(0)
 
-    const tick = (now: number) => {
-      const elapsed = now - start
-      const p = Math.min(100, Math.round((elapsed / duration) * 100))
-      setProgress(p)
-      if (p < 100) {
-        requestAnimationFrame(tick)
-      } else {
-        setTimeout(() => setPhase('ready'), 180)
-      }
-    }
-    requestAnimationFrame(tick)
+  const phase = useRef<'brand' | 'swap' | 'fly' | 'done'>('brand')
+  const swapAt = useRef(0)
+  const flyAt = useRef(0)
+  const from = useRef({ scale: 1, x: 0, y: 0 })
+
+  const finish = useCallback(() => {
+    if (phase.current === 'done') return
+    phase.current = 'done'
+    document.documentElement.classList.remove('nb-intro')
+    setGone(true)
+    onDone()
+  }, [onDone])
+
+  /* ── Freeze the page and hide the real cups for the duration ── */
+  useLayoutEffect(() => {
+    const html = document.documentElement
+    html.classList.add('nb-intro')
+    window.scrollTo(0, 0)
+    // Take over from the static boot screen in index.html. This runs in the
+    // same commit as our own first paint, and we draw the same poster, gradient
+    // and mark, so there is no frame where neither is on screen.
+    document.getElementById('boot')?.remove()
+    return () => html.classList.remove('nb-intro')
   }, [])
 
-  /* ─── Kick off exit after "ready" beat ──────────────── */
-  useEffect(() => {
-    if (phase === 'ready') {
-      const t = setTimeout(() => setPhase('exit'), 700)
-      return () => clearTimeout(t)
-    }
-    if (phase === 'exit') {
-      // berries blast out, then mark done
-      const t = setTimeout(() => setPhase('done'), 820)
-      return () => clearTimeout(t)
-    }
-    if (phase === 'done') {
-      onComplete()
-    }
-  }, [phase, onComplete])
+  /* ── Place the cup, warm the site, then run the sequence ── */
+  useLayoutEffect(() => {
+    let raf = 0
+    let cancelled = false
 
-  if (phase === 'done') return null
+    // Lay the overlay cup on the hero's own box and push it out to full screen.
+    const place = () => {
+      const anchor = document.querySelector('[data-cup-anchor="hero"]')
+      const img = cupRef.current
+      const r = anchor?.getBoundingClientRect()
+      // Height comes from the ratio rather than the DOM, so this doesn't have
+      // to wait on the cup image having decoded.
+      if (!img || !r || r.width < 4) {
+        raf = requestAnimationFrame(place)
+        return
+      }
+      const height = r.width / RATIO
+      // Set as a custom property rather than in JSX: framer's MotionStyle only
+      // accepts known CSS keys, and `.cup-img` reads the shadow from this var.
+      img.style.setProperty('--cup-shadow', 'drop-shadow(0 14px 24px rgba(80,30,55,0.26))')
+      img.style.left = `${r.left}px`
+      img.style.top = `${r.top}px`
+      img.style.width = `${r.width}px`
+      img.style.height = `${height}px`
+
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+      // Big enough to fill the screen, but never so wide it runs off a phone.
+      const s = Math.min(vh / height, (vw * 1.15) / r.width)
+      // Scaling happens about the printed logo so that point stays put; the
+      // translate then carries it to the middle of the viewport.
+      const logoX = r.left + r.width * LOGO_FOCUS.x
+      const logoY = r.top + height * LOGO_FOCUS.y
+      from.current = { scale: s, x: vw / 2 - logoX, y: vh / 2 - logoY }
+      scale.set(s)
+      x.set(from.current.x)
+      y.set(from.current.y)
+    }
+
+    place()
+
+    // Beat 1 doubles as the site's warm-up. The progress bar tracks real work.
+    const jobs = [...WARM_IMAGES.map((s) => preloadImage(s)), ...WARM_CHUNKS.map((f) => f())]
+    let settled = 0
+    for (const job of jobs) {
+      Promise.resolve(job).catch(() => {}).then(() => {
+        if (cancelled) return
+        settled += 1
+        setProgress(Math.round((settled / jobs.length) * 100))
+      })
+    }
+
+    const beginSwap = () => {
+      if (cancelled || phase.current !== 'brand') return
+      setProgress(100)
+      // Re-place: fonts and images landing during beat 1 can move the hero.
+      place()
+      swapAt.current = performance.now()
+      phase.current = prefersReducedMotion ? 'fly' : 'swap'
+      if (prefersReducedMotion) {
+        flyAt.current = swapAt.current
+        onReveal()
+      }
+    }
+
+    const held = new Promise((r) => setTimeout(r, prefersReducedMotion ? 0 : BRAND_MIN_MS))
+    const capped = new Promise((r) => setTimeout(r, BRAND_MAX_MS))
+    Promise.race([Promise.all([...jobs.map((j) => Promise.resolve(j).catch(() => {})), held]), capped])
+      .then(beginSwap)
+
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(raf)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  /* ── One rAF drives both beats ── */
+  useAnimationFrame(() => {
+    const now = performance.now()
+
+    if (phase.current === 'swap') {
+      const t = now - swapAt.current
+      const p = Math.min(1, t / SWAP_MS)
+      const e = p * p * (3 - 2 * p) // smoothstep
+      // The film and mark clear as the cup rises in, already at full size.
+      brandOpacity.set(1 - e)
+      cupOpacity.set(e)
+      markOpacity.set(e)
+      if (p === 1) {
+        phase.current = 'fly'
+        flyAt.current = now
+        onReveal()
+      }
+      return
+    }
+
+    if (phase.current !== 'fly') return
+    if (prefersReducedMotion) return finish()
+
+    const t = now - flyAt.current
+    const p = Math.min(1, t / FLIGHT_MS)
+    // Expo-out: most of the distance is covered early, then a long calm settle —
+    // the shape that makes a zoom-out read as weighty rather than snappy.
+    const e = p === 1 ? 1 : 1 - Math.pow(2, -10 * p)
+    const f = from.current
+
+    scale.set(f.scale + (1 - f.scale) * e)
+    x.set(f.x * (1 - e))
+    y.set(f.y * (1 - e))
+
+    // The veil clears early so the headline is revealed while the cup is still
+    // travelling; the strapline only lives while the cup is large.
+    veilOpacity.set(Math.max(0, 1 - t / (FLIGHT_MS * 0.45)))
+    markOpacity.set(Math.max(0, 1 - t / (FLIGHT_MS * 0.3)))
+
+    if (t >= FLIGHT_MS - HANDOFF_MS) {
+      document.documentElement.classList.remove('nb-intro')
+      cupOpacity.set(Math.max(0, 1 - (t - (FLIGHT_MS - HANDOFF_MS)) / HANDOFF_MS))
+    }
+    if (t >= FLIGHT_MS) finish()
+  })
+
+  if (gone) return null
 
   return (
-    <motion.div
-      className="fixed inset-0 z-[999] overflow-hidden"
-      animate={phase === 'exit' ? { opacity: 0 } : { opacity: 1 }}
-      transition={{ duration: 0.5, delay: phase === 'exit' ? 0.32 : 0, ease: 'easeIn' }}
-    >
-      {/* ── Video background ─────────────────────── */}
-      <video
-        src="/2026-02-22T12-01-38_ultra_realistic_watermarked.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover scale-100"
-        style={{ filter: 'brightness(0.28) saturate(1.4)' }}
-      />
+    <div className="fixed inset-0 z-[999] overflow-hidden pointer-events-none" aria-hidden="true">
+      {/* Beat 2's backdrop, underneath everything — the brand layer sits on top
+          of it and clears to reveal it. */}
+      <motion.div className="absolute inset-0 bg-[#F6E3EB]" style={{ opacity: veilOpacity }} />
 
-      {/* ── Gradient overlay ─────────────────────── */}
-      <div
-        className="absolute inset-0"
+      {/* ── Beat 1: film + mark ── */}
+      <motion.div className="absolute inset-0" style={{ opacity: brandOpacity }}>
+        {/* The poster is what the boot screen already painted, so the film has
+            something to be until it has buffered — it never shows through. */}
+        <video
+          src={FILM_SRC}
+          poster={POSTER_SRC}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: 'brightness(0.3) saturate(1.35)' }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse at 50% 40%, rgba(232,23,109,0.42) 0%, rgba(45,18,37,0.84) 55%, rgba(20,4,14,0.97) 100%)',
+          }}
+        />
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-6">
+          {/* No entrance — the boot screen already has this on screen at full
+              size, and animating it here would make it pop a second time. */}
+          <img
+            src={LOGO_SRC}
+            alt="Naughty Berry"
+            className="w-[clamp(220px,38vw,360px)]"
+            style={{ filter: 'drop-shadow(0 8px 36px rgba(232,23,109,0.62))' }}
+            draggable={false}
+          />
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.55, ease: 'easeOut' }}
+            className="mt-6 text-white/60 text-[11px] font-bold tracking-[0.32em] uppercase"
+          >
+            Cape Town’s Sweetest Obsession
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7, duration: 0.45 }}
+            className="mt-12 w-full max-w-[240px]"
+          >
+            <div className="relative h-[3px] rounded-full bg-white/12 overflow-hidden">
+              <div
+                className="absolute inset-y-0 left-0 rounded-full bg-[#E8176D]"
+                style={{ width: `${progress}%`, transition: 'width 0.3s ease-out' }}
+              />
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* ── Beat 2: the cup. Position and size are written imperatively from the
+             hero's own rect; only the transform is animated. ── */}
+      <motion.img
+        ref={cupRef}
+        src={CUP_SRC}
+        alt=""
+        fetchPriority="high"
+        decoding="async"
+        draggable={false}
+        className="cup-img absolute select-none"
         style={{
-          background:
-            'radial-gradient(ellipse at 50% 30%, rgba(232,23,109,0.45) 0%, rgba(45,18,37,0.82) 55%, rgba(20,4,14,0.97) 100%)',
+          transformOrigin: `${LOGO_FOCUS.x * 100}% ${LOGO_FOCUS.y * 100}%`,
+          x,
+          y,
+          scale,
+          opacity: cupOpacity,
+          willChange: 'transform, opacity',
         }}
       />
 
-      {/* ── Floating strawberries ────────────────── */}
-      {BERRY_POSITIONS.map((b, i) => (
-        <motion.img
-          key={i}
-          src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
-          aria-hidden="true"
-          draggable={false}
-          initial={{ opacity: 0, scale: 0.4, rotate: -20 }}
-          animate={{
-            opacity: [0, 0.55, 0.45, 0.55],
-            scale: [0.4, 1, 0.95, 1],
-            rotate: [-20, 8, -6, 8],
-            y: [0, -14, 6, -10],
-          }}
-          transition={{
-            duration: 4 + i * 0.4,
-            delay: b.delay + 0.3,
-            repeat: Infinity,
-            repeatType: 'mirror',
-            ease: 'easeInOut',
-          }}
-          style={{
-            position: 'absolute',
-            top: b.top,
-            left: b.left,
-            width: b.size,
-            height: b.size,
-            objectFit: 'contain',
-            filter: 'drop-shadow(0 4px 14px rgba(232,23,109,0.5))',
-            pointerEvents: 'none',
-          }}
-        />
-      ))}
-
-      {/* ── Centre content ───────────────────────── */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-6">
-        {/* Logo */}
-        <motion.img
-          src="/naughty-berry-logo.png"
-          alt="Naughty Berry"
-          initial={{ opacity: 0, scale: 0.55, y: 40 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-          style={{
-            width: 'clamp(220px, 38vw, 360px)',
-            filter: 'drop-shadow(0 8px 40px rgba(232,23,109,0.7))',
-          }}
-        />
-
-        {/* Tagline */}
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.75, duration: 0.6, ease: 'easeOut' }}
-          className="mt-6 text-white/60 tracking-[0.28em] text-xs uppercase font-medium"
-        >
-          Cape Town's Sweetest Obsession
-        </motion.p>
-
-        {/* Progress bar */}
-        <motion.div
-          initial={{ opacity: 0, scaleX: 0.6 }}
-          animate={{ opacity: 1, scaleX: 1 }}
-          transition={{ delay: 0.9, duration: 0.5, ease: 'easeOut' }}
-          className="mt-12 w-full max-w-[260px]"
-        >
-          <div className="relative h-[3px] rounded-full bg-white/10 overflow-hidden">
-            <div
-              className="absolute inset-y-0 left-0 rounded-full"
-              style={{
-                width: `${progress}%`,
-                background: 'linear-gradient(90deg, #E8176D, #FF6BAD)',
-                boxShadow: '0 0 12px rgba(232,23,109,0.8)',
-                transition: 'width 0.08s linear',
-              }}
-            />
-          </div>
-          <div className="mt-2 flex justify-between text-[10px] text-white/30 tracking-widest font-mono">
-            <span>Loading</span>
-            <span>{progress}%</span>
-          </div>
-        </motion.div>
-
-        {/* "Ready" beat */}
-        <AnimatePresence>
-          {phase === 'ready' && (
-            <motion.div
-              key="ready-label"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: [0.8, 1.15, 1] }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-8 text-[#FF6BAD] text-xs tracking-[0.3em] uppercase font-semibold"
-            >
-              🍓 Let's go
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ── Berry explosion exit ─────────────────── */}
-      <AnimatePresence>
-        {phase === 'exit' && BLAST_BERRIES.map((b, i) => (
-          <motion.img
-            key={`blast-${i}`}
-            src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
-            aria-hidden="true"
-            draggable={false}
-            initial={{
-              opacity: 1,
-              scale: 0.3,
-              x: 0,
-              y: 0,
-              rotate: 0,
-            }}
-            animate={{
-              opacity: [1, 1, 0],
-              scale: [0.3, 1.6, 2.2],
-              x: `${b.tx}vw`,
-              y: `${b.ty}vh`,
-              rotate: b.rot,
-            }}
-            transition={{
-              duration: b.dur,
-              delay: b.delay,
-              ease: [0.2, 0.8, 0.4, 1],
-            }}
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              width: b.size,
-              height: b.size,
-              marginTop: -b.size / 2,
-              marginLeft: -b.size / 2,
-              objectFit: 'contain',
-              filter: 'drop-shadow(0 0 18px rgba(232,23,109,0.9))',
-              pointerEvents: 'none',
-              zIndex: 10,
-            }}
-          />
-        ))}
-      </AnimatePresence>
-    </motion.div>
+      <motion.div
+        className="absolute inset-x-0 bottom-[9%] flex justify-center"
+        style={{ opacity: markOpacity }}
+      >
+        <span className="text-[11px] font-bold tracking-[0.34em] uppercase text-[#E8176D]/70">
+          Strawberries &amp; Chocolate On Tap
+        </span>
+      </motion.div>
+    </div>
   )
 }
-

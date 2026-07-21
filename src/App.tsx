@@ -13,9 +13,30 @@ const FindUs      = lazy(() => import('./components/FindUs'))
 const Testimonials= lazy(() => import('./components/Testimonials'))
 const Gallery     = lazy(() => import('./components/Gallery'))
 const Footer      = lazy(() => import('./components/Footer'))
+const StoryPage   = lazy(() => import('./components/StoryPage'))
+
+/** Standalone routes. Plain <a> navigation, resolved by the SPA fallback in
+ *  public/_redirects — no router dependency for the handful of pages here. */
+const isStoryRoute = () => window.location.pathname.replace(/\/+$/, '') === '/story'
 
 function App() {
-  const [loaded, setLoaded] = useState(false)
+  if (isStoryRoute()) {
+    return (
+      <Suspense fallback={null}>
+        <StoryPage />
+      </Suspense>
+    )
+  }
+  return <HomePage />
+}
+
+function HomePage() {
+  // `revealed` flips the moment the intro cup starts zooming out, so the
+  // headline rises in behind it rather than after it. `introDone` only unmounts
+  // the overlay. The page itself is never faded — it sits fully painted under
+  // the intro veil, which is what lets the hand-off be a pure cross-fade.
+  const [revealed, setRevealed] = useState(false)
+  const [introDone, setIntroDone] = useState(false)
   const [isNaughtyMode, setIsNaughtyMode] = useState(false)
   const [transitionKey, setTransitionKey] = useState(0)
   const [showTransition, setShowTransition] = useState(false)
@@ -44,14 +65,14 @@ function App() {
     }
   }, [])
 
+  const handleReveal = useCallback(() => setRevealed(true), [])
+  const handleIntroDone = useCallback(() => setIntroDone(true), [])
+
   return (
     <>
-      <LoadingScreen onComplete={() => setLoaded(true)} />
+      {!introDone && <LoadingScreen onReveal={handleReveal} onDone={handleIntroDone} />}
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={loaded ? { opacity: 1 } : { opacity: 0 }}
-        transition={{ duration: 0.7, ease: 'easeOut' }}
+      <div
         className={`min-h-screen text-[#2D1225] transition-[background-color] duration-700 ${
         isNaughtyMode ? 'bg-[#1B0823]' : 'bg-[#FDE8EF]'
       }`}
@@ -67,7 +88,7 @@ function App() {
       <Navbar isNaughtyMode={isNaughtyMode} onToggleNaughtyMode={handleToggleNaughtyMode} />
 
       {/* Shared strawberry cup that flies hero → story → reviews → menu on scroll */}
-      <ScrollCup />
+      <ScrollCup loaded={revealed} />
 
       <AnimatePresence>
         {showTransition && (
@@ -91,7 +112,7 @@ function App() {
 
       <main id="main-content">
         <Suspense fallback={null}>
-          <Hero isNaughtyMode={isNaughtyMode} />
+          <Hero isNaughtyMode={isNaughtyMode} loaded={revealed} />
         </Suspense>
         <Suspense fallback={null}><About /></Suspense>
         <Suspense fallback={null}><Testimonials /></Suspense>
@@ -103,7 +124,7 @@ function App() {
       </main>
 
       {/* <Suspense fallback={null}><FloatingCTA /></Suspense> */}
-      </motion.div>
+      </div>
     </>
   )
 }

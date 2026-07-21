@@ -23,10 +23,62 @@
     <meta name="twitter:description" content="Cape Town's first strawberries & chocolate on tap." />
     <meta name="twitter:image" content="/og-image.jpg" />
 
+    <!-- The intro needs these before the JS bundle could ask for them. The
+         poster is the first thing on screen, so it goes first. -->
+    <link rel="preload" as="image" href="/loader-poster.jpg" fetchpriority="high" />
+    <link rel="preload" as="image" href="/naughty-berry-logo.png" fetchpriority="high" />
+    <link rel="preload" as="image" href="/naughty-hero-cup.png" />
+
+    <!--
+      Boot screen. This is plain markup with inline styles so it paints on the
+      first HTML parse — before the stylesheet, before the JS bundle, before
+      React exists. Without it the browser shows the page background for as long
+      as the bundle takes to download and execute, which read as a pink flash
+      ahead of the video.
+
+      It is a still frame of the loader film under the same gradient and mark
+      that LoadingScreen draws, so when React mounts and removes #boot the swap
+      is invisible and the film simply starts moving.
+    -->
+    <style>
+      html, body { background-color: #1B0812; }
+      #boot {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #1B0812 url('/loader-poster.jpg') center / cover no-repeat;
+      }
+      #boot::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 40%,
+          rgba(232, 23, 109, 0.42) 0%,
+          rgba(45, 18, 37, 0.84) 55%,
+          rgba(20, 4, 14, 0.97) 100%
+        );
+      }
+      #boot img {
+        position: relative;
+        z-index: 1;
+        width: clamp(220px, 38vw, 360px);
+        filter: drop-shadow(0 8px 36px rgba(232, 23, 109, 0.62));
+      }
+      /* The film is dimmed to brightness(0.3); the poster is dimmed to match. */
+      #boot-film { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.7); }
+    </style>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <!-- Only the weights actually used: Nunito 400/600/700/800. Anton was
+         requested but never referenced, and 500/900 are never applied. -->
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
     <!-- JSON-LD LocalBusiness -->
     <script type="application/ld+json">
@@ -47,7 +99,19 @@
     </script>
   </head>
   <body>
+    <div id="boot">
+      <div id="boot-film"></div>
+      <img src="/naughty-berry-logo.png" alt="Naughty Berry" fetchpriority="high" />
+    </div>
     <div id="root"></div>
+    <!-- Safety net: the app clears #boot as it takes over, but if the bundle
+         never runs at all this stops the boot screen sealing the page shut. -->
+    <script>
+      setTimeout(function () {
+        var b = document.getElementById('boot')
+        if (b) b.remove()
+      }, 12000)
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

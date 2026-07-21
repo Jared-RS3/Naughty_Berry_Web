@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import {
   AnimatePresence,
+  cubicBezier,
   motion,
   useMotionValue,
   useReducedMotion,
@@ -64,7 +65,10 @@ const SLOTS: Array<CSSProperties> = [
 /** Scroll-reveal order for the slots — cards pop in alternating around the cup. */
 const REVEAL_ORDER = [0, 3, 1, 4, 2, 5]
 
-const PINK = '#D3196A'
+/** Soft ease-out so each card decelerates into place after its slide up. */
+const SLIDE_EASE = cubicBezier(0.22, 1, 0.36, 1)
+
+const PINK = '#E8176D'
 const CREAM = '#FFF9ED'
 
 function Stars() {
@@ -117,14 +121,16 @@ function RevealSlot({
   active: boolean
   children: ReactNode
 }) {
-  const t0 = 0.05 + order * 0.155
-  const t1 = t0 + 0.12
-  const opacity = useTransform(progress, [t0, t1], [0, 1])
-  const y = useTransform(progress, [t0, t1], [90, 0])
-  const scale = useTransform(progress, [t0, t1], [0.8, 1])
-  const rotate = useTransform(progress, [t0, t1], [order % 2 ? 6 : -6, 0])
+  // Clean bottom-to-top slide: each card starts well below its slot and rises
+  // into place, fading in on a smooth ease-out. Staggering by `order` makes the
+  // set cascade upward one after another as you scroll through the pinned run.
+  const t0 = 0.04 + order * 0.14
+  const t1 = t0 + 0.18
+  const opacity = useTransform(progress, [t0, t1], [0, 1], { ease: SLIDE_EASE })
+  const y = useTransform(progress, [t0, t1], [150, 0], { ease: SLIDE_EASE })
+  const scale = useTransform(progress, [t0, t1], [0.95, 1], { ease: SLIDE_EASE })
   if (!active) return <>{children}</>
-  return <motion.div style={{ opacity, y, scale, rotate }}>{children}</motion.div>
+  return <motion.div style={{ opacity, y, scale }}>{children}</motion.div>
 }
 
 /**
@@ -151,16 +157,27 @@ export default function Testimonials() {
     const el = runRef.current
     if (!el || !pinned) return
     const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
-    const update = () => {
+    const read = () => {
       const r = el.getBoundingClientRect()
       const vh = window.innerHeight
       approach.set(clamp01((vh - r.top) / vh))
       progress.set(clamp01(-r.top / Math.max(1, r.height - vh)))
     }
-    update()
+    // getBoundingClientRect forces layout, so it runs once per frame at most
+    // rather than once per scroll event.
+    let frame = 0
+    const update = () => {
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        read()
+      })
+    }
+    read()
     window.addEventListener('scroll', update, { passive: true })
     window.addEventListener('resize', update)
     return () => {
+      if (frame) cancelAnimationFrame(frame)
       window.removeEventListener('scroll', update)
       window.removeEventListener('resize', update)
     }
@@ -202,24 +219,23 @@ export default function Testimonials() {
             {/* Eyebrow */}
             <motion.div
               style={pinned ? { opacity: eyebrowOpacity } : undefined}
-              className="absolute inset-x-0 top-[11%] z-30 flex flex-col items-center gap-3"
+              className="absolute inset-x-0 top-[11%] z-30 flex items-center justify-center gap-3"
             >
-              <div className="flex items-center justify-center gap-2">
-                <img
-                  src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
-                  alt=""
-                  aria-hidden="true"
-                  className="w-5 h-5 object-contain"
-                  draggable={false}
-                />
-                <span
-                  className="text-[13px] font-extrabold tracking-[0.3em] uppercase"
-                  style={{ color: PINK }}
-                >
-                  Reviews
-                </span>
-              </div>
-              <span className="w-16 h-px bg-[#D3196A]/25" aria-hidden="true" />
+              <img
+                src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+                alt=""
+                aria-hidden="true"
+                className="w-6 h-6 object-contain opacity-85"
+                draggable={false}
+              />
+              <span className="w-6 h-[1px] bg-[#E8176D]/60" aria-hidden="true" />
+              <span
+                className="text-[12px] font-bold tracking-[0.24em] uppercase"
+                style={{ color: PINK }}
+              >
+                Reviews
+              </span>
+              <span className="w-6 h-[1px] bg-[#E8176D]/60" aria-hidden="true" />
             </motion.div>
 
             <h2 className="sr-only">Reviews — what Cape Town says about Naughty Berry</h2>
@@ -234,7 +250,7 @@ export default function Testimonials() {
                   fontSize: 'min(16.5cqw, 250px)',
                   lineHeight: 1,
                   letterSpacing: '-0.02em',
-                  color: '#EC7EA6',
+                  color: '#E8176D',
                 }}
                 aria-hidden="true"
                 className="absolute inset-x-0 top-[2%] z-0 text-center select-none pointer-events-none"
@@ -266,8 +282,8 @@ export default function Testimonials() {
                 <img
                   src="/naughty-hero-cup.png"
                   alt=""
-                  className="w-full h-auto select-none"
-                  style={{ filter: 'drop-shadow(0 12px 18px rgba(80,30,55,0.28))' }}
+                  className="cup-img w-full h-auto select-none"
+                  style={{ '--cup-shadow': 'drop-shadow(0 12px 18px rgba(80,30,55,0.28))' } as React.CSSProperties}
                   draggable={false}
                 />
               </div>
@@ -285,7 +301,7 @@ export default function Testimonials() {
                     <path d="M12 19V5M5 12l7-7 7 7" />
                   </svg>
                 </button>
-                <span className="w-px h-52 bg-[#D3196A]/25" aria-hidden="true" />
+                <span className="w-px h-52 bg-[#E8176D]/25" aria-hidden="true" />
                 <button
                   type="button"
                   onClick={() => shift(1)}
@@ -332,23 +348,22 @@ export default function Testimonials() {
           className="relative w-full max-w-[1560px] mx-auto px-4 sm:px-6"
           style={{ containerType: 'inline-size' }}
         >
-          <div className="flex flex-col items-center gap-3 mb-6">
-            <div className="flex items-center justify-center gap-2">
-              <img
-                src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
-                alt=""
-                aria-hidden="true"
-                className="w-5 h-5 object-contain"
-                draggable={false}
-              />
-              <span
-                className="text-[13px] font-extrabold tracking-[0.3em] uppercase"
-                style={{ color: PINK }}
-              >
-                Reviews
-              </span>
-            </div>
-            <span className="w-16 h-px bg-[#D3196A]/25" aria-hidden="true" />
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <img
+              src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+              alt=""
+              aria-hidden="true"
+              className="w-6 h-6 object-contain opacity-85"
+              draggable={false}
+            />
+            <span className="w-6 h-[1px] bg-[#E8176D]/60" aria-hidden="true" />
+            <span
+              className="text-[12px] font-bold tracking-[0.24em] uppercase"
+              style={{ color: PINK }}
+            >
+              Reviews
+            </span>
+            <span className="w-6 h-[1px] bg-[#E8176D]/60" aria-hidden="true" />
           </div>
 
           <div className="relative mt-2 mb-10">
@@ -368,8 +383,8 @@ export default function Testimonials() {
             <img
               src="/naughty-hero-cup.png"
               alt=""
-              className="relative z-10 mx-auto w-[46%] max-w-[220px] h-auto select-none"
-              style={{ filter: 'drop-shadow(0 12px 18px rgba(80,30,55,0.28))' }}
+              className="cup-img relative z-10 mx-auto w-[46%] max-w-[220px] h-auto select-none"
+              style={{ '--cup-shadow': 'drop-shadow(0 12px 18px rgba(80,30,55,0.28))' } as React.CSSProperties}
               draggable={false}
             />
           </div>
@@ -377,10 +392,10 @@ export default function Testimonials() {
             {TESTIMONIALS.map((t, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 48 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.05 * i }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: 0.06 * i, ease: [0.22, 1, 0.36, 1] }}
               >
                 <ReviewCard t={t} />
               </motion.div>

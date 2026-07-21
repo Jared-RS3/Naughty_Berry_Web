@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 
 type HeroProps = {
   isNaughtyMode: boolean
+  loaded?: boolean
 }
 
 /**
@@ -14,7 +15,7 @@ type HeroProps = {
  * proportions of the reference. Positioning wrappers are kept separate from the
  * Framer-Motion elements so entrance transforms never fight the layout transforms.
  */
-export default function Hero({ isNaughtyMode }: HeroProps) {
+export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
   const prefersReducedMotion = useReducedMotion()
 
   const c = isNaughtyMode
@@ -26,9 +27,9 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
       }
     : {
         bg: '#F6E3EB',
-        pink: '#D4588C',
-        brown: '#704E43',
-        copy: '#9A2C58',
+        pink: '#E8176D',
+        brown: '#3B2116',
+        copy: '#7A3B5E',
       }
 
   const rise = {
@@ -59,7 +60,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
           {/* ── Layered headline ── */}
           <motion.div
             initial="hidden"
-            animate="visible"
+            animate={loaded ? 'visible' : 'hidden'}
             className="absolute inset-0 z-0 flex flex-col items-center justify-center text-center select-none pointer-events-none"
             style={{
               fontFamily: "'Archivo Black', system-ui, sans-serif",
@@ -88,7 +89,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
           <div className="absolute left-0 top-[54%] -translate-y-1/2 z-30">
             <motion.p
               initial={{ opacity: 0, x: prefersReducedMotion ? 0 : -14 }}
-              animate={{ opacity: 1, x: 0 }}
+              animate={loaded ? { opacity: 1, x: 0 } : { opacity: 0 }}
               transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
               className="text-left font-semibold"
               style={{ color: c.copy, fontSize: 'clamp(11px, 1.42cqw, 19px)', lineHeight: 1.42 }}
@@ -105,7 +106,7 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
           <div className="absolute right-0 top-[54%] -translate-y-1/2 z-30">
             <motion.p
               initial={{ opacity: 0, x: prefersReducedMotion ? 0 : 14 }}
-              animate={{ opacity: 1, x: 0 }}
+              animate={loaded ? { opacity: 1, x: 0 } : { opacity: 0 }}
               transition={{ duration: 0.7, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="text-left font-semibold"
               style={{ color: c.copy, fontSize: 'clamp(11px, 1.42cqw, 19px)', lineHeight: 1.42 }}
@@ -154,18 +155,24 @@ export default function Hero({ isNaughtyMode }: HeroProps) {
               transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
               className="relative"
             >
+              {/* No entrance of its own — the intro overlay zooms the cup down
+                  onto this exact spot and cross-fades into it, so anything more
+                  than a plain fade here would fight the hand-off. */}
               <motion.img
                 src="/naughty-hero-cup.png"
                 alt="Naughty Berry cup — chocolate-dipped strawberries"
-                initial={{ opacity: 0, scale: 0.93 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-                className="w-full h-auto select-none"
-                style={{
-                  filter: isNaughtyMode
-                    ? 'drop-shadow(0 10px 14px rgba(0,0,0,0.42)) drop-shadow(0 32px 56px rgba(255,45,156,0.34))'
-                    : 'drop-shadow(0 10px 14px rgba(80,30,55,0.30)) drop-shadow(0 30px 52px rgba(112,45,80,0.22))',
-                }}
+                fetchPriority="high"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: loaded ? 1 : 0 }}
+                transition={{ duration: 0.3, ease: 'linear' }}
+                className="cup-img w-full h-auto select-none"
+                style={
+                  {
+                    '--cup-shadow': isNaughtyMode
+                      ? 'drop-shadow(0 10px 14px rgba(0,0,0,0.42)) drop-shadow(0 32px 56px rgba(255,45,156,0.34))'
+                      : 'drop-shadow(0 10px 14px rgba(80,30,55,0.30)) drop-shadow(0 30px 52px rgba(112,45,80,0.22))',
+                  } as React.CSSProperties
+                }
                 draggable={false}
               />
 

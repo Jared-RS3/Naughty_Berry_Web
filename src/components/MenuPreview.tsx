@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import WaveDivider from './WaveDivider'
 import { Download, Star, Coffee, GlassWater, ArrowLeft, ArrowRight } from 'lucide-react'
 
 /**
@@ -25,34 +24,40 @@ const decorSet = (flav: string) => ({
   br: `/menu-decor/${flav}-br.png`,
 })
 
+/**
+ * Flavour backdrops. These are pushed well past the sampled card colours on
+ * purpose — this is the section that has to sell the product, and a wash that
+ * barely separates from the page pink makes the cups look flat. `glow` is the
+ * pool of colour the centre cup sits in, so it runs hotter than `base`.
+ */
 const THEME_CLASSIC: CupTheme = {
   id: 'classic',
-  base: '#FDEAF1',
-  glow: '#F8C9DD',
+  base: '#FBD7E6',
+  glow: '#FF9EC4',
   decor: decorSet('classic'),
 }
 const THEME_BROWNIE: CupTheme = {
   id: 'brownie',
-  base: '#FCE3E0',
-  glow: '#EBC3AE',
+  base: '#F8CFC6',
+  glow: '#E3A078',
   decor: decorSet('brownie'),
 }
 const THEME_DUBAI: CupTheme = {
   id: 'dubai',
-  base: '#E4E1B7',
-  glow: '#F0EECB',
+  base: '#D8D68F',
+  glow: '#EFEB9E',
   decor: decorSet('dubai'),
 }
 const THEME_CREAM: CupTheme = {
   id: 'cream',
-  base: '#FDEEDA',
-  glow: '#F7DDB9',
+  base: '#FBE2BC',
+  glow: '#F7C983',
   decor: decorSet('cream'),
 }
 const THEME_ICED_TEA: CupTheme = {
   id: 'iced-tea',
-  base: '#FBE8D8',
-  glow: '#FFD9B5',
+  base: '#FCDCBE',
+  glow: '#FFBC7C',
 }
 
 /** Corner placement, edge-fade mask and entrance pose for each decor slot. */
@@ -239,7 +244,7 @@ function CupCarousel({
             fontFamily: "'Archivo Black', system-ui, sans-serif",
             fontSize: `${Math.min(16.5, 68 / word.length)}cqw`,
             letterSpacing: '-0.02em',
-            color: '#D75A92',
+            color: '#E8176D',
             zIndex: 0,
           }}
         >
@@ -279,11 +284,13 @@ function CupCarousel({
                   <img
                     src={item.cutout}
                     alt={item.name}
-                    className="max-h-full w-auto select-none"
-                    style={{
-                      filter:
-                        'drop-shadow(0 10px 12px rgba(80,30,55,0.22)) drop-shadow(0 30px 46px rgba(112,45,80,0.18))',
-                    }}
+                    className="cup-img max-h-full w-auto select-none"
+                    style={
+                      {
+                        '--cup-shadow':
+                          'drop-shadow(0 10px 12px rgba(80,30,55,0.22)) drop-shadow(0 30px 46px rgba(112,45,80,0.18))',
+                      } as React.CSSProperties
+                    }
                     draggable={false}
                   />
                 ) : (
@@ -291,7 +298,10 @@ function CupCarousel({
                     src={item.photo}
                     alt={item.name}
                     className="h-full w-full object-cover rounded-3xl select-none"
-                    style={{ boxShadow: '0 24px 48px rgba(112,45,80,0.28)' }}
+                    style={{
+                      boxShadow: '0 24px 48px rgba(112,45,80,0.28)',
+                      filter: 'saturate(1.16) contrast(1.05)',
+                    }}
                     draggable={false}
                   />
                 )}
@@ -306,14 +316,14 @@ function CupCarousel({
             <button
               onClick={() => go(-1)}
               aria-label="Previous flavour"
-              className="absolute left-0 top-[59%] -translate-y-1/2 z-40 w-11 h-11 md:w-14 md:h-14 rounded-full border border-[#E8176D]/30 flex items-center justify-center text-[#E8176D] bg-white/30 backdrop-blur-[2px] hover:bg-[#E8176D] hover:text-white transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#E8176D] focus:ring-offset-2 focus:ring-offset-[#FFF0F6]"
+              className="absolute left-0 top-[59%] -translate-y-1/2 z-40 w-11 h-11 md:w-14 md:h-14 rounded-full border border-[#E8176D]/30 flex items-center justify-center text-[#E8176D] bg-white/70 hover:bg-[#E8176D] hover:text-white transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#E8176D] focus:ring-offset-2 focus:ring-offset-[#FFF0F6]"
             >
               <ArrowLeft size={18} strokeWidth={1.8} />
             </button>
             <button
               onClick={() => go(1)}
               aria-label="Next flavour"
-              className="absolute right-0 top-[59%] -translate-y-1/2 z-40 w-11 h-11 md:w-14 md:h-14 rounded-full border border-[#E8176D]/30 flex items-center justify-center text-[#E8176D] bg-white/30 backdrop-blur-[2px] hover:bg-[#E8176D] hover:text-white transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#E8176D] focus:ring-offset-2 focus:ring-offset-[#FFF0F6]"
+              className="absolute right-0 top-[59%] -translate-y-1/2 z-40 w-11 h-11 md:w-14 md:h-14 rounded-full border border-[#E8176D]/30 flex items-center justify-center text-[#E8176D] bg-white/70 hover:bg-[#E8176D] hover:text-white transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#E8176D] focus:ring-offset-2 focus:ring-offset-[#FFF0F6]"
             >
               <ArrowRight size={18} strokeWidth={1.8} />
             </button>
@@ -336,7 +346,7 @@ function CupCarousel({
                 {current.tag}
               </span>
             )}
-            <h3 className="font-display font-bold uppercase tracking-[0.16em] text-[#C2255C] text-lg md:text-xl">
+            <h3 className="font-display font-bold uppercase tracking-[0.16em] text-[#E8176D] text-lg md:text-xl">
               {current.name}
             </h3>
             <p className="mt-2 max-w-sm mx-auto text-[#7A3B5E]/75 text-sm md:text-[15px] leading-relaxed">
@@ -369,7 +379,7 @@ function CupCarousel({
           href="/naughty-berry-menu.pdf"
           download="Naughty-Berry-Menu.pdf"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 px-4 py-2 border border-[#E8176D]/30 rounded-full text-[#E8176D] text-xs font-bold hover:bg-[#E8176D]/10 transition-all whitespace-nowrap"
+          className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-full text-[#E8176D] text-sm font-bold shadow-[0_8px_22px_rgba(112,45,80,0.20)] ring-1 ring-[#F9BDD4] hover:bg-[#FFF0F6] hover:shadow-[0_10px_26px_rgba(232,23,109,0.28)] transition-all whitespace-nowrap"
           aria-label="Download menu PDF"
         >
           <Download size={13} />
@@ -385,10 +395,25 @@ export default function MenuPreview() {
   const prefersReducedMotion = useReducedMotion()
   const [activeCategory, setActiveCategory] = useState('cups')
   const [theme, setTheme] = useState<CupTheme>(THEME_CLASSIC)
+  const [warm, setWarm] = useState(false)
+  const sectionRef = useRef<HTMLElement>(null)
   const activeCat = MENU_CATEGORIES.find((c) => c.id === activeCategory)!
 
+  // Start fetching the flavour artwork a screen or two out, so a tab switch is
+  // instant without any of it landing on the initial page load.
+  useEffect(() => {
+    const el = sectionRef.current
+    if (!el || warm) return
+    const io = new IntersectionObserver(
+      ([e]) => e.isIntersecting && setWarm(true),
+      { rootMargin: '150% 0px' }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [warm])
+
   return (
-    <section id="menu" className="scroll-mt-20 md:scroll-mt-16 py-14 lg:py-16 relative overflow-hidden bg-[#F6E3EB]">
+    <section ref={sectionRef} id="menu" className="scroll-mt-20 md:scroll-mt-16 py-14 lg:py-16 relative overflow-hidden bg-[#F6E3EB]">
       {/* Flavour backdrop — the reference card's colours and corner artwork.
           On switch, the new world wipes out from behind the cup in an
           expanding circle while the decor pops in staggered; the old layer
@@ -433,14 +458,15 @@ export default function MenuPreview() {
                 />
               ))}
 
-            {/* Soft glow seating the centre cup */}
+            {/* Glow pool seating the centre cup — this is most of what makes
+                the flavour read, so it is deliberately strong. */}
             <div
               className="absolute left-1/2 top-[56%] -translate-x-1/2 -translate-y-1/2"
               style={{
-                width: 'min(56vw, 820px)',
-                height: 'min(56vw, 820px)',
-                background: `radial-gradient(circle, ${theme.glow} 0%, transparent 62%)`,
-                opacity: 0.55,
+                width: 'min(62vw, 900px)',
+                height: 'min(62vw, 900px)',
+                background: `radial-gradient(circle, ${theme.glow} 0%, transparent 64%)`,
+                opacity: 0.82,
               }}
             />
 
@@ -449,21 +475,25 @@ export default function MenuPreview() {
               className="absolute inset-0"
               style={{
                 background:
-                  'linear-gradient(180deg, #F6E3EB 0%, transparent 9%, transparent 91%, #F6E3EB 100%)',
+                  'linear-gradient(180deg, #F6E3EB 0%, transparent 11%, transparent 89%, #F6E3EB 100%)',
               }}
             />
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Warm the cache for every flavour's artwork so switches never pop */}
-      <div className="hidden" aria-hidden="true">
-        {MENU_CATEGORIES.flatMap((c) => c.items as CarouselItem[])
-          .flatMap((i) => (i.theme?.decor ? Object.values(i.theme.decor) : []))
-          .map((src) => (
-            <img key={src} src={src} alt="" />
-          ))}
-      </div>
+      {/* Warm the cache for every flavour's artwork so switches never pop.
+          Deferred until the section is actually near the viewport — sixteen
+          decor PNGs competing with the hero is what made first paint slow. */}
+      {warm && (
+        <div className="hidden" aria-hidden="true">
+          {MENU_CATEGORIES.flatMap((c) => c.items as CarouselItem[])
+            .flatMap((i) => (i.theme?.decor ? Object.values(i.theme.decor) : []))
+            .map((src) => (
+              <img key={src} src={src} alt="" loading="lazy" decoding="async" />
+            ))}
+        </div>
+      )}
 
       {/* Subtle bg dots */}
       <div
@@ -561,7 +591,6 @@ export default function MenuPreview() {
           </motion.div>
         </AnimatePresence>
       </div>
-      <WaveDivider variant="menu" fill="#F6E3EB" height={56} />
     </section>
   )
 }

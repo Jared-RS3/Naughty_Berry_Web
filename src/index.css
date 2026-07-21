@@ -56,28 +56,35 @@
   --radius-pill: 9999px;
 }
 
-/* ─── Global Reset ─────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* ─── Global Reset ───────────────────────────────
+   These MUST stay inside @layer base. Unlayered rules outrank everything
+   Tailwind emits (utilities live in @layer utilities, and unlayered always
+   wins over layered), so an unlayered `a { color: inherit }` silently beat
+   `text-white` on every link — which is why buttons used to need an inline
+   colour to render white on berry. */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-html {
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-body {
-  margin: 0;
-  background-color: var(--color-pink-bg);
-  color: var(--color-text-dark);
-  font-family: var(--font-body);
-  overflow-x: hidden;
-}
+  body {
+    margin: 0;
+    background-color: var(--color-pink-bg);
+    color: var(--color-text-dark);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+  }
 
-a { text-decoration: none; color: inherit; }
+  a { text-decoration: none; color: inherit; }
+}
 
 /* ─── Typography helpers ───────────────────────── */
 .font-display { font-family: var(--font-display); }
@@ -113,6 +120,42 @@ a { text-decoration: none; color: inherit; }
   background: #FFF0F6;
   border: 1.5px solid #F9BDD4;
   border-radius: 1.5rem;
+}
+
+/* ─── Surface system ───────────────────────────────
+   One card language across every section below the hero: a cream panel on the
+   pink page, seated by a soft berry shadow instead of a border. `nb-card-berry`
+   is the same shape inverted to solid berry, used for the one thing per
+   section that should shout. Keep new sections on these — the flat, borderless
+   look is what makes the site read as clean and deliberate rather than busy. */
+.nb-card {
+  background: #FFF9ED;
+  border-radius: 22px;
+  box-shadow: 0 18px 40px rgba(180, 40, 95, 0.12);
+}
+
+.nb-card-berry {
+  background: #E8176D;
+  border-radius: 22px;
+  box-shadow: 0 22px 46px rgba(192, 16, 87, 0.28);
+}
+
+.nb-pill {
+  background: #FFF9ED;
+  border-radius: 9999px;
+  box-shadow: 0 8px 20px rgba(180, 40, 95, 0.09);
+}
+
+/* Cream/pink checkerboard — a picnic-cloth backdrop for one section at a time.
+   Pair it with a radial mask so the squares fade out under the cards. */
+.nb-checker {
+  background-image: conic-gradient(
+    rgba(255, 249, 237, 0.72) 0 25%,
+    transparent 0 50%,
+    rgba(255, 249, 237, 0.72) 0 75%,
+    transparent 0
+  );
+  background-size: 88px 88px;
 }
 
 /* ─── Drip keyframes ───────────────────────────── */
@@ -231,6 +274,28 @@ a { text-decoration: none; color: inherit; }
   to   { transform: translateX(-75%); }
 }
 
+/* ─── Cup rendering ────────────────────────────────
+   Every cup on the site goes through this, so the hero, the flyer, the intro
+   and the menu are literally the same picture — the intro hands off to the
+   flyer by cross-fading, and any difference in grade would show up as a blink.
+   The saturate/contrast lift is deliberate: the cut-out is the product shot,
+   and it has to look worth queuing for. Shadow is per-cup via --cup-shadow. */
+.cup-img {
+  filter: saturate(1.2) contrast(1.06)
+    var(--cup-shadow, drop-shadow(0 12px 20px rgba(80, 30, 55, 0.26)));
+}
+
+/* ─── Cup specular sweep ───────────────────────────
+   A CSS animation, not a JS one: it never changes and never needs to react to
+   anything, so it belongs on the compositor where it costs no main-thread work
+   even while the rest of the cup is being driven by scroll. */
+@keyframes cup-sheen {
+  0%   { transform: translateX(-130%); }
+  69%  { transform: translateX(330%); }
+  100% { transform: translateX(330%); }
+}
+.cup-sheen { animation: cup-sheen 5.2s cubic-bezier(0.42, 0, 0.58, 1) infinite; }
+
 /* ─── Berry float (CSS-driven) ───────────────── */
 @keyframes berry-float {
   0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -243,8 +308,29 @@ a { text-decoration: none; color: inherit; }
    static cups hide underneath it; the menu's centre cup only appears once
    the flyer has docked there. !important beats framer-motion inline opacity. */
 html.fly-cup-on .cup-static { opacity: 0 !important; }
-.cup-menu-center { transition: opacity 0.25s ease; }
-html.fly-cup-on:not(.fly-cup-docked) .cup-menu-center { opacity: 0; }
+
+/* The carousel cup takes over when the flyer docks. It pops in on an
+   overshooting curve rather than fading, so the hand-off lands like the cup
+   dropped into the carousel instead of dissolving into it. */
+.cup-menu-center {
+  transition: opacity 0.22s ease-out, transform 0.62s cubic-bezier(0.34, 1.8, 0.48, 1);
+}
+html.fly-cup-on:not(.fly-cup-docked) .cup-menu-center {
+  opacity: 0;
+  transform: scale(0.8) translateY(9%);
+}
+
+/* ─── Intro ────────────────────────────────────────
+   While the intro cup is flying, the page is frozen and the real cups are
+   hidden, so only the overlay cup is on screen. The class lifts a beat before
+   the overlay fades, which is what makes the hand-off invisible. */
+html.nb-intro,
+html.nb-intro body {
+  overflow: hidden;
+  height: 100%;
+}
+html.nb-intro .cup-static,
+html.nb-intro .nb-flyer { opacity: 0 !important; }
 
 /* ─── Scrollbar ────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
