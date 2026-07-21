@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Instagram, Menu, X, Moon, Sun } from 'lucide-react'
+import { Download, Instagram, Menu, X, Moon, Sun } from 'lucide-react'
 
 type NavbarProps = {
   isNaughtyMode: boolean
@@ -115,19 +115,24 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
               <Instagram size={19} strokeWidth={1.6} />
             </a>
 
-            <motion.button
+            {/* The bar's primary action downloads the menu rather than
+                scrolling to it — the "Menu" nav link above already does that. */}
+            <motion.a
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
-              onClick={() => handleNavClick('#menu')}
-              className={`hidden md:flex items-center px-6 py-2.5 text-[12px] tracking-[0.16em] uppercase font-bold rounded-full text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+              href="/naughty-berry-menu.pdf"
+              download="Naughty-Berry-Menu.pdf"
+              rel="noopener noreferrer"
+              className={`hidden md:flex items-center gap-2 px-6 py-2.5 text-[12px] tracking-[0.16em] uppercase font-bold rounded-full text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 isNaughtyMode
                   ? 'bg-gradient-to-r from-[#FF2D9C] to-[#7A1B78] hover:shadow-[0_0_28px_rgba(255,45,156,0.45)] focus:ring-[#FF2D9C] focus:ring-offset-[#220A2C]'
                   : 'bg-[#C9366B] hover:bg-[#E8176D] hover:shadow-[0_0_24px_rgba(232,23,109,0.4)] focus:ring-[#E8176D] focus:ring-offset-[#FFDCEA]'
               }`}
-              aria-label="View the menu"
+              aria-label="Download the menu as a PDF"
             >
-              View Menu
-            </motion.button>
+              <Download size={14} />
+              Menu PDF
+            </motion.a>
 
             {/* Mobile hamburger */}
             <button
@@ -192,14 +197,18 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
               >
                 {isNaughtyMode ? 'Light Mode' : 'Get Naughty'}
               </button>
-              <button
-                onClick={() => handleNavClick('#menu')}
-                className={`w-full py-3 rounded-full text-white font-semibold text-sm tracking-widest uppercase ${
+              <a
+                href="/naughty-berry-menu.pdf"
+                download="Naughty-Berry-Menu.pdf"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+                className={`flex w-full items-center justify-center gap-2 py-3 rounded-full text-white font-semibold text-sm tracking-widest uppercase ${
                   isNaughtyMode ? 'bg-gradient-to-r from-[#FF2D9C] to-[#7A1B78]' : 'bg-[#C9366B]'
                 }`}
               >
-                View Menu
-              </button>
+                <Download size={15} />
+                Menu PDF
+              </a>
               <a
                 href="https://www.instagram.com/naughtyberrycpt"
                 target="_blank"

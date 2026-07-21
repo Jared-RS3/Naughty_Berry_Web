@@ -21,8 +21,8 @@ export default function SectionHeading({
   eyebrow: string
   /** The giant backdrop word — keep it to one or two short words. */
   word: string
-  /** The sentence over it, as [berry line, cocoa line]. */
-  title: [string, string]
+  /** The sentence over it, one entry per rendered line. */
+  title: readonly string[]
   lead?: string
   className?: string
 }) {
@@ -73,8 +73,11 @@ export default function SectionHeading({
             marginTop: 'clamp(-20px, -1.5cqw, -4px)',
           }}
         >
-          <span className="block">{title[0]}</span>
-          <span className="block">{title[1]}</span>
+          {title.map((line, i) => (
+            <span key={i} className="block">
+              {line}
+            </span>
+          ))}
         </h2>
       </motion.div>
 

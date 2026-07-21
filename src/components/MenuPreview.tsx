@@ -358,7 +358,7 @@ function CupCarousel({
       </div>
 
       {/* ── Pagination + PDF ── */}
-      <div className="mt-5 flex items-center justify-between gap-6">
+      <div className="relative z-10 mt-5 flex items-center justify-between gap-6">
         <div className="flex items-center gap-3" aria-label={`Item ${index + 1} of ${count}`}>
           <span className="font-display font-bold text-[#E8176D] text-lg leading-none">
             0{index + 1}
@@ -373,16 +373,19 @@ function CupCarousel({
           <span className="text-xs font-bold text-[#B0698C] leading-none">0{count}</span>
         </div>
 
+        {/* Back on the right so the middle column stays just the cup and its
+            copy — but solid berry, not the old white pill, which disappeared
+            into the decorative artwork behind it. */}
         <motion.a
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           href="/naughty-berry-menu.pdf"
           download="Naughty-Berry-Menu.pdf"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-full text-[#E8176D] text-sm font-bold shadow-[0_8px_22px_rgba(112,45,80,0.20)] ring-1 ring-[#FFB8D2] hover:bg-[#FFF0F6] hover:shadow-[0_10px_26px_rgba(232,23,109,0.28)] transition-all whitespace-nowrap"
+          className="inline-flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-full bg-[#E8176D] px-6 py-3 text-[12px] font-bold uppercase tracking-[0.16em] text-white shadow-[0_14px_32px_rgba(232,23,109,0.35)] transition-colors hover:bg-[#C01057]"
           aria-label="Download menu PDF"
         >
-          <Download size={13} />
+          <Download size={15} />
           <span className="hidden sm:inline">Download Menu (PDF)</span>
           <span className="sm:hidden">Menu PDF</span>
         </motion.a>

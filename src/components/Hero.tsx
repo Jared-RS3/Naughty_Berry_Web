@@ -1,8 +1,83 @@
 import { motion, useReducedMotion } from 'framer-motion'
+import { MapPin } from 'lucide-react'
+import { usePopupSchedule } from '../hooks/usePopupSchedule'
+import { pickNext, relativeLabel, shortWhen } from '../lib/nextStop'
 
 type HeroProps = {
   isNaughtyMode: boolean
   loaded?: boolean
+}
+
+/**
+ * Live location strip along the bottom of the hero. The full NextStop panel is
+ * one scroll away, but "where are you right now?" is the first thing a visitor
+ * wants from a roaming trailer — so it gets answered inside the first screen.
+ * The pill keeps its footprint in every state (loading, nothing booked) so the
+ * hero composition never shifts underneath the cup.
+ */
+function HeroLocationStrip({
+  isNaughtyMode,
+  loaded,
+}: {
+  isNaughtyMode: boolean
+  loaded: boolean
+}) {
+  const prefersReducedMotion = useReducedMotion()
+  const { schedule, loading, error } = usePopupSchedule()
+  const next = error ? null : pickNext(schedule)
+
+  const shell = isNaughtyMode
+    ? 'border-white/20 bg-white/10 text-[#FFD6EC] hover:bg-white/16'
+    : 'border-[#E8176D]/15 bg-white/70 text-[#7A3B5E] hover:bg-white'
+  const accent = isNaughtyMode ? 'text-[#FF4DAE]' : 'text-[#E8176D]'
+  const strong = isNaughtyMode ? 'text-white' : 'text-[#3B2116]'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
+      animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
+      transition={{ duration: 0.7, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      className="absolute inset-x-4 bottom-6 z-30 flex justify-center sm:bottom-8"
+    >
+      <a
+        href="#next-stop"
+        className={`flex max-w-full items-center gap-3 rounded-full border px-4 py-2.5 backdrop-blur-md transition-colors sm:gap-4 sm:px-6 sm:py-3 ${shell}`}
+      >
+        <span className={`relative flex h-2 w-2 shrink-0 ${accent}`} aria-hidden="true">
+          {!prefersReducedMotion && (
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-70" />
+          )}
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-current" />
+        </span>
+
+        <span
+          className={`hidden shrink-0 text-[10px] font-bold uppercase tracking-[0.2em] sm:inline ${accent}`}
+        >
+          Next stop
+        </span>
+
+        <span className="h-4 w-px shrink-0 bg-current opacity-20" aria-hidden="true" />
+
+        {loading ? (
+          <span className="h-3 w-40 animate-pulse rounded-full bg-current opacity-20" />
+        ) : next ? (
+          <span className="min-w-0 truncate text-[12px] sm:text-sm">
+            <span className={`font-semibold ${strong}`}>{next.slot.location}</span>
+            <span className="opacity-70">
+              {' · '}
+              {next.date ? relativeLabel(next.date) : shortWhen(next)}
+            </span>
+          </span>
+        ) : (
+          <span className="min-w-0 truncate text-[12px] sm:text-sm">
+            <span className={`font-semibold ${strong}`}>Next stop drops Thursday</span>
+          </span>
+        )}
+
+        <MapPin size={14} className={`shrink-0 ${accent}`} aria-hidden="true" />
+      </a>
+    </motion.div>
+  )
 }
 
 /**
@@ -194,6 +269,8 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
           </div>
         </div>
       </div>
+
+      <HeroLocationStrip isNaughtyMode={isNaughtyMode} loaded={loaded} />
     </section>
   )
 }

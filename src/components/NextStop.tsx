@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { MapPin, Clock, Navigation, CalendarDays, Instagram } from 'lucide-react'
-import { usePopupSchedule, type ScheduleSlot } from '../hooks/usePopupSchedule'
+import { usePopupSchedule } from '../hooks/usePopupSchedule'
+import { mapsHref, pickNext, relativeLabel } from '../lib/nextStop'
 
 /**
  * The answer to "where are you this weekend?", parked directly under the hero
@@ -11,59 +12,6 @@ import { usePopupSchedule, type ScheduleSlot } from '../hooks/usePopupSchedule'
 
 const ARCHIVO = "'Archivo Black', system-ui, sans-serif"
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
-
-/** Airtable date fields arrive as `YYYY-MM-DD`. Parsing those through
- *  `new Date()` lands on UTC midnight, which reads as the previous day in any
- *  timezone behind UTC — so build the date in local time instead. */
-function parseDate(raw: string): Date | null {
-  if (!raw) return null
-  const ymd = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw)
-  if (ymd) return new Date(+ymd[1], +ymd[2] - 1, +ymd[3])
-  const t = new Date(raw).getTime()
-  return Number.isNaN(t) ? null : new Date(t)
-}
-
-function startOfToday(): number {
-  const d = new Date()
-  d.setHours(0, 0, 0, 0)
-  return d.getTime()
-}
-
-/** Soonest stop that hasn't happened yet. Today still counts — the trailer is
- *  out there right now, and that is the single most useful thing to say. */
-function pickNext(schedule: ScheduleSlot[]): { slot: ScheduleSlot; date: Date | null } | null {
-  const today = startOfToday()
-
-  const dated = schedule
-    .map((slot) => ({ slot, date: parseDate(slot.date) }))
-    .filter((x): x is { slot: ScheduleSlot; date: Date } => x.date !== null)
-    .sort((a, b) => a.date.getTime() - b.date.getTime())
-
-  const upcoming = dated.find((x) => x.date.getTime() >= today)
-  if (upcoming) return upcoming
-
-  // No parseable future date — fall back to whatever the sheet flags as this
-  // week's event rather than showing nothing.
-  const flagged = schedule.find((s) => s.isThisWeek)
-  return flagged ? { slot: flagged, date: parseDate(flagged.date) } : null
-}
-
-/** "Today" and "Tomorrow" carry more urgency than a date, and within the week
- *  the weekday is what people actually plan around. */
-function relativeLabel(date: Date): string {
-  const days = Math.round((date.getTime() - startOfToday()) / 86_400_000)
-  if (days <= 0) return 'Today'
-  if (days === 1) return 'Tomorrow'
-  const weekday = date.toLocaleDateString('en-ZA', { weekday: 'long' })
-  if (days < 7) return `This ${weekday}`
-  if (days < 14) return `Next ${weekday}`
-  return weekday
-}
-
-function mapsHref(slot: ScheduleSlot): string {
-  const query = [slot.location, slot.area, 'Cape Town'].filter(Boolean).join(', ')
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
-}
 
 /** Shared shell so the loading, empty and loaded states are literally the same
  *  panel — the section never changes shape as the data lands. */

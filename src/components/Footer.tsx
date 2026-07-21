@@ -1,58 +1,23 @@
 import { motion } from 'framer-motion'
-import { Instagram, Mail, MapPin, Heart } from 'lucide-react'
-import { useState } from 'react'
-import SectionHeading from './SectionHeading'
-
-const EASE_OUT = [0.22, 1, 0.36, 1] as const
-
-const QUICK_LINKS = [
-  { label: 'Menu', href: '#menu' },
-  { label: 'Events', href: '#events' },
-  { label: 'Find Us', href: '#findus' },
-  { label: 'Gallery', href: '#gallery' },
-  { label: 'About', href: '#about' },
-  { label: 'Contact', href: '#contact' },
-]
-
-const CONTACTS = [
-  {
-    icon: Mail,
-    eyebrow: 'Email us',
-    value: 'naughtyberryinfo@gmail.com',
-    href: 'mailto:naughtyberryinfo@gmail.com',
-    label: 'Email Naughty Berry',
-  },
-  {
-    icon: Instagram,
-    eyebrow: 'Instagram',
-    value: '@naughtyberrycpt',
-    href: 'https://www.instagram.com/naughtyberrycpt',
-    label: 'Naughty Berry on Instagram',
-  },
-  {
-    icon: MapPin,
-    eyebrow: 'Based in',
-    value: 'Cape Town, South Africa',
-    href: null,
-    label: null,
-  },
-]
-
-'use client'
-
-
 import {
   ArrowRight,
   CalendarDays,
-  // Instagram,
-  // Mail,
-  // MapPin,
+  Heart,
+  Instagram,
+  Mail,
+  MapPin,
   MessageCircle,
   Navigation,
-  Send,
 } from 'lucide-react'
+import { useState, type FormEvent } from 'react'
+import { usePopupSchedule } from '../hooks/usePopupSchedule'
+import { mapsHref, pickNext, shortWhen } from '../lib/nextStop'
 
-// const EASE_OUT = [0.16, 1, 0.3, 1] as const
+const EASE_OUT = [0.22, 1, 0.36, 1] as const
+/** Same display face the rest of the site sets headings in (Gallery, Hero,
+ *  SectionHeading) — these two headings were the only ones left on the default
+ *  sans at weight 900, which read as a different typeface entirely. */
+const ARCHIVO = "'Archivo Black', system-ui, sans-serif"
 
 const CONTACT_OPTIONS = [
   {
@@ -87,6 +52,10 @@ const CONTACT_OPTIONS = [
 
 export default function Footer() {
   const [email, setEmail] = useState('')
+  // Same shared Airtable fetch the hero and NextStop use, so the card on the
+  // map below is the live stop rather than a hard-coded one that goes stale.
+  const { schedule, loading, error } = usePopupSchedule()
+  const next = error ? null : pickNext(schedule)
 
   const scrollTo = (href: string) => {
     if (!href.startsWith('#')) return
@@ -142,69 +111,24 @@ export default function Footer() {
                   Contact us
                 </p>
               </div>
-              
 
-              <h2 className="max-w-[560px] font-black uppercase leading-[0.9] tracking-[-0.045em] text-[#3B2116]">
+              <h2
+                className="max-w-[560px] uppercase leading-[0.9] tracking-[-0.045em] text-[#3B2116]"
+                style={{ fontFamily: ARCHIVO }}
+              >
                 <span className="block text-[clamp(3.5rem,7vw,7.6rem)]">
                   A Little Naughty
                 </span>
-        
+
                 <span className="block text-[clamp(3.5rem,7vw,7.6rem)] text-[#E8176D]">
                   A Lot Delicious.
                 </span>
-
-                
-               
               </h2>
 
               <p className="mt-8 max-w-sm text-base leading-7 text-[#674255] sm:text-lg">
                 Got a question, an idea or an event in mind? We’d love to hear
                 from you.
               </p>
-
-              {/* <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-                <a
-                  href="mailto:naughtyberryinfo@gmail.com"
-                  className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#E8176D] px-7 text-[12px] font-bold uppercase tracking-[0.14em] text-white shadow-[0_18px_45px_rgba(232,23,109,0.22)] transition duration-300 hover:-translate-y-1 hover:bg-[#D71062]"
-                >
-                  <Send size={17} strokeWidth={1.8} />
-                  Send us a message
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform duration-300 group-hover:translate-x-1"
-                  />
-                </a>
-
-                <div className="relative hidden max-w-[150px] rotate-[-4deg] font-serif text-sm italic leading-5 text-[#6C3B53] sm:block">
-                  We’ll get back to you as soon as we can.
-                  <Heart
-                    size={11}
-                    className="ml-1 inline text-[#E8176D]"
-                    fill="#E8176D"
-                  />
-                  <svg
-                    viewBox="0 0 100 40"
-                    className="absolute -left-7 -top-9 h-10 w-24 rotate-[-14deg]"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M5 34C30 9 50 7 90 17"
-                      fill="none"
-                      stroke="#4A2A3B"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M82 11L91 17L82 21"
-                      fill="none"
-                      stroke="#4A2A3B"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-              </div> */}
             </motion.div>
 
             {/* Trailer image */}
@@ -352,7 +276,10 @@ export default function Footer() {
                   </p>
                 </div>
 
-                <h3 className="font-black uppercase leading-[0.92] tracking-[-0.04em] text-[#E8176D]">
+                <h3
+                  className="uppercase leading-[0.92] tracking-[-0.04em] text-[#E8176D]"
+                  style={{ fontFamily: ARCHIVO }}
+                >
                   <span className="block text-[clamp(3rem,5vw,5.8rem)]">
                     We pop up.
                   </span>
@@ -416,27 +343,58 @@ export default function Footer() {
                 />
 
                 <div className="absolute right-[7%] top-[5%] w-[260px] rounded-[22px] border border-white/70 bg-white/80 p-6 shadow-[0_20px_55px_rgba(113,48,75,0.12)] backdrop-blur-md">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#E8176D]">
+                  <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#E8176D]">
+                    <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#E8176D] opacity-70" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#E8176D]" />
+                    </span>
                     Next stop
                   </p>
 
-                  <p className="mt-2 text-sm font-semibold text-[#3B2116]">
-                    Oranjezicht City Farm Market
-                  </p>
+                  {loading ? (
+                    <div className="mt-3 space-y-2">
+                      <div className="h-3 w-40 animate-pulse rounded-full bg-[#E8176D]/15" />
+                      <div className="h-2.5 w-28 animate-pulse rounded-full bg-[#E8176D]/10" />
+                    </div>
+                  ) : next ? (
+                    <>
+                      <p className="mt-2 text-sm font-semibold text-[#3B2116]">
+                        {next.slot.location}
+                      </p>
 
-                  <p className="mt-1 text-xs text-[#694653]">
-                    Saturday · 9:00–14:00
-                  </p>
+                      <p className="mt-1 text-xs text-[#694653]">{shortWhen(next)}</p>
 
-                  <a
-                    href="https://maps.google.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#E8176D]"
-                  >
-                    <Navigation size={13} />
-                    Directions
-                  </a>
+                      <a
+                        href={mapsHref(next.slot)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#E8176D]"
+                      >
+                        <Navigation size={13} />
+                        Directions
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <p className="mt-2 text-sm font-semibold text-[#3B2116]">
+                        Still being locked in
+                      </p>
+
+                      <p className="mt-1 text-xs text-[#694653]">
+                        Locations drop every Thursday.
+                      </p>
+
+                      <a
+                        href="https://www.instagram.com/naughtyberrycpt"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#E8176D]"
+                      >
+                        <Instagram size={13} />
+                        Follow for drops
+                      </a>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
