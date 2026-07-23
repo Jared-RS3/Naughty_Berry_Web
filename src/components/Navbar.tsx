@@ -66,7 +66,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
         role="navigation"
         aria-label="Main navigation"
       >
-        <div className="relative max-w-[1560px] my-8 mx-auto px-4 sm:px-6 lg:px-10 h-20 md:h-16 flex items-center justify-between">
+        <div className="relative max-w-[1560px] my-4 mx-auto px-4 sm:px-6 lg:px-10 h-20 md:h-16 flex items-center justify-between">
           {/* Desktop Links (left) */}
           <ul className="hidden md:flex items-center gap-8" role="list">
             {links.map(({ label, href }) => (
