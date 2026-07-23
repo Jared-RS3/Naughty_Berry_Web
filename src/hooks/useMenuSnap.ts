@@ -1,39 +1,108 @@
 import { useEffect } from 'react'
-import { scrollToLock, programmaticScrollAt } from '../lib/smoothScroll'
+import { getLenis, programmaticScrollAt } from '../lib/smoothScroll'
 
 /**
- * Menu "catch". As the #menu section rises into the upper half of the screen on
- * a normal downward scroll, the page is pulled so the menu sits full-frame just
- * under the navbar and — on desktop, via Lenis's scroll lock — holds there for a
- * beat, so it takes a second scroll to carry on. This gives the flying cup a
- * settled target to dock onto instead of a moving one.
+ * Menu lock. As the #menu section scrolls up into view on a normal downward
+ * scroll, the page is pulled so the menu sits full-frame under the navbar and
+ * then **held there** — every further scroll is swallowed until the viewer makes
+ * a second, deliberate scroll, at which point it releases and carries on to
+ * Events. The hold is what stops the flying cup from overshooting: the scroll
+ * position is frozen on the cup's dock mark, so it lands and settles instead of
+ * blowing past to the next section.
+ *
+ * It holds the page itself (wheel + touch are preventDefault-ed while locked),
+ * so it works the same whether Lenis is running (desktop) or not (mobile) — it
+ * does not rely on Lenis's own lock. Lenis is merely paused for the duration.
  *
  * It never traps:
- *  - a hard fling from the top blows straight past (velocity gate),
- *  - it fires once per downward pass and only re-arms after you scroll back up
- *    above the menu,
- *  - it stands down while a navbar-link jump is scrolling through the menu,
+ *  - an outright fling from the top skips the lock (velocity gate),
+ *  - it fires once per downward pass and re-arms only after you scroll back up,
+ *  - scrolling up, any scroll key, or a 4s ceiling all release it immediately,
  *  - and it's off entirely under reduced motion.
- *
- * On mobile there's no hard lock (locking native scroll janks iOS); it's a
- * gentle magnetic snap that re-frames the menu, which reads as the same "it
- * caught here" beat without touching the compositor scroll.
  */
 export function useMenuSnap() {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     let armed = true
-    let snapping = false
+    let phase: 'idle' | 'snapping' | 'locked' = 'idle'
     let lastY = window.scrollY
     let lastT = performance.now()
+    let accum = 0
+    let touchY = 0
+    let safety = 0
+    let disposed = false
 
-    // Gap left above the menu so it clears the fixed navbar.
     const navOffset = () => (window.matchMedia('(min-width: 768px)').matches ? 64 : 80)
-    // Above this scroll speed (px/ms) a fling is left to pass untouched.
-    const FAST = 2.0
+    // Only an outright fling skips the lock; normal and brisk scrolling engage.
+    const FAST = 5.5 // px/ms
+    // How much deliberate intent breaks the hold, per input.
+    const RELEASE_WHEEL = 80 // px of accumulated wheel delta
+    const RELEASE_TOUCH = 55 // px of accumulated swipe
 
-    const onScroll = () => {
+    function onWheel(e: WheelEvent) {
+      e.preventDefault() // nothing scrolls while held
+      if (e.deltaY < 0) return endLock() // wheel up → leave upward
+      accum += e.deltaY
+      if (accum >= RELEASE_WHEEL) endLock()
+    }
+    function onTouchStart(e: TouchEvent) {
+      touchY = e.touches[0]?.clientY ?? 0
+      accum = 0
+    }
+    function onTouchMove(e: TouchEvent) {
+      e.preventDefault()
+      const cur = e.touches[0]?.clientY ?? touchY
+      const dy = touchY - cur // + = swiping up (content moves down)
+      touchY = cur
+      if (dy < 0) return endLock() // swipe the other way → leave upward
+      accum += dy
+      if (accum >= RELEASE_TOUCH) endLock()
+    }
+    function onKey(e: KeyboardEvent) {
+      // Never trap the keyboard — any scroll key releases at once.
+      if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' ', 'Spacebar'].includes(e.key)) endLock()
+    }
+
+    function beginLock() {
+      if (disposed || phase !== 'snapping') return // only ever snapping → locked
+      phase = 'locked'
+      accum = 0
+      getLenis()?.stop()
+      window.addEventListener('wheel', onWheel, { passive: false })
+      window.addEventListener('touchstart', onTouchStart, { passive: false })
+      window.addEventListener('touchmove', onTouchMove, { passive: false })
+      window.addEventListener('keydown', onKey)
+      safety = window.setTimeout(endLock, 4000) // hard ceiling — never stuck
+    }
+
+    function endLock() {
+      if (phase !== 'locked') return
+      phase = 'idle'
+      window.clearTimeout(safety)
+      window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('keydown', onKey)
+      getLenis()?.start()
+      lastY = window.scrollY
+      lastT = performance.now()
+    }
+
+    // Frame the menu under the navbar, then hold.
+    function frameThenLock(el: HTMLElement) {
+      const off = navOffset()
+      const lenis = getLenis()
+      if (lenis) {
+        lenis.scrollTo(el, { offset: -off, duration: 0.7, lock: true, onComplete: beginLock })
+      } else {
+        const top = window.scrollY + el.getBoundingClientRect().top - off
+        window.scrollTo({ top, behavior: 'smooth' })
+        window.setTimeout(beginLock, 560)
+      }
+    }
+
+    function onScroll() {
       const now = performance.now()
       const y = window.scrollY
       const dt = Math.max(1, now - lastT)
@@ -41,9 +110,9 @@ export function useMenuSnap() {
       lastY = y
       lastT = now
 
-      if (snapping) return
+      if (phase !== 'idle') return
       // Let a navbar-link / anchor jump pass through the menu without a fight.
-      if (now - programmaticScrollAt() < 1000) return
+      if (now - programmaticScrollAt() < 1200) return
 
       const el = document.getElementById('menu')
       if (!el) return
@@ -55,27 +124,26 @@ export function useMenuSnap() {
         armed = true
         return
       }
-      if (!armed || v <= 0) return
-      // Very fast from the top → let them through this pass.
+      if (!armed || v <= 0) return // downward only
       if (v > FAST) {
         armed = false
         return
-      }
+      } // outright fling passes
 
-      // Catch as the menu top crosses into the upper half, before it settles.
-      const off = navOffset()
-      if (rect.top <= vh * 0.5 && rect.top > off + 12) {
+      // Engage as the menu top crosses into the upper ~half of the screen.
+      if (rect.top <= vh * 0.58 && rect.top > navOffset() + 10) {
         armed = false
-        snapping = true
-        scrollToLock(el, off, () => {
-          snapping = false
-          lastY = window.scrollY
-          lastT = performance.now()
-        })
+        phase = 'snapping'
+        frameThenLock(el)
       }
     }
 
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => {
+      disposed = true
+      window.removeEventListener('scroll', onScroll)
+      phase = 'locked' // let endLock run its teardown regardless of where we were
+      endLock()
+    }
   }, [])
 }
