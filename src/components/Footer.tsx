@@ -168,7 +168,7 @@ export default function Footer() {
           </div>
 
           {/* Contact cards */}
-          <div className="mt-8 grid grid-cols-1 overflow-hidden rounded-[28px] border border-[#E8176D]/12 bg-white/32 shadow-[0_25px_80px_rgba(116,49,77,0.06)] backdrop-blur-sm sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-8 grid grid-cols-1 overflow-hidden rounded-[28px] border border-[#E8176D]/12 bg-white/40 shadow-[0_25px_80px_rgba(116,49,77,0.06)] sm:bg-white/32 sm:backdrop-blur-sm sm:grid-cols-2 xl:grid-cols-4">
             {CONTACT_OPTIONS.map(
               ({ icon: Icon, title, description, value, href }, index) => {
                 const isExternal = href.startsWith('http')

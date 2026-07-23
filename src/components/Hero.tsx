@@ -50,7 +50,7 @@ function HeroLocationStrip({
     >
       <a
         href="#next-stop"
-        className={`flex max-w-full items-center gap-3 rounded-full border px-4 py-2.5 backdrop-blur-md transition-colors sm:gap-4 sm:px-6 sm:py-3 ${shell}`}
+        className={`flex max-w-full items-center gap-3 rounded-full border px-4 py-2.5 transition-colors sm:gap-4 sm:px-6 sm:py-3 sm:backdrop-blur-md ${shell}`}
       >
         <span className={`relative flex h-2 w-2 shrink-0 ${accent}`} aria-hidden="true">
           {!prefersReducedMotion && (

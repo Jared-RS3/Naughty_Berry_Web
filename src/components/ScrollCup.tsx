@@ -7,6 +7,7 @@ import {
   useTransform,
   useVelocity,
 } from 'framer-motion'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 /**
  * ScrollCup — the shared strawberry cup that travels with scroll:
@@ -96,6 +97,14 @@ const SILHOUETTE = {
 } as const
 
 export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
+  // On phones the cup flies with position + scale + a fade only: the 3D tumble,
+  // velocity squash-and-stretch, masked screen-blend lighting and the per-frame
+  // drop-shadow re-raster are all dropped. Those are what make it buttery on a
+  // laptop and what make it stutter on mobile Safari.
+  const isMobile = useIsMobile()
+  const isMobileRef = useRef(isMobile)
+  isMobileRef.current = isMobile
+
   const stopsRef = useRef<Stop[] | null>(null)
   const observedRef = useRef(new Set<Element>())
 
@@ -167,7 +176,9 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
   const idleT0 = useRef(0)
 
   useAnimationFrame((t) => {
-    if (!loaded || !idleOnRef.current || document.hidden) return
+    // No idle bob on mobile — the body layer doesn't read it there, so this
+    // would be a persistent rAF writing a value nothing paints.
+    if (!loaded || isMobileRef.current || !idleOnRef.current || document.hidden) return
     if (!idleT0.current) idleT0.current = t
     idleBob.set(Math.sin((t - idleT0.current) / 1900) * -6)
   })
@@ -323,13 +334,16 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
         out.y + out.h / 2 > -40 &&
         out.y - out.h / 2 < window.innerHeight + 40
       html.classList.toggle('fly-cup-docked', out.docked)
+      // On mobile the tumble/depth channels stay at 0 so their springs settle
+      // and stop — the body is a plain translate + scale there.
+      const lite = isMobileRef.current
       mvX.set(out.x - BASE_W / 2)
       mvY.set(out.y - BASE_H / 2)
       mvScale.set(out.h / BASE_H)
-      mvRoll.set(out.roll)
-      mvYaw.set(out.yaw)
-      mvPitch.set(out.pitch)
-      mvZ.set(out.docked ? 0 : out.z)
+      mvRoll.set(lite ? 0 : out.roll)
+      mvYaw.set(lite ? 0 : out.yaw)
+      mvPitch.set(lite ? 0 : out.pitch)
+      mvZ.set(lite || out.docked ? 0 : out.z)
       mvOpacity.set(out.docked ? 0 : 1)
       if (jump) {
         sx.jump(mvX.get())
@@ -410,7 +424,9 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
       {/* Scale layer — the floor plane lives here, so the ground shadow scales
           with the cup but never inherits its tumble. */}
       <motion.div className="relative w-full h-full" style={{ scale: sScale }}>
-        {/* Ground shadow — stays flat on the floor as the body turns above it */}
+        {/* Ground shadow — stays flat on the floor as the body turns above it.
+            On mobile its per-frame drift is dropped; it just scales with the
+            cup via this layer. */}
         <motion.div
           aria-hidden="true"
           className="absolute pointer-events-none"
@@ -420,9 +436,9 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
             bottom: '0.5%',
             height: '5.5%',
             borderRadius: '50%',
-            x: shadowX,
-            scale: shadowScale,
-            opacity: shadowOpacity,
+            x: isMobile ? 0 : shadowX,
+            scale: isMobile ? 1 : shadowScale,
+            opacity: isMobile ? 0.26 : shadowOpacity,
             background:
               'radial-gradient(ellipse at center, rgba(74,24,48,0.70) 0%, rgba(74,24,48,0.30) 38%, rgba(74,24,48,0.10) 62%, transparent 80%)',
           }}
@@ -430,16 +446,17 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
 
         {/* Solid body — depth (z toward the viewer), the full roll/pitch/yaw
             tumble and the idle bob all ride one perspective layer, so the cup
-            banks and turns as a single sculpted object. */}
+            banks and turns as a single sculpted object. On mobile all of that is
+            frozen so the body is a plain, cheap translate+scale. */}
         <motion.div
           className="w-full h-full"
           style={{
-            y: idleBob,
-            z: sZ,
-            rotate: sRoll,
-            rotateX: sPitch,
-            rotateY: sYaw,
-            transformPerspective: 1150,
+            y: isMobile ? 0 : idleBob,
+            z: isMobile ? 0 : sZ,
+            rotate: isMobile ? 0 : sRoll,
+            rotateX: isMobile ? 0 : sPitch,
+            rotateY: isMobile ? 0 : sYaw,
+            transformPerspective: isMobile ? undefined : 1150,
             // No preserve-3d: nothing here is positioned in 3D space, and it
             // forces a 3D rendering context that blocks layer squashing.
             backfaceVisibility: 'hidden',
@@ -450,12 +467,12 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
               deforms along the screen's vertical rather than along whatever
               angle it happens to be banked at — which is how it's drawn in
               animation, and the only version that doesn't look like a glitch.
-              Origin at the base so it plants on landing. */}
+              Origin at the base so it plants on landing. Frozen on mobile. */}
           <motion.div
             className="relative w-full h-full"
             style={{
-              scaleX: squashX,
-              scaleY: stretchY,
+              scaleX: isMobile ? 1 : squashX,
+              scaleY: isMobile ? 1 : stretchY,
               transformOrigin: '50% 92%',
               willChange: 'transform',
             }}
@@ -464,14 +481,18 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
                 it is re-rasterised whenever the layer's scale changes — which,
                 on a cup that is constantly rescaling as it flies, meant three
                 full-size blurs every frame. The ground shadow below carries the
-                weight; this only has to lift the cup off the pink. */}
+                weight; this only has to lift the cup off the pink. Dropped
+                entirely on mobile so the constantly-scaling flyer never
+                re-blurs — the ground shadow alone seats it. */}
             <img
               src={CUP_SRC}
               alt=""
               className="cup-img w-full h-full select-none"
               style={
                 {
-                  '--cup-shadow': 'drop-shadow(0 14px 20px rgba(80,30,55,0.28))',
+                  '--cup-shadow': isMobile
+                    ? 'none'
+                    : 'drop-shadow(0 14px 20px rgba(80,30,55,0.28))',
                 } as React.CSSProperties
               }
               draggable={false}
@@ -481,37 +502,37 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
                 a mask forces its own render surface, and a surface whose
                 contents never change can be cached as a texture and simply
                 transformed with the cup instead of repainted every frame.
-                (The light used to slide against the cup's yaw — at the ±3° the
-                cup now turns, that parallax was invisible and cost a repaint
-                per frame.) The multiply shade group was dropped entirely: it
-                was a second surface, and it desaturated the product shot. */}
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 overflow-hidden pointer-events-none"
-              style={{ ...SILHOUETTE, mixBlendMode: 'screen' }}
-            >
+                Skipped on mobile — the mask + screen blend is the single most
+                expensive layer per frame and the cup reads fine without it. */}
+            {!isMobile && (
               <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    'radial-gradient(58% 44% at 32% 20%, rgba(255,255,255,0.50) 0%, rgba(255,238,247,0.17) 46%, transparent 74%)',
-                }}
-              />
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    'linear-gradient(258deg, rgba(255,248,252,0.62) 0%, rgba(255,220,236,0.20) 9%, transparent 24%)',
-                }}
-              />
-              <div
-                className="cup-sheen absolute inset-y-0 w-[45%]"
-                style={{
-                  background:
-                    'linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.34) 45%, rgba(255,255,255,0.12) 58%, transparent 100%)',
-                }}
-              />
-            </div>
+                aria-hidden="true"
+                className="absolute inset-0 overflow-hidden pointer-events-none"
+                style={{ ...SILHOUETTE, mixBlendMode: 'screen' }}
+              >
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      'radial-gradient(58% 44% at 32% 20%, rgba(255,255,255,0.50) 0%, rgba(255,238,247,0.17) 46%, transparent 74%)',
+                  }}
+                />
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      'linear-gradient(258deg, rgba(255,248,252,0.62) 0%, rgba(255,220,236,0.20) 9%, transparent 24%)',
+                  }}
+                />
+                <div
+                  className="cup-sheen absolute inset-y-0 w-[45%]"
+                  style={{
+                    background:
+                      'linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.34) 45%, rgba(255,255,255,0.12) 58%, transparent 100%)',
+                  }}
+                />
+              </div>
+            )}
           </motion.div>
         </motion.div>
       </motion.div>

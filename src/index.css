@@ -312,7 +312,7 @@
    While the fixed flying cup is active (lg + motion OK), the per-section
    static cups hide underneath it; the menu's centre cup only appears once
    the flyer has docked there. !important beats framer-motion inline opacity. */
-html.fly-cup-on .cup-static { opacity: 0 !important; }
+html.fly-cup-on .cup-static { opacity: 0 !important; visibility: hidden; }
 
 /* The carousel cup takes over when the flyer docks. It pops in on an
    overshooting curve rather than fading, so the hand-off lands like the cup

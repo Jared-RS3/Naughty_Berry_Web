@@ -54,7 +54,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
            every single scroll frame — it was the largest raster cost on the
            page. At 90% opacity the blur was barely readable anyway, so an
            opaque bar looks the same and costs nothing to scroll past. */
-        className={`fixed top-5 inset-x-0 z-50 transition-all duration-500 ${
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
           scrolled
             ? isNaughtyMode
               ? 'bg-[#241030] border-b border-[#8D2E7A]/70 shadow-lg shadow-fuchsia-900/35'
@@ -155,10 +155,10 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className={`fixed inset-y-0 right-0 z-40 w-72 backdrop-blur-xl border-l flex flex-col pt-20 px-8 pb-10 ${
+            className={`fixed inset-y-0 right-0 z-40 w-72 border-l flex flex-col pt-20 px-8 pb-10 ${
               isNaughtyMode
-                ? 'bg-[#220A2C]/95 border-[#8D2E7A]/70'
-                : 'bg-[#FFDCEA]/95 border-[#FFC2DA]'
+                ? 'bg-[#220A2C] border-[#8D2E7A]/70'
+                : 'bg-[#FFDCEA] border-[#FFC2DA]'
             }`}
             role="dialog"
             aria-modal="true"
@@ -232,7 +232,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-30 bg-black/60 md:hidden"
             onClick={() => setMobileOpen(false)}
             aria-hidden="true"
           />

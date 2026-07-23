@@ -63,7 +63,7 @@ const FACTS = ['Cape Town', 'Every weekend', 'Chocolate on tap']
  *  sections that do not exist here, so this route gets its own. */
 function StoryNav() {
   return (
-    <header className="sticky top-0 z-50 border-b border-[#E8176D]/10 bg-[#FFDCEA]/85 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-[#E8176D]/10 bg-[#FFDCEA]/95 sm:bg-[#FFDCEA]/85 sm:backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3.5">
         <a
           href="/"
