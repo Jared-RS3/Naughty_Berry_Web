@@ -14,13 +14,15 @@ const pub = (p) => join(ROOT, 'public', p)
 
 // [source png, webp quality]. Cutouts with alpha get a touch more quality so
 // the soft edges don't fringe; the trailer photo can go lower.
+//
+// The cup cutouts are NOT listed here any more — scripts/cutout-cups.mjs owns
+// classic / cream / dubai / iced-tea / naughty-hero-cup end to end, deriving
+// both formats from the full-resolution originals in assets-src/cups/. Their
+// .png in public/ is a palette-quantised fallback, so re-encoding a .webp from
+// it here would quietly throw away quality.
 const JOBS = [
   ['Naughty_Berry_Trailer.png', 78],
-  ['naughty-hero-cup.png', 84],
-  ['menu-cups/classic.png', 84],
   ['menu-cups/brownie.png', 84],
-  ['menu-cups/dubai.png', 84],
-  ['menu-cups/cream.png', 84],
 ]
 
 const kb = (n) => `${(n / 1024).toFixed(0)}KB`

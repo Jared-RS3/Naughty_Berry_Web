@@ -143,7 +143,7 @@ export const MENU_CATEGORIES = [
         desc: 'A smooth mix of sun-kissed strawberry and peach, served over ice. Simple, refreshing, and full of flavour.',
         price: 'R45',
         tag: 'New',
-        photo: '/iced-tea-duo.jpg',
+        cutout: '/menu-cups/iced-tea.webp',
         theme: THEME_ICED_TEA,
       },
     ],

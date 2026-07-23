@@ -48,11 +48,34 @@ const TESTIMONIALS = [
     handle: '@ammaarah.b',
   },
   {
-    quote: 'It was an absolute pleasure having you as part of our wedding. Thank you for your wonderful service and yummy treats! 😊',
+    quote: 'It was an absolute pleasure having you as part of our wedding. Thank you for your wonderful service and yummy treats(as always) it was definitely a hit among the guests! 😊',
     name: 'S Mia',
     handle: '',
   },
 ]
+
+/**
+ * Two reviewers left more than one quote, so a straight `offset + i` window can
+ * seat the same person in two slots at once — six cards on screen, four faces.
+ * Walk forward from the offset and take the first unseen name instead: a page
+ * always shows `count` different people, and stepping the offset swaps in that
+ * person's other quote rather than duplicating them.
+ */
+function pickUnique(offset: number, count: number) {
+  const seen = new Set<string>()
+  const out: Array<(typeof TESTIMONIALS)[number]> = []
+  for (let i = 0; i < TESTIMONIALS.length && out.length < count; i++) {
+    const t = TESTIMONIALS[(offset + i) % TESTIMONIALS.length]
+    if (seen.has(t.name)) continue
+    seen.add(t.name)
+    out.push(t)
+  }
+  // Only reachable if the list ever holds fewer distinct names than slots.
+  for (let i = 0; out.length < count; i++) {
+    out.push(TESTIMONIALS[(offset + i) % TESTIMONIALS.length])
+  }
+  return out
+}
 
 /** Scatter positions for the six desktop card slots, matching Reviews.png. */
 const SLOTS: Array<CSSProperties> = [
@@ -225,14 +248,8 @@ export default function Testimonials() {
   const shift = (dir: 1 | -1) =>
     setOffset((o) => (o + dir + TESTIMONIALS.length) % TESTIMONIALS.length)
 
-  const visible = Array.from(
-    { length: SLOTS.length },
-    (_, i) => TESTIMONIALS[(offset + i) % TESTIMONIALS.length]
-  )
-  const mVisible = Array.from(
-    { length: SLOTS_MOBILE.length },
-    (_, i) => TESTIMONIALS[(offset + i) % TESTIMONIALS.length]
-  )
+  const visible = pickUnique(offset, SLOTS.length)
+  const mVisible = pickUnique(offset, SLOTS_MOBILE.length)
 
   return (
     <section

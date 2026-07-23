@@ -19,45 +19,46 @@ import { STAGGER, POP, RISE } from '../motionPresets'
 const ARCHIVO = "'Archivo Black', system-ui, sans-serif"
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 
+/** The intro sits directly under the headline — it is the longest run of copy on
+ *  the page, so it gets its own full-width block rather than being squeezed into
+ *  the hero column beside the photo. */
+const INTRO = [
+  'Naughty Berry is all about fun, flavour, and community. Inspired by our love for strawberries, chocolate, and everything pink, we brought it all together to create an experience that’s playful, welcoming, and a little bit indulgent.',
+  'At the heart of Naughty Berry is connection, from our friendly, energetic team to the way we engage with every customer. We’re not just serving desserts, we’re creating moments. Think fresh, juicy locally sourced strawberries topped with smooth, premium chocolate, poured right in front of you and served with a smile.',
+  'We pop up on select dates at markets and events, with all upcoming locations shared on our website and social media pages. We also bring the Naughty Berry experience to any occasion, from weddings and year-end functions to baby showers, birthdays, and private parties. Naughty Berry adds a pop of fun, colour, and exceptional service to every event.',
+]
+
 const CHAPTERS = [
   {
-    no: '01',
-    heading: 'It started with a tap.',
+    heading: 'Made with Love',
     image: '/chocolate-pour.jpg',
     alt: 'Melted couverture chocolate being poured over a cup of strawberries',
     focus: 'center 45%',
     body: [
-      'Naughty Berry began with one stubborn idea: that a strawberry tastes better the second it leaves the chocolate. Not an hour before, not sitting in a fridge under cling film — right then, still warm, still moving.',
-      'So we built the tap. Real couverture chocolate, flowing all night, and a queue of people watching their cup get made in front of them. It turned out we were not the only ones who cared about that thirty-second window.',
+      'Each cup is carefully prepared by hand and completed in front of you, combining freshness with a fun, interactive experience. From the first pour to the final touch, it’s all about great flavour, quality ingredients, and a little bit of showmanship and, of course, lots of love.',
     ],
   },
   {
-    no: '02',
-    heading: 'Cape Town made it ours.',
+    heading: 'Sweet, Simple, Premium',
+    image: '/strawberry-drip.jpg',
+    alt: 'A strawberry being dipped into premium melted chocolate',
+    focus: 'center 55%',
+    body: [
+      'We use premium chocolate and locally sourced strawberries, because we believe dessert should always feel a little more exciting than the usual.',
+    ],
+  },
+  {
+    heading: 'The Naughty Berry Club',
     image: '/market.jpg',
     alt: 'The pink Naughty Berry trailer parked at a Cape Town weekend market',
     // Both outdoor shots are landscape; cropping them to the column's portrait
     // frame from the centre fills the top half with empty sky.
     focus: 'center 78%',
     body: [
-      'What began as a single trailer at a weekend market became a fixture. Different suburb every Saturday, the same faces finding us each time, telling their friends where we would be before we had even posted it.',
-      'We buy our strawberries locally and pick them over by hand. The ones that do not make the cup do not leave the kitchen. It is slower, and it is the only version of this we are interested in running.',
-    ],
-  },
-  {
-    no: '03',
-    heading: 'Now we bring it to you.',
-    image: '/setup.jpg',
-    alt: 'A Naughty Berry cart set up on location for a private event',
-    focus: 'center 80%',
-    body: [
-      'Weddings, birthdays, year-end functions, a Tuesday because someone deserved it — the tap travels. Our team sets up, styles the station, and serves your guests the same cup we serve at the market.',
-      'Still made in front of you. Still handed over while the chocolate is setting. That has not changed since the first night, and it is not going to.',
+      'Naughty Berry started with just one table, a chocolate melter, and a big dream at local Cape Town markets. From those humble beginnings, our community showed up for us in the best way possible and helped turn that dream into something much bigger. Because of their support, we’ve grown into three trailers, each one built on the same love for strawberries, chocolate, and shared moments that started it all. Our community is the backbone of everything we do, and the Naughty Berry Club continues to grow every day, one cup, one smile, and one pop-up at a time.',
     ],
   },
 ]
-
-const FACTS = ['Cape Town', 'Every weekend', 'Chocolate on tap']
 
 /** Slim standalone header. The home page's Navbar is scroll-spy driven against
  *  sections that do not exist here, so this route gets its own. */
@@ -122,51 +123,30 @@ export default function StoryPage() {
           className="grid items-center gap-12 md:grid-cols-[1.08fr_0.92fr] md:gap-14"
         >
           <div className="text-center md:text-left" style={{ containerType: 'inline-size' }}>
-            <motion.div variants={POP} className="flex items-center justify-center gap-3 md:justify-start">
-              <img
-                src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
-                alt=""
-                aria-hidden="true"
-                className="h-6 w-6 object-contain opacity-85"
-                draggable={false}
-              />
-              <span className="h-[1px] w-6 bg-[#E8176D]/60" aria-hidden="true" />
-              <span className="text-[12px] font-bold uppercase tracking-[0.24em] text-[#E8176D]">
-                The Full Story
-              </span>
-            </motion.div>
+            <motion.img
+              variants={POP}
+              src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+              alt=""
+              aria-hidden="true"
+              className="mx-auto h-8 w-8 object-contain opacity-85 md:mx-0"
+              draggable={false}
+            />
 
+            {/* Three lines of headline, so this is sized off the longest of them
+                rather than the two-word title it replaced. */}
             <motion.h1
               variants={RISE}
-              className="mt-6 uppercase leading-[0.9]"
+              className="mt-6 uppercase leading-[0.95]"
               style={{
                 fontFamily: ARCHIVO,
-                fontSize: 'min(22cqw, 158px)',
-                letterSpacing: '-0.03em',
+                fontSize: 'min(8.8cqw, 62px)',
+                letterSpacing: '-0.02em',
               }}
             >
-              <span className="block text-[#E8176D]">Our</span>
-              <span className="block text-[#3B2116]">Story</span>
+              <span className="block text-[#E8176D]">Cape Town’s First</span>
+              <span className="block text-[#3B2116]">Strawberries &amp;</span>
+              <span className="block text-[#E8176D]">Chocolate on Tap.</span>
             </motion.h1>
-
-            <motion.p
-              variants={RISE}
-              className="mx-auto mt-7 max-w-md text-[17px] leading-[1.7] text-[#7A3B5E] md:mx-0"
-            >
-              Cape Town’s first strawberries &amp; chocolate on tap — how a single trailer turned
-              into the sweetest queue in the city.
-            </motion.p>
-
-            <motion.div variants={RISE} className="mt-8 flex flex-wrap justify-center gap-2.5 md:justify-start">
-              {FACTS.map((f) => (
-                <span
-                  key={f}
-                  className="nb-pill px-4 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-[#E8176D]"
-                >
-                  {f}
-                </span>
-              ))}
-            </motion.div>
           </div>
 
           <motion.div variants={RISE} className="relative">
@@ -198,6 +178,48 @@ export default function StoryPage() {
         </motion.div>
       </section>
 
+      {/* ── Intro: the three opening paragraphs, then the two calls to action ── */}
+      <section className="bg-[#FFF9ED]">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-90px' }}
+          transition={{ duration: 0.65, ease: EASE_OUT }}
+          className="mx-auto max-w-3xl px-6 py-16 md:py-20"
+        >
+          <div className="space-y-6">
+            {INTRO.map((p) => (
+              <p key={p.slice(0, 24)} className="text-[17px] leading-[1.75] text-[#7A3B5E]">
+                {p}
+              </p>
+            ))}
+          </div>
+
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3 md:justify-start">
+            <a
+              href="/#events"
+              className="group inline-flex items-center gap-2 rounded-full bg-[#E8176D] px-8 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#C01057]"
+            >
+              Book for an Event
+              <ArrowRight
+                size={14}
+                className="transition-transform duration-300 group-hover:translate-x-1"
+              />
+            </a>
+
+            <a
+              href="https://www.instagram.com/naughtyberrycpt"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="nb-pill inline-flex items-center gap-2 px-8 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-[#E8176D] transition-colors hover:text-[#C01057]"
+            >
+              <Instagram size={15} />
+              Follow Our Journey
+            </a>
+          </div>
+        </motion.div>
+      </section>
+
       {/* ── Chapters ── */}
       {CHAPTERS.map((c, i) => {
         // Odd chapters flip the photo to the right and sit on a cream band, so
@@ -205,7 +227,7 @@ export default function StoryPage() {
         const flipped = i % 2 === 1
 
         return (
-          <section key={c.no} className={flipped ? 'bg-[#FFF9ED]' : undefined}>
+          <section key={c.heading} className={flipped ? 'bg-[#FFF9ED]' : undefined}>
             <motion.div
               initial={{ opacity: 0, y: 34 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -226,21 +248,13 @@ export default function StoryPage() {
               </div>
 
               <div className="text-center md:text-left">
-                <div className="flex items-center justify-center gap-4 md:justify-start">
-                  <span
-                    className="leading-none text-[#E8176D] text-[clamp(2.2rem,4vw,3.1rem)]"
-                    style={{ fontFamily: ARCHIVO }}
-                  >
-                    {c.no}
-                  </span>
-                  <span className="h-px w-10 bg-[#E8176D]/30" aria-hidden="true" />
-                  <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#E8176D]/70">
-                    Chapter
-                  </span>
-                </div>
+                <span
+                  className="mx-auto block h-[3px] w-12 rounded-full bg-[#E8176D]/40 md:mx-0"
+                  aria-hidden="true"
+                />
 
                 <h2
-                  className="mt-5 uppercase leading-[1.02] text-[clamp(1.75rem,3.8vw,2.7rem)] text-[#3B2116]"
+                  className="mt-6 uppercase leading-[1.02] text-[clamp(1.75rem,3.8vw,2.7rem)] text-[#3B2116]"
                   style={{ fontFamily: ARCHIVO }}
                 >
                   {c.heading}
@@ -259,9 +273,9 @@ export default function StoryPage() {
         )
       })}
 
-      {/* ── Pull quote — the one line from the copy worth stopping on ── */}
+      {/* ── Close: the sign-off, on the berry card so the page ends on colour ── */}
       <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-        <motion.blockquote
+        <motion.section
           initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-80px' }}
@@ -273,63 +287,21 @@ export default function StoryPage() {
             className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full bg-white/12 blur-3xl"
           />
 
-          <p
-            className="relative mx-auto max-w-3xl uppercase leading-[1.14] text-white text-[clamp(1.3rem,2.9vw,2.1rem)]"
+          <MapPin size={22} className="relative mx-auto mb-6 text-white/70" aria-hidden="true" />
+
+          <h2
+            className="relative uppercase leading-[1.08] text-white text-[clamp(1.6rem,4vw,2.6rem)]"
             style={{ fontFamily: ARCHIVO }}
           >
-            “Still made in front of you. Still handed over while the chocolate is setting.”
+            From Cape Town, with Love
+          </h2>
+
+          <p className="relative mx-auto mt-6 max-w-2xl text-[17px] leading-[1.75] text-white/85">
+            Proudly rooted in the Mother City, we’re here to add a little more fun, colour, and
+            sweetness to Cape Town’s dessert scene one strawberry at a time.
           </p>
-
-          <footer className="relative mt-6 text-[11px] font-bold uppercase tracking-[0.24em] text-white/70">
-            Naughty Berry, since night one
-          </footer>
-        </motion.blockquote>
+        </motion.section>
       </div>
-
-      {/* ── Close ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, ease: EASE_OUT }}
-        className="mx-auto max-w-3xl px-6 pb-24 text-center"
-      >
-        <h2
-          className="uppercase leading-[1.04] text-[clamp(1.7rem,5vw,2.8rem)]"
-          style={{ fontFamily: ARCHIVO }}
-        >
-          <span className="text-[#E8176D]">Come find </span>
-          <span className="text-[#3B2116]">the tap.</span>
-        </h2>
-
-        <p className="mx-auto mt-5 max-w-md text-[#7A3B5E]">
-          We roam Cape Town every weekend. New locations drop on Instagram every Thursday.
-        </p>
-
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <a
-            href="/#findus"
-            className="group inline-flex items-center gap-2 rounded-full bg-[#E8176D] px-8 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#C01057]"
-          >
-            <MapPin size={15} />
-            This weekend’s pop-ups
-            <ArrowRight
-              size={14}
-              className="transition-transform duration-300 group-hover:translate-x-1"
-            />
-          </a>
-
-          <a
-            href="https://www.instagram.com/naughtyberrycpt"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="nb-pill inline-flex items-center gap-2 px-8 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-[#E8176D] transition-colors hover:text-[#C01057]"
-          >
-            <Instagram size={15} />
-            @naughtyberrycpt
-          </a>
-        </div>
-      </motion.div>
 
       {/* ── Slim footer, so the page ends rather than just stopping ── */}
       <footer className="border-t border-[#E8176D]/10 bg-[#FFF8FB]" role="contentinfo">
