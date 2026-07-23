@@ -386,7 +386,7 @@ export default function About() {
                 style={{ aspectRatio: '548 / 712' }}
               >
                 <img
-                  src="/naughty-hero-cup.png"
+                  src="/naughty-hero-cup.webp"
                   alt=""
                   aria-hidden="true"
                   className="cup-img w-full h-full select-none"

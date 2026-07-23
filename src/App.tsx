@@ -4,6 +4,8 @@ import LoadingScreen from './components/LoadingScreen'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import ScrollCup from './components/ScrollCup'
+import { useLenis } from './hooks/useLenis'
+import { useMenuSnap } from './hooks/useMenuSnap'
 
 // All below-fold sections split into separate chunks — only downloaded when needed
 // const NextStop    = lazy(() => import('./components/NextStop'))
@@ -32,6 +34,12 @@ function App() {
 }
 
 function HomePage() {
+  // Weighted inertia scroll on desktop; a no-op on touch / reduced motion.
+  useLenis()
+  // Magnetic "catch" that frames the menu full-screen as it scrolls in, so the
+  // cup docks onto a settled target. Bypassed by a fast fling from the top.
+  useMenuSnap()
+
   // `revealed` flips the moment the intro cup starts zooming out, so the
   // headline rises in behind it rather than after it. `introDone` only unmounts
   // the overlay. The page itself is never faded — it sits fully painted under

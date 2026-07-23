@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { motion, useAnimationFrame, useMotionValue, useReducedMotion } from 'framer-motion'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 /**
  * Intro — two beats.
@@ -22,7 +23,7 @@ import { motion, useAnimationFrame, useMotionValue, useReducedMotion } from 'fra
  * sequence stays on the compositor.
  */
 
-const CUP_SRC = '/naughty-hero-cup.png'
+const CUP_SRC = '/naughty-hero-cup.webp'
 const LOGO_SRC = '/naughty-berry-logo.png'
 const FILM_SRC = '/2026-02-22T12-01-38_ultra_realistic_watermarked.mp4'
 const POSTER_SRC = '/loader-poster.jpg'
@@ -66,6 +67,13 @@ const preloadImage = (src: string) =>
 
 export default function LoadingScreen({ onReveal, onDone }: Props) {
   const prefersReducedMotion = useReducedMotion()
+  // On phones the brand film is a still, not a video. The 576KB clip has to be
+  // fetched and then decoded frame-by-frame on the main thread during the exact
+  // window the site is booting and the cup is about to fly — on mobile that
+  // decode competes with everything and is what made the intro feel heavy. The
+  // poster is a frame of the same film (already preloaded for the boot screen),
+  // so the phone intro looks the same but costs one static image instead.
+  const isMobile = useIsMobile()
   const [gone, setGone] = useState(false)
   const [progress, setProgress] = useState(0)
   const cupRef = useRef<HTMLImageElement>(null)
@@ -246,19 +254,30 @@ export default function LoadingScreen({ onReveal, onDone }: Props) {
       {/* ── Beat 1: film + mark ── */}
       <motion.div className="absolute inset-0" style={{ opacity: brandOpacity }}>
         {/* The poster is what the boot screen already painted, so the film has
-            something to be until it has buffered — it never shows through. */}
-        <video
-          ref={videoRef}
-          src={FILM_SRC}
-          poster={POSTER_SRC}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: 'brightness(0.3) saturate(1.35)' }}
-        />
+            something to be until it has buffered — it never shows through. On
+            mobile the poster IS the brand layer; the video is desktop-only. */}
+        {isMobile ? (
+          <img
+            src={POSTER_SRC}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ filter: 'brightness(0.3) saturate(1.35)' }}
+          />
+        ) : (
+          <video
+            ref={videoRef}
+            src={FILM_SRC}
+            poster={POSTER_SRC}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ filter: 'brightness(0.3) saturate(1.35)' }}
+          />
+        )}
         <div
           className="absolute inset-0"
           style={{

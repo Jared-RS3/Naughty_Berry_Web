@@ -38,8 +38,8 @@ function HeroLocationStrip({
 
   const posClass =
     placement === 'top'
-      ? 'top-29 flex sm:hidden'
-      : 'top-31 hidden justify-center sm:flex'
+      ? 'top-32 flex sm:hidden'
+      : 'top-34 hidden justify-center sm:flex'
 
   return (
     <motion.div
@@ -136,7 +136,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
       }`}
       aria-label="View the menu"
     >
-      View the Menu
+      View Menu
       <ArrowRight
         size={15}
         className="transition-transform duration-300 group-hover:translate-x-1"
@@ -239,7 +239,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
               className="absolute left-1/2 -translate-x-1/2"
               initial={{ opacity: 0 }}
               animate={
-                prefersReducedMotion
+                prefersReducedMotion || isMobile
                   ? { opacity: 1 }
                   : { opacity: 1, scaleX: [1, 0.92, 1], transition: { opacity: { duration: 0.9, delay: 0.3 }, scaleX: { duration: 5.5, repeat: Infinity, ease: 'easeInOut' } } }
               }
@@ -255,9 +255,11 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
               }}
             />
 
-            {/* Float wrapper — slow bob sells the depth */}
+            {/* Float wrapper — slow bob sells the depth. Off on mobile: the
+                flyer replaces this cup there, so the bob would run forever on a
+                hidden element and cost main-thread rAF during every scroll. */}
             <motion.div
-              animate={prefersReducedMotion ? undefined : { y: [0, -8, 0] }}
+              animate={prefersReducedMotion || isMobile ? undefined : { y: [0, -8, 0] }}
               transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
               className="relative"
             >
@@ -265,7 +267,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
                   onto this exact spot and cross-fades into it, so anything more
                   than a plain fade here would fight the hand-off. */}
               <motion.img
-                src="/naughty-hero-cup.png"
+                src="/naughty-hero-cup.webp"
                 alt="Naughty Berry cup — chocolate-dipped strawberries"
                 fetchPriority="high"
                 initial={{ opacity: 0 }}
@@ -287,8 +289,8 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
                 aria-hidden="true"
                 className="absolute inset-0"
                 style={{
-                  WebkitMaskImage: 'url(/naughty-hero-cup.png)',
-                  maskImage: 'url(/naughty-hero-cup.png)',
+                  WebkitMaskImage: 'url(/naughty-hero-cup.webp)',
+                  maskImage: 'url(/naughty-hero-cup.webp)',
                   WebkitMaskSize: '100% 100%',
                   maskSize: '100% 100%',
                   background:

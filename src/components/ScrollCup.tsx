@@ -41,7 +41,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
  * while `fly-cup-on` is set, and stay visible on mobile / reduced motion.
  */
 
-const CUP_SRC = '/naughty-hero-cup.png'
+const CUP_SRC = '/naughty-hero-cup.webp'
 const RATIO = 548 / 712 // natural w/h of the cup cutout
 // Reference box, deliberately larger than the cup ever renders. Every stop and
 // every mid-flight swell therefore lands at scale < 1, so the promoted layer is
@@ -369,31 +369,49 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
       }
     }
 
-    // Scroll fires far more often than the screen refreshes, and `measure()`
-    // reads layout for every anchor. Coalescing both onto one rAF caps the work
-    // at once per frame and keeps the reads out of the scroll handler itself.
+    // A scroll-linked fixed element has to update on the display's clock, not
+    // the scroll event's. On iOS the scroll event lags a frame or more behind
+    // the finger during a momentum fling and thins out toward the end, so a cup
+    // driven straight off the event stutters and snaps. Instead a rAF loop reads
+    // scrollY every frame while a scroll is in flight (and for a short beat
+    // after, to catch the tail of the fling), so the cup tracks the refresh rate
+    // frame-for-frame. `measure()` reads layout for every anchor, so it stays
+    // coalesced to at most once per frame via `needsMeasure`.
     let frame = 0
     let needsMeasure = false
-    const schedule = (remeasureToo = false) => {
-      needsMeasure ||= remeasureToo
-      if (frame) return
-      frame = requestAnimationFrame(() => {
+    let lastScrollAt = 0
+    const IDLE_MS = 260
+    const tick = () => {
+      if (needsMeasure) {
+        needsMeasure = false
+        measure()
+      }
+      apply()
+      // Keep the loop alive while a scroll is recent or another measure is
+      // queued; otherwise let it go idle so a still page costs nothing.
+      if (needsMeasure || performance.now() - lastScrollAt < IDLE_MS) {
+        frame = requestAnimationFrame(tick)
+      } else {
         frame = 0
-        if (needsMeasure) {
-          needsMeasure = false
-          measure()
-        }
-        apply()
-      })
+      }
+    }
+    const kick = () => {
+      if (!frame) frame = requestAnimationFrame(tick)
     }
 
-    const remeasure = () => schedule(true)
+    const onScroll = () => {
+      lastScrollAt = performance.now()
+      kick()
+    }
+    const remeasure = () => {
+      needsMeasure = true
+      kick()
+    }
     const ro = new ResizeObserver(remeasure)
     ro.observe(document.body)
     measure()
     apply(true)
 
-    const onScroll = () => schedule()
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', remeasure)
     window.addEventListener('load', remeasure)

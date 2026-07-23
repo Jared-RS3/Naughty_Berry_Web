@@ -102,7 +102,7 @@ export const MENU_CATEGORIES = [
         desc: 'Fresh strawberries drenched in creamy milk chocolate, finished in front of you for a simple, indulgent treat that never misses.',
         price: 'R75',
         tag: null,
-        cutout: '/menu-cups/classic.png',
+        cutout: '/menu-cups/classic.webp',
         theme: THEME_CLASSIC,
       },
       {
@@ -110,7 +110,7 @@ export const MENU_CATEGORIES = [
         desc: 'Fresh strawberries with fudgey brownie bites, drenched in creamy milk chocolate for the perfect mix of fudgy and fresh.',
         price: 'R75',
         tag: null,
-        cutout: '/menu-cups/brownie.png',
+        cutout: '/menu-cups/brownie.webp',
         theme: THEME_BROWNIE,
       },
       {
@@ -118,7 +118,7 @@ export const MENU_CATEGORIES = [
         desc: 'Our classic or brownie cup topped with our decadent kunafeh mixture of creamy pistachio cream and toasted kataifi pastry, drenched in creamy milk chocolate.',
         price: 'R95',
         tag: 'Best Seller',
-        cutout: '/menu-cups/dubai.png',
+        cutout: '/menu-cups/dubai.webp',
         theme: THEME_DUBAI,
       },
       {
@@ -126,7 +126,7 @@ export const MENU_CATEGORIES = [
         desc: 'Fresh strawberries layered in a velvety sweetened cream, crowned with crunchy Lotus Biscoff crumbs.',
         price: 'R95',
         tag: 'New',
-        cutout: '/menu-cups/cream.png',
+        cutout: '/menu-cups/cream.webp',
         theme: THEME_CREAM,
       },
     ],

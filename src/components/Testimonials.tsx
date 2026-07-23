@@ -318,7 +318,7 @@ export default function Testimonials() {
                   }}
                 />
                 <img
-                  src="/naughty-hero-cup.png"
+                  src="/naughty-hero-cup.webp"
                   alt=""
                   className="cup-img w-full h-auto select-none"
                   style={{ '--cup-shadow': 'drop-shadow(0 12px 18px rgba(80,30,55,0.28))' } as React.CSSProperties}
@@ -457,7 +457,7 @@ export default function Testimonials() {
                     }}
                   />
                   <img
-                    src="/naughty-hero-cup.png"
+                    src="/naughty-hero-cup.webp"
                     alt=""
                     className="cup-img w-full h-auto select-none"
                     style={{ '--cup-shadow': 'drop-shadow(0 12px 18px rgba(80,30,55,0.28))' } as React.CSSProperties}
@@ -559,7 +559,7 @@ export default function Testimonials() {
               REVIEWS
             </div>
             <img
-              src="/naughty-hero-cup.png"
+              src="/naughty-hero-cup.webp"
               alt=""
               className="cup-img relative z-10 mx-auto w-[46%] max-w-[220px] h-auto select-none"
               style={{ '--cup-shadow': 'drop-shadow(0 12px 18px rgba(80,30,55,0.28))' } as React.CSSProperties}

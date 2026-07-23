@@ -337,6 +337,18 @@ html.nb-intro body {
 html.nb-intro .cup-static,
 html.nb-intro .nb-flyer { opacity: 0 !important; }
 
+/* ─── Lenis (desktop smooth scroll) ────────────────
+   Lenis adds these classes to <html> while it runs (desktop + fine pointer
+   only; see useLenis). The key rule turns off native `scroll-behavior: smooth`
+   so it doesn't fight Lenis's own inertia. None of this applies on mobile,
+   where Lenis is never started and native momentum is left untouched. */
+html.lenis,
+html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
+
 /* ─── Scrollbar ────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #FFDCEA; }

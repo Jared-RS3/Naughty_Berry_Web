@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Download, Instagram, Menu, X, Moon, Sun } from 'lucide-react'
+import { scrollToSelector } from '../lib/smoothScroll'
 
 type NavbarProps = {
   isNaughtyMode: boolean
@@ -35,8 +36,9 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
 
   const handleNavClick = (href: string) => {
     setMobileOpen(false)
-    const el = document.querySelector(href)
-    if (el) el.scrollIntoView({ behavior: 'smooth' })
+    // Routed through the shared helper so it glides with Lenis on desktop and
+    // falls back to native smooth scroll on mobile / reduced motion.
+    scrollToSelector(href)
   }
 
   const linkClass = isNaughtyMode
@@ -64,7 +66,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
         role="navigation"
         aria-label="Main navigation"
       >
-        <div className="relative max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-10 h-20 md:h-16 flex items-center justify-between">
+        <div className="relative max-w-[1560px] my-8 mx-auto px-4 sm:px-6 lg:px-10 h-20 md:h-16 flex items-center justify-between">
           {/* Desktop Links (left) */}
           <ul className="hidden md:flex items-center gap-8" role="list">
             {links.map(({ label, href }) => (
@@ -126,7 +128,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
               className={`hidden md:flex items-center gap-2 px-6 py-2.5 text-[12px] tracking-[0.16em] uppercase font-bold rounded-full text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 isNaughtyMode
                   ? 'bg-gradient-to-r from-[#FF2D9C] to-[#7A1B78] hover:shadow-[0_0_28px_rgba(255,45,156,0.45)] focus:ring-[#FF2D9C] focus:ring-offset-[#220A2C]'
-                  : 'bg-[#C9366B] hover:bg-[#E8176D] hover:shadow-[0_0_24px_rgba(232,23,109,0.4)] focus:ring-[#E8176D] focus:ring-offset-[#FFDCEA]'
+                  : 'bg-[#E8176D] hover:bg-[#C01057] shadow-[0_14px_32px_rgba(232,23,109,0.32)] focus:ring-[#E8176D] focus:ring-offset-[#FFDCEA]'
               }`}
               aria-label="Download the menu as a PDF"
             >

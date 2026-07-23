@@ -182,7 +182,7 @@ export default function StoryPage() {
             {/* The cup breaks the photo's corner so the two halves of the hero
                 overlap instead of sitting in separate boxes. */}
             <motion.img
-              src="/naughty-hero-cup.png"
+              src="/naughty-hero-cup.webp"
               alt=""
               aria-hidden="true"
               initial={{ opacity: 0, y: 30, scale: 0.9 }}

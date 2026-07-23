@@ -160,7 +160,7 @@ export default function Footer() {
               </div>
 
               <img
-                src="/Naughty_Berry_Trailer.png"
+                src="/Naughty_Berry_Trailer.webp"
                 alt="Naughty Berry pink dessert trailer"
                 loading="lazy"
                 decoding="async"
@@ -315,7 +315,7 @@ export default function Footer() {
                   <div className="relative">
                     <div className="absolute -inset-5 rounded-full bg-[#E8176D]/12 blur-xl" />
                     <img
-                      src="/Naughty_Berry_Trailer.png"
+                      src="/Naughty_Berry_Trailer.webp"
                       alt=""
                       aria-hidden="true"
                       loading="lazy"
