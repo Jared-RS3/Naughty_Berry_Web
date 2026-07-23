@@ -121,8 +121,8 @@ export default function StoryPage() {
           variants={STAGGER}
           className="grid items-center gap-12 md:grid-cols-[1.08fr_0.92fr] md:gap-14"
         >
-          <div style={{ containerType: 'inline-size' }}>
-            <motion.div variants={POP} className="flex items-center gap-3">
+          <div className="text-center md:text-left" style={{ containerType: 'inline-size' }}>
+            <motion.div variants={POP} className="flex items-center justify-center gap-3 md:justify-start">
               <img
                 src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
                 alt=""
@@ -151,13 +151,13 @@ export default function StoryPage() {
 
             <motion.p
               variants={RISE}
-              className="mt-7 max-w-md text-[17px] leading-[1.7] text-[#7A3B5E]"
+              className="mx-auto mt-7 max-w-md text-[17px] leading-[1.7] text-[#7A3B5E] md:mx-0"
             >
               Cape Town’s first strawberries &amp; chocolate on tap — how a single trailer turned
               into the sweetest queue in the city.
             </motion.p>
 
-            <motion.div variants={RISE} className="mt-8 flex flex-wrap gap-2.5">
+            <motion.div variants={RISE} className="mt-8 flex flex-wrap justify-center gap-2.5 md:justify-start">
               {FACTS.map((f) => (
                 <span
                   key={f}
@@ -225,8 +225,8 @@ export default function StoryPage() {
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center gap-4">
+              <div className="text-center md:text-left">
+                <div className="flex items-center justify-center gap-4 md:justify-start">
                   <span
                     className="leading-none text-[#E8176D] text-[clamp(2.2rem,4vw,3.1rem)]"
                     style={{ fontFamily: ARCHIVO }}

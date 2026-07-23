@@ -92,7 +92,7 @@ export default function Footer() {
 
         <div className="relative mx-auto max-w-[1500px] px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
           {/* Contact hero */}
-          <div className="grid min-h-[620px] items-center gap-12 lg:grid-cols-[0.78fr_1.22fr] lg:gap-4">
+          <div className="grid items-center gap-12 lg:min-h-[620px] lg:grid-cols-[0.78fr_1.22fr] lg:gap-4">
             <motion.div
               initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -100,7 +100,7 @@ export default function Footer() {
               transition={{ duration: 0.7, ease: EASE_OUT }}
               className="relative z-20 max-w-xl lg:pl-6 xl:pl-12"
             >
-              <div className="mb-8 flex items-center gap-3">
+              <div className="mb-8 flex items-center justify-center gap-3 md:justify-start">
                 <span className="text-lg" aria-hidden="true">
                   🍓
                 </span>
@@ -113,19 +113,19 @@ export default function Footer() {
               </div>
 
               <h2
-                className="max-w-[560px] uppercase leading-[0.9] tracking-[-0.045em] text-[#3B2116]"
+                className="mx-auto max-w-[560px] text-center uppercase leading-[0.9] tracking-[-0.045em] text-[#3B2116] md:mx-0 md:text-left"
                 style={{ fontFamily: ARCHIVO }}
               >
-                <span className="block text-[clamp(3.5rem,7vw,7.6rem)]">
+                <span className="block text-[clamp(1.9rem,9.2vw,7.6rem)]">
                   A Little Naughty
                 </span>
 
-                <span className="block text-[clamp(3.5rem,7vw,7.6rem)] text-[#E8176D]">
+                <span className="block text-[clamp(1.9rem,9.2vw,7.6rem)] text-[#E8176D]">
                   A Lot Delicious.
                 </span>
               </h2>
 
-              <p className="mt-8 max-w-sm text-base leading-7 text-[#674255] sm:text-lg">
+              <p className="mx-auto mt-8 max-w-sm text-center text-base leading-7 text-[#674255] sm:text-lg md:mx-0 md:text-left">
                 Got a question, an idea or an event in mind? We’d love to hear
                 from you.
               </p>
@@ -141,7 +141,7 @@ export default function Footer() {
                 delay: 0.08,
                 ease: EASE_OUT,
               }}
-              className="relative flex min-h-[460px] items-center justify-center lg:min-h-[650px]"
+              className="relative flex min-h-[240px] items-center justify-center sm:min-h-[460px] lg:min-h-[650px]"
             >
               <div className="pointer-events-none absolute inset-x-[12%] bottom-[7%] h-[25%] rounded-[50%] bg-[#AF416D]/15 blur-[60px]" />
 
@@ -196,29 +196,29 @@ export default function Footer() {
                       delay: index * 0.08,
                       ease: EASE_OUT,
                     }}
-                    className="group relative min-h-[190px] border-b border-[#E8176D]/10 p-7 transition-colors duration-300 hover:bg-white/55 sm:[&:nth-child(odd)]:border-r xl:border-b-0 xl:border-r xl:last:border-r-0"
+                    className="group relative flex min-h-[170px] flex-col items-center border-b border-[#E8176D]/10 p-7 text-center transition-colors duration-300 hover:bg-white/55 sm:min-h-[190px] sm:[&:nth-child(odd)]:border-r md:items-start md:text-left xl:border-b-0 xl:border-r xl:last:border-r-0"
                   >
                     <Icon
                       size={31}
                       strokeWidth={1.5}
-                      className="mb-9 text-[#E8176D]"
+                      className="mb-5 text-[#E8176D] sm:mb-9"
                     />
 
                     <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-[#D61362]">
                       {title}
                     </p>
 
-                    <p className="mt-4 max-w-[210px] text-sm leading-6 text-[#60404F]">
+                    <p className="mx-auto mt-4 max-w-[210px] text-sm leading-6 text-[#60404F] md:mx-0">
                       {description}
                     </p>
 
-                    <p className="mt-1 max-w-[230px] text-sm font-medium text-[#3B2116]">
+                    <p className="mx-auto mt-1 max-w-[230px] text-sm font-medium text-[#3B2116] md:mx-0">
                       {value}
                     </p>
 
                     <ArrowRight
                       size={16}
-                      className="absolute bottom-7 right-7 text-[#E8176D] opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100"
+                      className="absolute bottom-7 right-7 hidden text-[#E8176D] opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100 md:block"
                     />
                   </motion.a>
                 )
@@ -267,8 +267,8 @@ export default function Footer() {
             </svg>
 
             <div className="relative z-10 grid min-h-[390px] items-center gap-10 p-8 md:grid-cols-[0.75fr_1.25fr] md:p-12 lg:p-16">
-              <div>
-                <div className="mb-7 flex items-center gap-3">
+              <div className="text-center md:text-left">
+                <div className="mb-7 flex items-center justify-center gap-3 md:justify-start">
                   <span aria-hidden="true">🍓</span>
                   <span className="h-px w-8 bg-[#E8176D]/50" />
                   <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#A92B60]">
@@ -280,18 +280,18 @@ export default function Footer() {
                   className="uppercase leading-[0.92] tracking-[-0.04em] text-[#E8176D]"
                   style={{ fontFamily: ARCHIVO }}
                 >
-                  <span className="block text-[clamp(3rem,5vw,5.8rem)]">
+                  <span className="block text-[clamp(2rem,9vw,5.8rem)] md:text-[clamp(3rem,5vw,5.8rem)]">
                     We pop up.
                   </span>
-                  <span className="block text-[clamp(3rem,5vw,5.8rem)]">
+                  <span className="block text-[clamp(2rem,9vw,5.8rem)] md:text-[clamp(3rem,5vw,5.8rem)]">
                     You pull up.
                   </span>
-                  <span className="block text-[clamp(3rem,5vw,5.8rem)] text-[#3B2116]">
+                  <span className="block text-[clamp(2rem,9vw,5.8rem)] md:text-[clamp(3rem,5vw,5.8rem)] text-[#3B2116]">
                     Simple.
                   </span>
                 </h3>
 
-                <p className="mt-6 max-w-xs text-sm leading-6 text-[#654555]">
+                <p className="mx-auto mt-6 max-w-xs text-sm leading-6 text-[#654555] md:mx-0">
                   Check our upcoming locations and come say hi.
                 </p>
 
@@ -403,7 +403,7 @@ export default function Footer() {
           {/* Newsletter */}
           <div className="relative mt-9 overflow-hidden rounded-[25px] border border-[#E8176D]/12 bg-white/35 px-6 py-7 sm:px-9">
             <div className="grid items-center gap-7 lg:grid-cols-[0.8fr_1.2fr]">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
                 <Mail
                   size={27}
                   strokeWidth={1.6}

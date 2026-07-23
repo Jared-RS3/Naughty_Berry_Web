@@ -41,7 +41,11 @@
       is invisible and the film simply starts moving.
     -->
     <style>
-      html, body { background-color: #1B0812; }
+      /* Page background is pink — the site is entirely pink once loaded, so any
+         exposed gap or bottom overscroll must never flash the near-black loader
+         colour. The loader stays dark via #boot below, which paints its own
+         #1B0812 from the first frame and covers the pink until React takes over. */
+      html, body { background-color: #FFDCEA; }
       #boot {
         position: fixed;
         inset: 0;

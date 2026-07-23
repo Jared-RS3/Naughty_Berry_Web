@@ -52,14 +52,14 @@ export default function Gallery() {
         />
 
         {/* Masonry */}
-        <div className="columns-2 md:columns-3 lg:columns-4 gap-6">
+        <div className="columns-2 md:columns-3 lg:columns-4 gap-4 md:gap-6">
           {GALLERY.map((item, i) => (
             <motion.button
               key={item.id}
               type="button"
               onClick={() => setSelected(item)}
               aria-label={`View ${item.label}`}
-              className="block w-full break-inside-avoid mb-6 rounded-[22px] overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8176D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFDCEA]"
+              className="block w-full break-inside-avoid mb-4 md:mb-6 rounded-[22px] overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8176D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFDCEA]"
               style={{ boxShadow: '0 18px 40px rgba(180, 40, 95, 0.12)' }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}

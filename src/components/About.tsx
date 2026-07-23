@@ -3,13 +3,14 @@ import {
   cubicBezier,
   motion,
   useMotionValue,
-  useReducedMotion,
   useTransform,
   type MotionValue,
 } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { STAGGER } from '../motionPresets'
 import StoryTags from './StoryTags'
+import { useMediaQuery } from '../hooks/useIsMobile'
+import { usePinProgress } from '../hooks/usePinProgress'
 
 /**
  * Our Story — a pinned scroll story. A tall run pins one full-screen stage:
@@ -96,18 +97,22 @@ function FillBlock({
   progress,
   active,
   className,
+  nowrap = true,
 }: {
   lines: Seg[][]
   startIndex: number
   progress: MotionValue<number>
   active: boolean
   className?: string
+  /** Desktop keeps each statement line on one line; mobile lets long lines
+   *  wrap so the bigger type never runs off a narrow screen. */
+  nowrap?: boolean
 }) {
   let i = startIndex
   return (
     <span className={className}>
       {lines.map((line, li) => (
-        <span key={li} className="block whitespace-nowrap">
+        <span key={li} className={`block ${nowrap ? 'whitespace-nowrap' : ''}`}>
           {line.flatMap((seg) =>
             seg.text.split(' ').map((word) => (
               <FillWord
@@ -164,8 +169,10 @@ function ReadFullStory({ className = '' }: { className?: string }) {
 }
 
 export default function About() {
-  const prefersReducedMotion = useReducedMotion()
-  const pinned = !prefersReducedMotion
+  // Scroll-driven, so it runs even under prefers-reduced-motion (iOS Low Power
+  // Mode reports that) — the whole point is the effect reaching mobile.
+  const pinned = true
+  const isBelowLg = useMediaQuery('(max-width: 1023px)')
   const runRef = useRef<HTMLDivElement>(null)
   const [filled, setFilled] = useState(false)
 
@@ -175,7 +182,7 @@ export default function About() {
   const progress = useMotionValue(0)
   useEffect(() => {
     const el = runRef.current
-    if (!el || !pinned) return
+    if (!el || !pinned || isBelowLg) return
     const read = () => {
       const r = el.getBoundingClientRect()
       const span = Math.max(1, r.height - window.innerHeight)
@@ -201,11 +208,20 @@ export default function About() {
       window.removeEventListener('scroll', update)
       window.removeEventListener('resize', update)
     }
-  }, [pinned, progress])
+  }, [pinned, isBelowLg, progress])
 
   // Hairline meter under the eyebrow — reads as the statement "loading".
   const meterWidth = useTransform(
     progress,
+    [FILL_START, FILL_START + FILL_SPAN],
+    ['0%', '100%']
+  )
+
+  // ── Mobile: its own pinned run drives the same word-by-word fill ──
+  const mobileRunRef = useRef<HTMLDivElement>(null)
+  const { progress: mProgress } = usePinProgress(mobileRunRef, pinned && isBelowLg)
+  const mMeterWidth = useTransform(
+    mProgress,
     [FILL_START, FILL_START + FILL_SPAN],
     ['0%', '100%']
   )
@@ -310,57 +326,76 @@ export default function About() {
         </div>
       </div>
 
-      {/* ── Mobile / tablet: no pin, cup and copy simply reveal ── */}
-      <div className="lg:hidden py-20">
-        <div className="max-w-2xl mx-auto px-6">
-          <Eyebrow />
-          <motion.h2
-            initial={{ opacity: 0, y: 34 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ type: 'spring', stiffness: 90, damping: 16 }}
-            className="mt-8 uppercase leading-[1.05] text-[clamp(1.6rem,7.4vw,2.6rem)] text-center"
-            style={{ fontFamily: ARCHIVO }}
-          >
-            {[...STATEMENT, ...TAGLINE].map((line, i) => (
-              <span
-                key={i}
-                className={`block ${i === STATEMENT.length ? 'mt-6 text-[0.72em]' : ''}`}
+      {/* ── Mobile / tablet: the same pinned run, single column ──
+          The statement fills word by word as the stage holds, and the flying
+          cup docks on the anchor below it — the desktop choreography, stacked. */}
+      <div
+        ref={mobileRunRef}
+        className="relative lg:hidden"
+        style={{ height: pinned ? '215vh' : undefined }}
+      >
+        <div
+          data-cup-sticky-stage
+          className={pinned ? 'sticky top-0 h-screen overflow-hidden' : 'relative py-20'}
+        >
+          <div className="h-full max-w-xl mx-auto px-6 flex flex-col justify-center text-center">
+            <Eyebrow />
+
+            {/* Fill meter */}
+            <span
+              className="relative mx-auto mt-5 mb-6 block h-[2px] w-32 overflow-hidden rounded-full bg-[#E8176D]/15"
+              aria-hidden="true"
+            >
+              <motion.span
+                className="absolute inset-y-0 left-0 bg-[#E8176D]"
+                style={pinned ? { width: mMeterWidth } : { width: '100%' }}
+              />
+            </span>
+
+            <h2
+              className="uppercase leading-[1.08] text-[clamp(1.7rem,8vw,2.6rem)]"
+              style={{ fontFamily: ARCHIVO }}
+            >
+              <FillBlock
+                lines={STATEMENT}
+                startIndex={0}
+                progress={mProgress}
+                active={pinned}
+                nowrap={false}
+              />
+              <FillBlock
+                lines={TAGLINE}
+                startIndex={STATEMENT_WORDS}
+                progress={mProgress}
+                active={pinned}
+                nowrap={false}
+                className="mt-6 block text-[0.9em] leading-[1.18]"
+              />
+            </h2>
+
+            <div className="mt-8 flex justify-center">
+              <ReadFullStory />
+            </div>
+
+            {/* Landing zone for the flying cup (cup-static hides under the flyer;
+                stays visible for reduced-motion users). */}
+            <div className="mt-8 flex items-center justify-center">
+              <div
+                data-cup-anchor="story"
+                className="cup-static relative w-[42%] max-w-[172px]"
+                style={{ aspectRatio: '548 / 712' }}
               >
-                {line.map((seg, j) => (
-                  <span key={j} style={{ color: seg.color }}>
-                    {seg.text}{' '}
-                  </span>
-                ))}
-              </span>
-            ))}
-          </motion.h2>
-
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            variants={STAGGER}
-          >
-            <StoryTags className="mt-9 justify-center" />
-          </motion.div>
-
-          <div className="mt-9 flex justify-center">
-            <ReadFullStory />
+                <img
+                  src="/naughty-hero-cup.png"
+                  alt=""
+                  aria-hidden="true"
+                  className="cup-img w-full h-full select-none"
+                  style={{ '--cup-shadow': 'drop-shadow(0 14px 22px rgba(80,30,55,0.26))' } as React.CSSProperties}
+                  draggable={false}
+                />
+              </div>
+            </div>
           </div>
-
-          <motion.img
-            src="/naughty-hero-cup.png"
-            alt=""
-            aria-hidden="true"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="cup-img mt-12 mx-auto w-[54%] max-w-[240px] h-auto select-none"
-            style={{ '--cup-shadow': 'drop-shadow(0 14px 22px rgba(80,30,55,0.26))' } as React.CSSProperties}
-            draggable={false}
-          />
         </div>
       </div>
     </section>

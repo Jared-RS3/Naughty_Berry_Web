@@ -1,7 +1,8 @@
 import { motion, useReducedMotion } from 'framer-motion'
-import { MapPin } from 'lucide-react'
+import { MapPin, ArrowRight } from 'lucide-react'
 import { usePopupSchedule } from '../hooks/usePopupSchedule'
 import { pickNext, relativeLabel, shortWhen } from '../lib/nextStop'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 type HeroProps = {
   isNaughtyMode: boolean
@@ -18,9 +19,12 @@ type HeroProps = {
 function HeroLocationStrip({
   isNaughtyMode,
   loaded,
+  placement = 'bottom',
 }: {
   isNaughtyMode: boolean
   loaded: boolean
+  /** Mobile floats it above the title; desktop keeps it along the bottom. */
+  placement?: 'top' | 'bottom'
 }) {
   const prefersReducedMotion = useReducedMotion()
   const { schedule, loading, error } = usePopupSchedule()
@@ -32,12 +36,17 @@ function HeroLocationStrip({
   const accent = isNaughtyMode ? 'text-[#FF4DAE]' : 'text-[#E8176D]'
   const strong = isNaughtyMode ? 'text-white' : 'text-[#3B2116]'
 
+  const posClass =
+    placement === 'top'
+      ? 'top-29 flex sm:hidden'
+      : 'top-31 hidden justify-center sm:flex'
+
   return (
     <motion.div
       initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
       animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
       transition={{ duration: 0.7, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute inset-x-4 bottom-6 z-30 flex justify-center sm:bottom-8"
+      className={`absolute inset-x-4 z-30 justify-center ${posClass}`}
     >
       <a
         href="#next-stop"
@@ -92,6 +101,7 @@ function HeroLocationStrip({
  */
 export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
   const prefersReducedMotion = useReducedMotion()
+  const isMobile = useIsMobile()
 
   const c = isNaughtyMode
     ? {
@@ -115,6 +125,25 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
       transition: { duration: 0.7, delay: 0.05 * i, ease: [0.22, 1, 0.36, 1] as const },
     }),
   }
+
+  const menuCta = (
+    <a
+      href="#menu"
+      className={`group inline-flex items-center gap-2.5 rounded-full px-8 py-3.5 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-colors ${
+        isNaughtyMode
+          ? 'bg-gradient-to-r from-[#FF2D9C] to-[#7A1B78] hover:shadow-[0_0_28px_rgba(255,45,156,0.45)]'
+          : 'bg-[#E8176D] hover:bg-[#C01057] shadow-[0_14px_32px_rgba(232,23,109,0.32)]'
+      }`}
+      aria-label="View the menu"
+    >
+      View the Menu
+      <ArrowRight
+        size={15}
+        className="transition-transform duration-300 group-hover:translate-x-1"
+        aria-hidden="true"
+      />
+    </a>
+  )
 
   return (
     <section
@@ -141,7 +170,9 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
               fontFamily: "'Archivo Black', system-ui, sans-serif",
               lineHeight: 0.9,
               letterSpacing: '-0.012em',
-              fontSize: 'max(34px, 8.5cqw)',
+              // On mobile the words read big and bold behind the cup but leave
+              // a margin down each side — the desktop scaling is unchanged.
+              fontSize: isMobile ? '12.3cqw' : 'max(34px, 8.5cqw)',
             }}
             aria-hidden="true"
           >
@@ -161,7 +192,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
           <h1 className="sr-only">Strawberry Strawberry Chocolate Chocolate — Naughty Berry Cape Town</h1>
 
           {/* ── Left micro-copy ── */}
-          <div className="absolute left-0 top-[54%] -translate-y-1/2 z-30">
+          <div className="hidden sm:block absolute left-0 top-[54%] -translate-y-1/2 z-30">
             <motion.p
               initial={{ opacity: 0, x: prefersReducedMotion ? 0 : -14 }}
               animate={loaded ? { opacity: 1, x: 0 } : { opacity: 0 }}
@@ -178,7 +209,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
           </div>
 
           {/* ── Right micro-copy ── */}
-          <div className="absolute right-0 top-[54%] -translate-y-1/2 z-30">
+          <div className="hidden sm:block absolute right-0 top-[54%] -translate-y-1/2 z-30">
             <motion.p
               initial={{ opacity: 0, x: prefersReducedMotion ? 0 : 14 }}
               animate={loaded ? { opacity: 1, x: 0 } : { opacity: 0 }}
@@ -268,9 +299,47 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
             </motion.div>
           </div>
         </div>
+
+        {/* ── Mobile subtitle — the flanking blocks overlap the cup below sm, so
+            one centred line stands in for them and lets the big title lead ── */}
+        <motion.p
+          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 14 }}
+          animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
+          transition={{ duration: 0.7, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="sm:hidden mt-3 text-center font-semibold"
+          style={{ color: c.copy, fontSize: '14px', lineHeight: 1.5 }}
+        >
+          Hand-dipped, fresh strawberries.
+          <br />
+          Made to delight.
+        </motion.p>
+
+        {/* Mobile CTA — in flow, centred under the composition. */}
+        <motion.div
+          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 14 }}
+          animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
+          transition={{ duration: 0.7, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-7 flex justify-center sm:hidden"
+        >
+          {menuCta}
+        </motion.div>
       </div>
 
-      <HeroLocationStrip isNaughtyMode={isNaughtyMode} loaded={loaded} />
+      {/* Desktop CTA — floated just above the location pill so it doesn't fight
+          the full-bleed composition; on mobile the in-flow button above is used. */}
+      <motion.div
+        initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 14 }}
+        animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
+        transition={{ duration: 0.7, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="absolute inset-x-0 bottom-24 z-30 hidden justify-center sm:flex"
+      >
+        {menuCta}
+      </motion.div>
+
+      {/* Mobile: the live-location pill rides above the title. Desktop keeps it
+          along the bottom of the hero. */}
+      <HeroLocationStrip isNaughtyMode={isNaughtyMode} loaded={loaded} placement="top" />
+      <HeroLocationStrip isNaughtyMode={isNaughtyMode} loaded={loaded} placement="bottom" />
     </section>
   )
 }

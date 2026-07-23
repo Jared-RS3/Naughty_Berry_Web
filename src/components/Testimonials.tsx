@@ -8,6 +8,8 @@ import {
   useTransform,
   type MotionValue,
 } from 'framer-motion'
+import { useMediaQuery } from '../hooks/useIsMobile'
+import { usePinProgress } from '../hooks/usePinProgress'
 
 const TESTIMONIALS = [
   {
@@ -65,6 +67,17 @@ const SLOTS: Array<CSSProperties> = [
 /** Scroll-reveal order for the slots — cards pop in alternating around the cup. */
 const REVEAL_ORDER = [0, 3, 1, 4, 2, 5]
 
+/** Mobile: four cards in the corners around the centre cup, seated well below
+ *  the REVIEWS title so nothing overlaps it, inset from the edges for a margin.
+ *  They still pop in one by one as you scroll. */
+const SLOTS_MOBILE: Array<CSSProperties> = [
+  { left: '0%', top: '21%' },
+  { right: '0%', top: '21%' },
+  { left: '0%', bottom: '12%' },
+  { right: '0%', bottom: '12%' },
+]
+const REVEAL_ORDER_MOBILE = [0, 3, 1, 2]
+
 /** Soft ease-out so each card decelerates into place after its slide up. */
 const SLIDE_EASE = cubicBezier(0.22, 1, 0.36, 1)
 
@@ -83,28 +96,35 @@ function Stars() {
   )
 }
 
-function ReviewCard({ t }: { t: (typeof TESTIMONIALS)[number] }) {
+function ReviewCard({ t, compact = false }: { t: (typeof TESTIMONIALS)[number]; compact?: boolean }) {
   return (
     <div
-      className="rounded-[22px] p-5 text-left"
+      className={`rounded-[20px] text-left ${compact ? 'p-3.5' : 'p-5'}`}
       style={{ background: CREAM, boxShadow: '0 18px 40px rgba(180, 40, 95, 0.12)' }}
     >
-      <div className="flex items-center gap-3 mb-3">
+      <div className={`flex items-center gap-2.5 ${compact ? 'mb-2' : 'mb-3'}`}>
         <div
-          className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+          className={`rounded-full flex items-center justify-center font-bold text-white shrink-0 ${
+            compact ? 'w-7 h-7 text-[11px]' : 'w-9 h-9 text-xs'
+          }`}
           style={{ background: 'linear-gradient(135deg, #E8143C, #C01057)' }}
           aria-hidden="true"
         >
           {t.name[0]}
         </div>
         <div>
-          <p className="text-[11px] font-extrabold tracking-[0.08em] uppercase" style={{ color: PINK }}>
+          <p
+            className={`font-extrabold tracking-[0.08em] uppercase ${compact ? 'text-[10px]' : 'text-[11px]'}`}
+            style={{ color: PINK }}
+          >
             {t.name}
           </p>
           <Stars />
         </div>
       </div>
-      <p className="text-[13px] leading-relaxed text-[#6E5A62]">{t.quote}</p>
+      <p className={`leading-relaxed text-[#6E5A62] ${compact ? 'text-[11.5px]' : 'text-[13px]'}`}>
+        {t.quote}
+      </p>
     </div>
   )
 }
@@ -142,11 +162,14 @@ function RevealSlot({
  */
 export default function Testimonials() {
   const prefersReducedMotion = useReducedMotion()
+  const isBelowLg = useMediaQuery('(max-width: 1023px)')
   const [offset, setOffset] = useState(0)
   const runRef = useRef<HTMLDivElement>(null)
 
-  // Reduced motion: no pin, no scroll choreography — everything just shows.
-  const pinned = !prefersReducedMotion
+  // Scroll-driven, so the pinned choreography runs even under reduced motion
+  // (iOS Low Power Mode reports that) — otherwise the whole reviews stage
+  // silently collapses to a plain grid on the phones it's meant to wow.
+  const pinned = true
 
   // Scroll progress measured straight off the run's rect (framer's useScroll
   // caches target offsets, which go stale as lazy sections mount above):
@@ -155,7 +178,7 @@ export default function Testimonials() {
   const progress = useMotionValue(0)
   useEffect(() => {
     const el = runRef.current
-    if (!el || !pinned) return
+    if (!el || !pinned || isBelowLg) return
     const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
     const read = () => {
       const r = el.getBoundingClientRect()
@@ -181,18 +204,33 @@ export default function Testimonials() {
       window.removeEventListener('scroll', update)
       window.removeEventListener('resize', update)
     }
-  }, [pinned, approach, progress])
+  }, [pinned, isBelowLg, approach, progress])
 
   const headOpacity = useTransform(approach, [0.5, 0.92], [0, 1])
   const headScale = useTransform(approach, [0.5, 1], [0.9, 1])
   const headY = useTransform(approach, [0.5, 1], [70, 0])
   const eyebrowOpacity = useTransform(approach, [0.6, 0.95], [0, 1])
 
+  // ── Mobile: its own pinned run drives the same headline build + card reveal ──
+  const mobileRunRef = useRef<HTMLDivElement>(null)
+  const { approach: mApproach, progress: mProgress } = usePinProgress(
+    mobileRunRef,
+    pinned && isBelowLg
+  )
+  const mHeadOpacity = useTransform(mApproach, [0.45, 0.9], [0, 1])
+  const mHeadScale = useTransform(mApproach, [0.45, 1], [0.88, 1])
+  const mHeadY = useTransform(mApproach, [0.45, 1], [60, 0])
+  const mEyebrowOpacity = useTransform(mApproach, [0.55, 0.95], [0, 1])
+
   const shift = (dir: 1 | -1) =>
     setOffset((o) => (o + dir + TESTIMONIALS.length) % TESTIMONIALS.length)
 
   const visible = Array.from(
     { length: SLOTS.length },
+    (_, i) => TESTIMONIALS[(offset + i) % TESTIMONIALS.length]
+  )
+  const mVisible = Array.from(
+    { length: SLOTS_MOBILE.length },
     (_, i) => TESTIMONIALS[(offset + i) % TESTIMONIALS.length]
   )
 
@@ -342,7 +380,147 @@ export default function Testimonials() {
         </div>
       </div>
 
-      {/* ── Mobile / tablet: compact headline + cup, then card grid ── */}
+      {/* ── Mobile / tablet: the same pinned stage, four cards round the cup ──
+          Giant REVIEWS builds as the stage rises, the flying cup lands centre,
+          then the cards pop in one by one as you scroll through the pin. */}
+      {pinned && (
+        <div
+          ref={mobileRunRef}
+          className="relative lg:hidden"
+          style={{ height: '250vh' }}
+        >
+          <div data-cup-sticky-stage className="sticky top-0 h-screen overflow-hidden">
+            <div
+              className="relative w-full h-full px-4"
+              style={{ containerType: 'inline-size' }}
+            >
+              {/* Eyebrow */}
+              <motion.div
+                style={{ opacity: mEyebrowOpacity }}
+                className="absolute inset-x-0 top-[5%] z-30 flex items-center justify-center gap-3"
+              >
+                <img
+                  src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
+                  alt=""
+                  aria-hidden="true"
+                  className="w-6 h-6 object-contain opacity-85"
+                  draggable={false}
+                />
+                <span className="w-6 h-[1px] bg-[#E8176D]/60" aria-hidden="true" />
+                <span
+                  className="text-[12px] font-bold tracking-[0.24em] uppercase"
+                  style={{ color: PINK }}
+                >
+                  Reviews
+                </span>
+                <span className="w-6 h-[1px] bg-[#E8176D]/60" aria-hidden="true" />
+              </motion.div>
+
+              {/* Stage */}
+              <div className="absolute inset-x-4 top-[13%] bottom-[8%]">
+                {/* Giant headline across the top — the cup sits under it and the
+                    cards seat well below, so nothing overlaps the word. */}
+                <motion.div
+                  style={{
+                    opacity: mHeadOpacity,
+                    scale: mHeadScale,
+                    y: mHeadY,
+                    fontFamily: "'Archivo Black', system-ui, sans-serif",
+                    fontSize: 'min(21cqw, 116px)',
+                    lineHeight: 1,
+                    letterSpacing: '-0.02em',
+                    color: '#E8176D',
+                  }}
+                  aria-hidden="true"
+                  className="absolute inset-x-0 top-[1%] z-0 text-center select-none pointer-events-none"
+                >
+                  REVIEWS
+                </motion.div>
+
+                {/* Cup cut-out, centred — the flyer docks here. */}
+                <div
+                  data-cup-anchor="reviews"
+                  className="cup-static absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                  style={{ width: 'clamp(116px, 33cqw, 148px)' }}
+                >
+                  <div
+                    aria-hidden="true"
+                    className="absolute left-1/2 -translate-x-1/2"
+                    style={{
+                      bottom: '-3%',
+                      width: '72%',
+                      height: '6%',
+                      borderRadius: '50%',
+                      filter: 'blur(7px)',
+                      background:
+                        'radial-gradient(ellipse at center, rgba(90,32,58,0.32) 0%, rgba(90,32,58,0.12) 45%, transparent 72%)',
+                    }}
+                  />
+                  <img
+                    src="/naughty-hero-cup.png"
+                    alt=""
+                    className="cup-img w-full h-auto select-none"
+                    style={{ '--cup-shadow': 'drop-shadow(0 12px 18px rgba(80,30,55,0.28))' } as React.CSSProperties}
+                    draggable={false}
+                  />
+                </div>
+
+                {/* Four review cards — revealed one by one by scroll */}
+                {SLOTS_MOBILE.map((pos, i) => (
+                  <div
+                    key={i}
+                    className="absolute z-20"
+                    style={{ ...pos, width: 'clamp(138px, 42cqw, 154px)' }}
+                  >
+                    <RevealSlot progress={mProgress} order={REVEAL_ORDER_MOBILE[i]} active>
+                      <AnimatePresence mode="wait" initial={false}>
+                        <motion.div
+                          key={`${offset}-${i}`}
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -12 }}
+                          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                        >
+                          <ReviewCard t={mVisible[i]} compact />
+                        </motion.div>
+                      </AnimatePresence>
+                    </RevealSlot>
+                  </div>
+                ))}
+
+                {/* Prev / next — cycles which reviews fill the four slots */}
+                <div className="absolute inset-x-0 bottom-0 z-30 flex items-center justify-center gap-5">
+                  <button
+                    type="button"
+                    onClick={() => shift(-1)}
+                    aria-label="Previous reviews"
+                    className="w-11 h-11 rounded-full border flex items-center justify-center transition-colors bg-white/60 hover:bg-white"
+                    style={{ borderColor: 'rgba(211,25,106,0.45)', color: PINK }}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => shift(1)}
+                    aria-label="Next reviews"
+                    className="w-11 h-11 rounded-full border flex items-center justify-center transition-colors bg-white/60 hover:bg-white"
+                    style={{ borderColor: 'rgba(211,25,106,0.45)', color: PINK }}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Reduced motion: compact headline + cup, then a plain card grid ── */}
+      {!pinned && (
       <div className="lg:hidden py-16">
         <div
           className="relative w-full max-w-[1560px] mx-auto px-4 sm:px-6"
@@ -403,6 +581,7 @@ export default function Testimonials() {
           </div>
         </div>
       </div>
+      )}
     </section>
   )
 }

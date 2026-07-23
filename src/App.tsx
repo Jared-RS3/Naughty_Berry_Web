@@ -6,7 +6,7 @@ import Hero from './components/Hero'
 import ScrollCup from './components/ScrollCup'
 
 // All below-fold sections split into separate chunks — only downloaded when needed
-const NextStop    = lazy(() => import('./components/NextStop'))
+// const NextStop    = lazy(() => import('./components/NextStop'))
 const About       = lazy(() => import('./components/About'))
 const MenuPreview = lazy(() => import('./components/MenuPreview'))
 const Events      = lazy(() => import('./components/Events'))
@@ -115,7 +115,7 @@ function HomePage() {
         <Suspense fallback={null}>
           <Hero isNaughtyMode={isNaughtyMode} loaded={revealed} />
         </Suspense>
-        <Suspense fallback={null}><NextStop /></Suspense>
+        {/* <Suspense fallback={null}><NextStop /></Suspense> */}
         <Suspense fallback={null}><About /></Suspense>
         <Suspense fallback={null}><Testimonials /></Suspense>
         <Suspense fallback={null}><MenuPreview /></Suspense>

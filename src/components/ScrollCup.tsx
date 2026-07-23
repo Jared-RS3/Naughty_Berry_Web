@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import {
   motion,
   useAnimationFrame,
@@ -96,7 +96,6 @@ const SILHOUETTE = {
 } as const
 
 export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
-  const [active, setActive] = useState(false)
   const stopsRef = useRef<Stop[] | null>(null)
   const observedRef = useRef(new Set<Element>())
 
@@ -191,38 +190,44 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
   )
 
   useLayoutEffect(() => {
-    const mqDesktop = window.matchMedia('(min-width: 1024px)')
-    const mqReduced = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const sync = () => setActive(mqDesktop.matches && !mqReduced.matches)
-    sync()
-    mqDesktop.addEventListener('change', sync)
-    mqReduced.addEventListener('change', sync)
-    return () => {
-      mqDesktop.removeEventListener('change', sync)
-      mqReduced.removeEventListener('change', sync)
-    }
-  }, [])
-
-  useLayoutEffect(() => {
+    // The cup flies on every viewport — mobile carries its own pinned
+    // Our Story / Reviews stages with matching anchors, so the whole
+    // hero → story → reviews → menu choreography plays on a phone too.
+    //
+    // Deliberately NOT gated on prefers-reduced-motion: iOS Low Power Mode
+    // reports reduce-motion, which was silently killing the whole scroll
+    // experience on the exact devices this needs to shine on. The flight is
+    // scroll-driven (it only moves when the finger does), so it stays on.
     const html = document.documentElement
-    if (!active) {
-      html.classList.remove('fly-cup-on', 'fly-cup-docked')
-      return
-    }
     html.classList.add('fly-cup-on')
+    // Local handle so the cleanup doesn't read a ref that may have changed.
+    const observed = observedRef.current
 
     const measure = () => {
       const vh = window.innerHeight
       const found: Stop[] = []
       STOPS.forEach((name, i) => {
-        const el = document.querySelector(`[data-cup-anchor="${name}"]`)
-        if (!el) return
-        if (!observedRef.current.has(el)) {
-          observedRef.current.add(el)
+        // Both the desktop and the mobile layout carry an anchor for each stop;
+        // whichever layout is hidden has display:none, so its rect is empty.
+        // Pick the one that is actually laid out right now.
+        const candidates = Array.from(
+          document.querySelectorAll(`[data-cup-anchor="${name}"]`)
+        )
+        let el: Element | null = null
+        let r: DOMRect | null = null
+        for (const cand of candidates) {
+          const cr = cand.getBoundingClientRect()
+          if (cr.width >= 4 && cr.height >= 4) {
+            el = cand
+            r = cr
+            break
+          }
+        }
+        if (!el || !r) return
+        if (!observed.has(el)) {
+          observed.add(el)
           ro.observe(el)
         }
-        const r = el.getBoundingClientRect()
-        if (r.width < 4 || r.height < 4) return
         const cx = r.left + r.width / 2
         const h = Math.min(r.width, r.height * RATIO) / RATIO
 
@@ -373,13 +378,11 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
       window.removeEventListener('resize', remeasure)
       window.removeEventListener('load', remeasure)
       ro.disconnect()
-      observedRef.current.clear()
+      observed.clear()
       html.classList.remove('fly-cup-on', 'fly-cup-docked')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active])
-
-  if (!active) return null
+  }, [])
 
   return (
     <motion.div

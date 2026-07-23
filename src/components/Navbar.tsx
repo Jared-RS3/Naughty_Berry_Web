@@ -54,7 +54,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
            every single scroll frame — it was the largest raster cost on the
            page. At 90% opacity the blur was barely readable anyway, so an
            opaque bar looks the same and costs nothing to scroll past. */
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
+        className={`fixed top-5 inset-x-0 z-50 transition-all duration-500 ${
           scrolled
             ? isNaughtyMode
               ? 'bg-[#241030] border-b border-[#8D2E7A]/70 shadow-lg shadow-fuchsia-900/35'

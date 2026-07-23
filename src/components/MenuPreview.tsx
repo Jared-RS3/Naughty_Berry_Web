@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Download, Star, Coffee, GlassWater, ArrowLeft, ArrowRight } from 'lucide-react'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 /**
  * Per-flavour backdrop (taken straight from the flavour-card reference
@@ -202,6 +203,19 @@ const SLOT_POSE = {
   hidden: { x: '-50%', y: '4%', scale: 0.55, rotate: 0, opacity: 0, zIndex: 10 },
 } as const
 
+/**
+ * Mobile: one big cup at a time. The neighbour poses keep their sideways travel
+ * and tilt but fade fully out, so tapping an arrow still reads as the next cup
+ * swinging in from off-stage rather than a cross-fade — the same theatre as the
+ * desktop 3-across, just with the wings hidden.
+ */
+const SLOT_POSE_MOBILE = {
+  center: { x: '-50%', y: '0%', scale: 1, rotate: 0, opacity: 1, zIndex: 30 },
+  left: { x: '-150%', y: '10%', scale: 0.7, rotate: -12, opacity: 0, zIndex: 20 },
+  right: { x: '50%', y: '10%', scale: 0.7, rotate: 12, opacity: 0, zIndex: 20 },
+  hidden: { x: '-50%', y: '4%', scale: 0.55, rotate: 0, opacity: 0, zIndex: 10 },
+} as const
+
 function slotFor(rel: number, count: number): keyof typeof SLOT_POSE {
   if (rel === 0) return 'center'
   if (rel === 1) return 'right'
@@ -219,6 +233,7 @@ function CupCarousel({
   onThemeChange: (theme: CupTheme) => void
 }) {
   const prefersReducedMotion = useReducedMotion()
+  const isMobile = useIsMobile()
   const [index, setIndex] = useState(0)
   const count = items.length
   const current = items[index]
@@ -232,17 +247,29 @@ function CupCarousel({
     ? { duration: 0 }
     : { type: 'spring' as const, stiffness: 200, damping: 26 }
 
+  const poses = isMobile ? SLOT_POSE_MOBILE : SLOT_POSE
+  // With the wings hidden the solo cup earns the full stage, so it runs much
+  // larger than its desktop share of the 3-across.
+  const cupSlot = isMobile
+    ? { width: 'clamp(180px, 56cqw, 250px)', height: 'clamp(234px, 73cqw, 325px)' }
+    : { width: 'clamp(150px, 21cqw, 315px)', height: 'clamp(195px, 25.5cqw, 380px)' }
+
   return (
     <div style={{ containerType: 'inline-size' }}>
       {/* ── Stage ── */}
-      <div className="relative" style={{ minHeight: 'clamp(300px, 34cqw, 520px)' }}>
+      <div
+        className="relative"
+        style={{ minHeight: isMobile ? 'clamp(300px, 88cqw, 380px)' : 'clamp(300px, 34cqw, 520px)' }}
+      >
         {/* Giant category word behind the cups — top half stays visible above the rims */}
         <span
           aria-hidden="true"
           className="absolute left-1/2 top-[22%] -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none whitespace-nowrap"
           style={{
             fontFamily: "'Archivo Black', system-ui, sans-serif",
-            fontSize: `${Math.min(16.5, 68 / word.length)}cqw`,
+            fontSize: isMobile
+              ? `${Math.min(24, 96 / word.length)}cqw`
+              : `${Math.min(16.5, 68 / word.length)}cqw`,
             letterSpacing: '-0.02em',
             color: '#E8176D',
             zIndex: 0,
@@ -258,13 +285,13 @@ function CupCarousel({
           aria-hidden="true"
           data-cup-anchor="menu"
           className="absolute left-1/2 bottom-0 -translate-x-1/2 pointer-events-none opacity-0"
-          style={{ width: 'clamp(150px, 21cqw, 315px)', height: 'clamp(195px, 25.5cqw, 380px)' }}
+          style={cupSlot}
         />
 
         {/* Cups */}
         {items.map((item, i) => {
           const slot = slotFor((i - index + count) % count, count)
-          const pose = SLOT_POSE[slot]
+          const pose = poses[slot]
           return (
             <motion.div
               key={item.name}
@@ -272,7 +299,7 @@ function CupCarousel({
               initial={false}
               animate={{ ...pose }}
               transition={spring}
-              style={{ width: 'clamp(150px, 21cqw, 315px)', height: 'clamp(195px, 25.5cqw, 380px)' }}
+              style={cupSlot}
             >
               {/* cup-menu-center: hidden until the flying cup docks here */}
               <div
