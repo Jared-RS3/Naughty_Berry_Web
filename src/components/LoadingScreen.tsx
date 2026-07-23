@@ -69,6 +69,7 @@ export default function LoadingScreen({ onReveal, onDone }: Props) {
   const [gone, setGone] = useState(false)
   const [progress, setProgress] = useState(0)
   const cupRef = useRef<HTMLImageElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   // Flight channels. Motion values, so the animation never round-trips through
   // React state.
@@ -160,6 +161,12 @@ export default function LoadingScreen({ onReveal, onDone }: Props) {
     const beginSwap = () => {
       if (cancelled || phase.current !== 'brand') return
       setProgress(100)
+      // Stop the film the instant the cup takes over. It fades out over the swap
+      // and is covered by the cup, so the last decoded frame is never seen — but
+      // left playing it keeps decoding video frames on the main thread through
+      // the whole zoom-out, which is exactly the beat that has to stay at 60fps.
+      // Pausing here hands the flight a clear thread.
+      videoRef.current?.pause()
       // Re-place: fonts and images landing during beat 1 can move the hero.
       place()
       swapAt.current = performance.now()
@@ -241,6 +248,7 @@ export default function LoadingScreen({ onReveal, onDone }: Props) {
         {/* The poster is what the boot screen already painted, so the film has
             something to be until it has buffered — it never shows through. */}
         <video
+          ref={videoRef}
           src={FILM_SRC}
           poster={POSTER_SRC}
           autoPlay

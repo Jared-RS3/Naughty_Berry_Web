@@ -99,8 +99,9 @@ const SILHOUETTE = {
 export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
   // On phones the cup flies with position + scale + a fade only: the 3D tumble,
   // velocity squash-and-stretch, masked screen-blend lighting and the per-frame
-  // drop-shadow re-raster are all dropped. Those are what make it buttery on a
-  // laptop and what make it stutter on mobile Safari.
+  // drop-shadow re-raster are all dropped, and the flight springs are bypassed
+  // so the cup binds straight to scroll instead of trailing it. Those are what
+  // make it buttery on a laptop and what make it stutter on mobile Safari.
   const isMobile = useIsMobile()
   const isMobileRef = useRef(isMobile)
   isMobileRef.current = isMobile
@@ -138,6 +139,17 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
   // brisk — a slow fade here is what made the hand-off into the menu feel like
   // the cup was dissolving instead of arriving.
   const sOpacity = useSpring(mvOpacity, { stiffness: 320, damping: 34 })
+
+  // What the body actually renders from. On a laptop it's the springs, so the
+  // cup floats and settles with weight. On a phone the springs are bypassed and
+  // the cup binds straight to the raw scroll-driven values — a spring on a
+  // scroll-linked transform always trails the finger by a few frames, and on
+  // mobile that trailing is precisely what read as "laggy scrolling of the
+  // cup". Bound direct, the cup is locked to the scroll offset: no trail, and
+  // no per-frame spring/velocity settle writing to a big fixed layer.
+  const outX = isMobile ? mvX : sx
+  const outY = isMobile ? mvY : sy
+  const outScale = isMobile ? mvScale : sScale
 
   // Squash and stretch, straight off the flight velocity: the cup elongates
   // along its travel while it's moving fast and compresses as it decelerates
@@ -403,8 +415,8 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
       aria-hidden="true"
       className="nb-flyer fixed left-0 top-0 z-40 pointer-events-none"
       style={{
-        x: sx,
-        y: sy,
+        x: outX,
+        y: outY,
         opacity: sOpacity,
         width: BASE_W,
         height: BASE_H,
@@ -422,8 +434,8 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
         style={{ transformPerspective: 1000 }}
       >
       {/* Scale layer — the floor plane lives here, so the ground shadow scales
-          with the cup but never inherits its tumble. */}
-      <motion.div className="relative w-full h-full" style={{ scale: sScale }}>
+          with the cup but never inherits its tumble. Direct-bound on mobile. */}
+      <motion.div className="relative w-full h-full" style={{ scale: outScale }}>
         {/* Ground shadow — stays flat on the floor as the body turns above it.
             On mobile its per-frame drift is dropped; it just scales with the
             cup via this layer. */}
@@ -460,7 +472,10 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
             // No preserve-3d: nothing here is positioned in 3D space, and it
             // forces a 3D rendering context that blocks layer squashing.
             backfaceVisibility: 'hidden',
-            willChange: 'transform',
+            // Frozen on mobile (nothing here animates), so it needs no promoted
+            // layer of its own — the outer flyer and the scale layer carry the
+            // only transforms that move. One fewer compositor layer per frame.
+            willChange: isMobile ? undefined : 'transform',
           }}
         >
           {/* Squash and stretch. Its own layer, below the rotation, so the cup
@@ -474,7 +489,7 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
               scaleX: isMobile ? 1 : squashX,
               scaleY: isMobile ? 1 : stretchY,
               transformOrigin: '50% 92%',
-              willChange: 'transform',
+              willChange: isMobile ? undefined : 'transform',
             }}
           >
             {/* One drop-shadow, not three. drop-shadow is a per-pixel blur and

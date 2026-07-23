@@ -162,6 +162,8 @@ export default function Footer() {
               <img
                 src="/Naughty_Berry_Trailer.png"
                 alt="Naughty Berry pink dessert trailer"
+                loading="lazy"
+                decoding="async"
                 className="relative z-10 h-auto max-h-[690px] w-full max-w-[900px] object-contain drop-shadow-[0_35px_50px_rgba(102,37,67,0.16)]"
               />
             </motion.div>
@@ -316,6 +318,8 @@ export default function Footer() {
                       src="/Naughty_Berry_Trailer.png"
                       alt=""
                       aria-hidden="true"
+                      loading="lazy"
+                      decoding="async"
                       className="relative h-24 w-32 rounded-xl object-cover shadow-xl"
                     />
                   </div>
