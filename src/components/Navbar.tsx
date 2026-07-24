@@ -102,7 +102,9 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
             <img
               src="/naughty-berry-logo.png"
               alt="Naughty Berry"
-              className="h-11 md:h-12 w-auto object-contain"
+              /* Mobile logo ~14% larger (44→50px) to anchor the minimal bar;
+                 it stays absolutely centred in the viewport. Desktop unchanged. */
+              className="h-[50px] md:h-12 w-auto object-contain"
             />
           </a>
 

@@ -36,21 +36,27 @@ function HeroLocationStrip({
   const accent = isNaughtyMode ? 'text-[#FF4DAE]' : 'text-[#E8176D]'
   const strong = isNaughtyMode ? 'text-white' : 'text-[#3B2116]'
 
-  const posClass =
+  // Mobile ('top') now rides in the document flow at the head of the hero
+  // column — with the pill pinned and the rest of the hero centred, the nav→pill
+  // and pill→product gaps drifted with every screen height; in flow they're
+  // fixed. A small bottom margin sets the gap down to the product. Desktop
+  // ('bottom') stays pinned across the hero, unchanged.
+  const wrapperClass =
     placement === 'top'
-      ? 'top-32 flex sm:hidden'
-      : 'top-34 hidden justify-center sm:flex'
+      ? 'flex justify-center mb-[clamp(18px,5vw,28px)] sm:hidden'
+      : 'absolute inset-x-4 top-34 justify-center hidden sm:flex'
 
   return (
     <motion.div
       initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
       animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
       transition={{ duration: 0.7, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      className={`absolute inset-x-4 z-30 justify-center ${posClass}`}
+      className={`z-30 ${wrapperClass}`}
     >
-      <a
+      <motion.a
         href="#next-stop"
-        className={`flex max-w-full items-center gap-3 rounded-full border px-4 py-2.5 transition-colors sm:gap-4 sm:px-6 sm:py-3 sm:backdrop-blur-md ${shell}`}
+        whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+        className={`flex max-w-full items-center gap-3 whitespace-nowrap rounded-full border px-4 py-2.5 transition-colors sm:gap-4 sm:px-6 sm:py-3 sm:backdrop-blur-md ${shell}`}
       >
         <span className={`relative flex h-2 w-2 shrink-0 ${accent}`} aria-hidden="true">
           {!prefersReducedMotion && (
@@ -84,7 +90,7 @@ function HeroLocationStrip({
         )}
 
         <MapPin size={14} className={`shrink-0 ${accent}`} aria-hidden="true" />
-      </a>
+      </motion.a>
     </motion.div>
   )
 }
@@ -148,7 +154,12 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
   return (
     <section
       id="top"
-      className="relative min-h-screen w-full overflow-hidden flex items-center justify-center"
+      /* Mobile: top-anchored column (items-start) so the nav → pill → product →
+         copy → CTA rhythm is fixed on every height. pt clears the ~64px nav and
+         opens a ~56px gap to the pill; pb keeps the CTA off the iPhone toolbar
+         via the safe-area inset. min-h-svh fills the small viewport so nothing
+         hides behind the browser chrome. Desktop resets to the centred layout. */
+      className="relative min-h-svh w-full overflow-hidden flex items-start justify-center pt-[120px] pb-[calc(24px_+_env(safe-area-inset-bottom))] sm:items-center sm:pt-0 sm:pb-0"
       style={{ background: c.bg }}
       aria-label="Hero — Naughty Berry"
     >
@@ -156,10 +167,20 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
         className="relative w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-10"
         style={{ containerType: 'inline-size' }}
       >
-        {/* Stage — height tracks the reference 1100×618 ratio via cqw */}
+        {/* Mobile announcement pill — first in the hero column so it sits a
+            fixed distance below the nav. Desktop's pill is the pinned one below. */}
+        <HeroLocationStrip isNaughtyMode={isNaughtyMode} loaded={loaded} placement="top" />
+
+        {/* Stage — desktop height tracks the reference 1100×618 ratio via cqw;
+            mobile is height-aware (svh) and bounded so it hugs the cup instead
+            of reserving a fixed 430px that left a dead gap beneath it. */}
         <div
           className="relative flex items-center justify-center"
-          style={{ minHeight: 'clamp(430px, 56.2cqw, 800px)' }}
+          style={{
+            minHeight: isMobile
+              ? 'clamp(260px, 46svh, 330px)'
+              : 'clamp(430px, 56.2cqw, 800px)',
+          }}
         >
           {/* ── Layered headline ── */}
           <motion.div
@@ -171,8 +192,10 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
               lineHeight: 0.9,
               letterSpacing: '-0.012em',
               // On mobile the words read big and bold behind the cup but leave
-              // a margin down each side — the desktop scaling is unchanged.
-              fontSize: isMobile ? '12.3cqw' : 'max(34px, 8.5cqw)',
+              // a margin down each side and never overflow a 320px screen; the
+              // clamp trims them a touch so the cup stays the clear focal point.
+              // Desktop scaling is unchanged.
+              fontSize: isMobile ? 'clamp(30px, 11.6cqw, 46px)' : 'max(34px, 8.5cqw)',
             }}
             aria-hidden="true"
           >
@@ -308,22 +331,40 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
           initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 14 }}
           animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
           transition={{ duration: 0.7, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="sm:hidden mt-3 text-center font-semibold"
-          style={{ color: c.copy, fontSize: '14px', lineHeight: 1.5 }}
+          className="sm:hidden mx-auto mt-[clamp(14px,4vw,22px)] max-w-[clamp(232px,80vw,300px)] text-balance text-center font-semibold"
+          style={{ color: c.copy, fontSize: 'clamp(13px, 3.7vw, 15px)', lineHeight: 1.55 }}
         >
           Hand-dipped, fresh strawberries.
           <br />
           Made to delight.
         </motion.p>
 
-        {/* Mobile CTA — in flow, centred under the composition. */}
+        {/* Mobile CTA — in flow, centred under the composition. Its own button
+            (not the shared desktop one) so it can carry the 56px touch height,
+            capped width and press feedback without touching desktop. */}
         <motion.div
           initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 14 }}
           animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
           transition={{ duration: 0.7, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-7 flex justify-center sm:hidden"
+          className="mt-[clamp(20px,6vw,32px)] flex justify-center sm:hidden"
         >
-          {menuCta}
+          <motion.a
+            href="#menu"
+            whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+            className={`group inline-flex min-h-[56px] w-full max-w-[20rem] items-center justify-center gap-3 rounded-full px-8 text-[13px] font-bold uppercase tracking-[0.18em] text-white transition-colors ${
+              isNaughtyMode
+                ? 'bg-gradient-to-r from-[#FF2D9C] to-[#7A1B78]'
+                : 'bg-[#E8176D] shadow-[0_14px_32px_rgba(232,23,109,0.32)]'
+            }`}
+            aria-label="View the menu"
+          >
+            View Menu
+            <ArrowRight
+              size={16}
+              className="transition-transform duration-300 group-active:translate-x-1"
+              aria-hidden="true"
+            />
+          </motion.a>
         </motion.div>
       </div>
 
@@ -338,9 +379,8 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
         {menuCta}
       </motion.div>
 
-      {/* Mobile: the live-location pill rides above the title. Desktop keeps it
-          along the bottom of the hero. */}
-      <HeroLocationStrip isNaughtyMode={isNaughtyMode} loaded={loaded} placement="top" />
+      {/* Desktop keeps the live-location pill pinned along the hero. The mobile
+          pill now lives in the column above (in flow). */}
       <HeroLocationStrip isNaughtyMode={isNaughtyMode} loaded={loaded} placement="bottom" />
     </section>
   )
