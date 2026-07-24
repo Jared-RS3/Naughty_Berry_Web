@@ -42,7 +42,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
  */
 
 const CUP_SRC = '/naughty-hero-cup.webp'
-const RATIO = 548 / 712 // natural w/h of the cup cutout
+const RATIO = 768 / 1000 // natural w/h of the cup cutout
 // Reference box, deliberately larger than the cup ever renders. Every stop and
 // every mid-flight swell therefore lands at scale < 1, so the promoted layer is
 // only ever scaled *down* — 3D transforms that scale a rasterised layer up are
@@ -557,13 +557,7 @@ export default function ScrollCup({ loaded = true }: { loaded?: boolean }) {
                       'linear-gradient(258deg, rgba(255,248,252,0.62) 0%, rgba(255,220,236,0.20) 9%, transparent 24%)',
                   }}
                 />
-                <div
-                  className="cup-sheen absolute inset-y-0 w-[45%]"
-                  style={{
-                    background:
-                      'linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.34) 45%, rgba(255,255,255,0.12) 58%, transparent 100%)',
-                  }}
-                />
+                
               </div>
             )}
           </motion.div>

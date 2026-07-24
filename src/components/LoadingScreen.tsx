@@ -25,7 +25,8 @@ import { useIsMobile } from '../hooks/useIsMobile'
 
 const CUP_SRC = '/naughty-hero-cup.webp'
 const LOGO_SRC = '/naughty-berry-logo.png'
-const FILM_SRC = '/2026-02-22T12-01-38_ultra_realistic_watermarked.mp4'
+// const FILM_SRC = '/2026-02-22T12-01-38_ultra_realistic_watermarked.mp4'
+const FILM_SRC = '/loader-poster.jpg'
 const POSTER_SRC = '/loader-poster.jpg'
 const RATIO = 548 / 712 // natural w/h of the cup cut-out
 

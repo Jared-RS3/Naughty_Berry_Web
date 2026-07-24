@@ -33,7 +33,7 @@ export function useMenuSnap() {
     let safety = 0
     let disposed = false
 
-    const navOffset = () => (window.matchMedia('(min-width: 768px)').matches ? 64 : 80)
+    const navOffset = () => (window.matchMedia('(min-width: 768px)').matches ? 15 : 20)
     // Only an outright fling skips the lock; normal and brisk scrolling engage.
     const FAST = 5.5 // px/ms
     // How much deliberate intent breaks the hold, per input.
@@ -131,7 +131,7 @@ export function useMenuSnap() {
       } // outright fling passes
 
       // Engage as the menu top crosses into the upper ~half of the screen.
-      if (rect.top <= vh * 0.58 && rect.top > navOffset() + 10) {
+      if (rect.top <= vh * 0.15 && rect.top > navOffset() + 10) {
         armed = false
         phase = 'snapping'
         frameThenLock(el)

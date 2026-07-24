@@ -16,6 +16,12 @@ export type CupTheme = {
   base: string
   glow: string
   decor?: { tl: string; tr: string; bl: string; br: string }
+  /** Per-corner style overrides merged onto the shared DECOR_SLOTS geometry
+   *  (e.g. lifting a single flavour's bottom-left artwork higher, or sizing a
+   *  flavour's corner art larger to fill space around a smaller cup). */
+  decorStyle?: Partial<Record<'tl' | 'tr' | 'bl' | 'br', React.CSSProperties>>
+  /** Per-corner mask override, letting a flavour fade its corner art less. */
+  decorMask?: Partial<Record<'tl' | 'tr' | 'bl' | 'br', string>>
 }
 
 const decorSet = (flav: string) => ({
@@ -45,9 +51,11 @@ const THEME_BROWNIE: CupTheme = {
 }
 const THEME_DUBAI: CupTheme = {
   id: 'dubai',
-  base: '#D8D68F',
-  glow: '#EFEB9E',
+  base: '#E8E396',
+  glow: '#E7E36B',
   decor: decorSet('dubai'),
+  // Lift the bottom-left pistachio-cream jar up off the section edge.
+  decorStyle: { bl: { bottom: '15%' } },
 }
 const THEME_CREAM: CupTheme = {
   id: 'cream',
@@ -57,8 +65,23 @@ const THEME_CREAM: CupTheme = {
 }
 const THEME_ICED_TEA: CupTheme = {
   id: 'iced-tea',
-  base: '#FCDCBE',
+  base: '#FCE8D4',
   glow: '#FFBC7C',
+  decor: decorSet('iced-tea'),
+  // The iced-tea cup is slim, so its corners run larger and fade less than the
+  // other flavours to fill the extra space around it with fruit/ice/splash.
+  decorStyle: {
+    tl: { width: 'clamp(115px, 15vw, 245px)' },
+    tr: { width: 'clamp(130px, 16.5vw, 270px)' },
+    bl: { width: 'clamp(120px, 15.5vw, 255px)' },
+    br: { width: 'clamp(135px, 17vw, 275px)' },
+  },
+  decorMask: {
+    tl: 'radial-gradient(165% 165% at 0% 0%, #000 50%, transparent 92%)',
+    tr: 'radial-gradient(165% 165% at 100% 0%, #000 50%, transparent 92%)',
+    bl: 'radial-gradient(165% 165% at 0% 100%, #000 50%, transparent 92%)',
+    br: 'radial-gradient(165% 165% at 100% 100%, #000 50%, transparent 92%)',
+  },
 }
 
 /** Corner placement, edge-fade mask and entrance pose for each decor slot. */
@@ -481,8 +504,9 @@ export default function MenuPreview() {
                   }}
                   style={{
                     ...slot.style,
-                    WebkitMaskImage: slot.mask,
-                    maskImage: slot.mask,
+                    ...(theme.decorStyle?.[slot.key] ?? {}),
+                    WebkitMaskImage: theme.decorMask?.[slot.key] ?? slot.mask,
+                    maskImage: theme.decorMask?.[slot.key] ?? slot.mask,
                   }}
                   draggable={false}
                 />
