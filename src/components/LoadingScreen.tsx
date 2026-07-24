@@ -133,7 +133,16 @@ export default function LoadingScreen({ onReveal, onDone }: Props) {
       const height = r.width / RATIO
       // Set as a custom property rather than in JSX: framer's MotionStyle only
       // accepts known CSS keys, and `.cup-img` reads the shadow from this var.
-      img.style.setProperty('--cup-shadow', 'drop-shadow(0 14px 24px rgba(80,30,55,0.26))')
+      // On mobile the cup carries NO drop-shadow: a drop-shadow is a per-pixel
+      // blur that re-rasterises on every frame the layer rescales, and the
+      // zoom-out rescales the cup on every single frame — the one thing certain
+      // to stutter on a phone. The mobile ScrollCup flyer it hands off to is
+      // shadowless too, so dropping it here also removes the shadow pop at the
+      // hand-off. Desktop keeps the shadow for weight.
+      img.style.setProperty(
+        '--cup-shadow',
+        isMobile ? 'none' : 'drop-shadow(0 14px 24px rgba(80,30,55,0.26))'
+      )
       img.style.left = `${r.left}px`
       img.style.top = `${r.top}px`
       img.style.width = `${r.width}px`

@@ -51,16 +51,22 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
         initial={{ y: -80 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
-        /* Solid, not translucent-with-blur. A backdrop-filter on a fixed,
+        /* Mobile: `absolute`, so the bar rides at the top of the document and
+           scrolls up and away with the hero rather than following the viewport
+           down the page. Desktop: `fixed`, so the bar stays pinned as a
+           persistent nav. The scroll-in solid background is therefore desktop-
+           only (md:) — on mobile the bar is transparent and simply leaves, so
+           it never flashes solid on its way out.
+           Solid, not translucent-with-blur. A backdrop-filter on a fixed,
            full-width bar forces the browser to re-blur the strip behind it on
            every single scroll frame — it was the largest raster cost on the
            page. At 90% opacity the blur was barely readable anyway, so an
            opaque bar looks the same and costs nothing to scroll past. */
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
+        className={`absolute md:fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
           scrolled
             ? isNaughtyMode
-              ? 'bg-[#241030] border-b border-[#8D2E7A]/70 shadow-lg shadow-fuchsia-900/35'
-              : 'bg-[#FFE6F0] border-b border-[#FFC2DA] shadow-lg shadow-pink-100/60'
+              ? 'md:bg-[#241030] md:border-b md:border-[#8D2E7A]/70 md:shadow-lg md:shadow-fuchsia-900/35'
+              : 'md:bg-[#FFE6F0] md:border-b md:border-[#FFC2DA] md:shadow-lg md:shadow-pink-100/60'
             : 'bg-transparent'
         }`}
         role="navigation"
