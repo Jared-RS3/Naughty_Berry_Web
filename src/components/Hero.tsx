@@ -362,7 +362,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
           <motion.a
             href="#menu"
             whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
-            className={`group inline-flex min-h-[56px] w-full max-w-[20rem] items-center justify-center gap-3 rounded-full px-8 text-[13px] font-bold uppercase tracking-[0.18em] text-white transition-colors ${
+            className={`group inline-flex min-h-[56px] items-center justify-center gap-3 rounded-full px-9 text-[13px] font-bold uppercase tracking-[0.18em] text-white transition-colors ${
               isNaughtyMode
                 ? 'bg-gradient-to-r from-[#FF2D9C] to-[#7A1B78]'
                 : 'bg-[#E8176D] shadow-[0_14px_32px_rgba(232,23,109,0.32)]'
