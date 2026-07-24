@@ -43,7 +43,7 @@ function HeroLocationStrip({
   // ('bottom') stays pinned across the hero, unchanged.
   const wrapperClass =
     placement === 'top'
-      ? 'flex justify-center mb-[clamp(18px,5vw,28px)] sm:hidden'
+      ? 'flex justify-center mb-[clamp(12px,3svh,24px)] sm:hidden'
       : 'absolute inset-x-4 top-34 justify-center hidden sm:flex'
 
   return (
@@ -155,11 +155,15 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
     <section
       id="top"
       /* Mobile: top-anchored column (items-start) so the nav → pill → product →
-         copy → CTA rhythm is fixed on every height. pt clears the ~64px nav and
-         opens a ~56px gap to the pill; pb keeps the CTA off the iPhone toolbar
-         via the safe-area inset. min-h-svh fills the small viewport so nothing
-         hides behind the browser chrome. Desktop resets to the centred layout. */
-      className="relative min-h-svh w-full overflow-hidden flex items-start justify-center pt-[120px] pb-[calc(24px_+_env(safe-area-inset-bottom))] sm:items-center sm:pt-0 sm:pb-0"
+         copy → CTA rhythm is fixed on every height. pt = the 64px nav + a gap
+         that eases from 60px (tall) down to 28px (short), so short screens spend
+         that space on the product and CTA instead of an air gap. pb clears the
+         iPhone toolbar via the safe-area inset. min-h-svh fills the small
+         viewport so nothing hides behind the browser chrome. Every vertical
+         value below is svh-aware for the same reason, which keeps the whole
+         composition — including the CTA — on screen down to ~480px tall.
+         Desktop resets to the centred layout. */
+      className="relative min-h-svh w-full overflow-hidden flex items-start justify-center pt-[calc(64px_+_clamp(28px,8svh,60px))] pb-[calc(16px_+_env(safe-area-inset-bottom))] sm:items-center sm:pt-0 sm:pb-0"
       style={{ background: c.bg }}
       aria-label="Hero — Naughty Berry"
     >
@@ -178,7 +182,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
           className="relative flex items-center justify-center"
           style={{
             minHeight: isMobile
-              ? 'clamp(260px, 46svh, 330px)'
+              ? 'clamp(176px, 38svh, 272px)'
               : 'clamp(430px, 56.2cqw, 800px)',
           }}
         >
@@ -254,7 +258,14 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
           <div
             data-cup-anchor="hero"
             className="cup-static absolute left-1/2 top-[56%] z-20 pointer-events-none"
-            style={{ transform: 'translate(-50%, -50%)', width: 'clamp(176px, 25cqw, 390px)' }}
+            style={{
+              transform: 'translate(-50%, -50%)',
+              // Mobile: full 176px on normal/tall phones, easing down on short
+              // screens (via svh) so the whole composition and the CTA stay on
+              // screen without the cup ever overflowing the stage. Desktop keeps
+              // its container-query sizing.
+              width: isMobile ? 'clamp(128px, 26svh, 176px)' : 'clamp(176px, 25cqw, 390px)',
+            }}
           >
             {/* Ground shadow — seats the cup on the floor plane */}
             <motion.div
@@ -331,7 +342,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
           initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 14 }}
           animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
           transition={{ duration: 0.7, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="sm:hidden mx-auto mt-[clamp(14px,4vw,22px)] max-w-[clamp(232px,80vw,300px)] text-balance text-center font-semibold"
+          className="sm:hidden mx-auto mt-[clamp(10px,2.5svh,20px)] max-w-[clamp(232px,80vw,300px)] text-balance text-center font-semibold"
           style={{ color: c.copy, fontSize: 'clamp(13px, 3.7vw, 15px)', lineHeight: 1.55 }}
         >
           Hand-dipped, fresh strawberries.
@@ -346,7 +357,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
           initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 14 }}
           animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
           transition={{ duration: 0.7, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-[clamp(20px,6vw,32px)] flex justify-center sm:hidden"
+          className="mt-[clamp(14px,3svh,28px)] flex justify-center sm:hidden"
         >
           <motion.a
             href="#menu"
