@@ -33,14 +33,14 @@ const RATIO = 548 / 712 // natural w/h of the cup cut-out
 const LOGO_FOCUS = { x: 0.5, y: 0.57 }
 
 /** Beat 1: long enough to read the mark, short enough not to be a toll gate. */
-const BRAND_MIN_MS = 1500
+const BRAND_MIN_MS = 1050
 /** …and never hold the brand beat past this, however slow the network is. */
 const BRAND_MAX_MS = 4000
 /** Cross-fade from the film to the cup. */
-const SWAP_MS = 620
+const SWAP_MS = 470
 /** Beat 2, and how long before its end the hand-off overlap starts. */
-const FLIGHT_MS = 1150
-const HANDOFF_MS = 260
+const FLIGHT_MS = 920
+const HANDOFF_MS = 240
 
 /** Fetched during beat 1 so the first two screens are warm on arrival. */
 const WARM_IMAGES = [CUP_SRC, '/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png']
@@ -222,9 +222,12 @@ export default function LoadingScreen({ onReveal, onDone }: Props) {
 
     const t = now - flyAt.current
     const p = Math.min(1, t / FLIGHT_MS)
-    // Expo-out: most of the distance is covered early, then a long calm settle —
-    // the shape that makes a zoom-out read as weighty rather than snappy.
-    const e = p === 1 ? 1 : 1 - Math.pow(2, -10 * p)
+    // Ease-out cubic. The cup still leads out immediately, but without the
+    // violent initial spike of an expo curve (~7× the average velocity in the
+    // first frames), which is what made the old zoom read as a snap followed by
+    // a crawl. Cubic peaks at ~3×, so the whole travel is one smooth, even glide
+    // that decelerates gently onto the hero mark.
+    const e = 1 - Math.pow(1 - p, 3)
     const f = from.current
 
     scale.set(f.scale + (1 - f.scale) * e)

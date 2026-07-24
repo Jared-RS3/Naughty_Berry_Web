@@ -359,7 +359,7 @@ function CupCarousel({
       </div>
 
       {/* ── Current item info ── */}
-      <div className="relative z-10 text-center mt-4 min-h-[136px]" aria-live="polite">
+      <div className="relative z-10 text-center mt-7 md:mt-4 min-h-[160px] md:min-h-[136px]" aria-live="polite">
         <AnimatePresence mode="wait">
           <motion.div
             key={current.name}
@@ -376,16 +376,16 @@ function CupCarousel({
             <h3 className="font-display font-bold uppercase tracking-[0.16em] text-[#E8176D] text-lg md:text-xl">
               {current.name}
             </h3>
-            <p className="mt-2 max-w-sm mx-auto text-[#7A3B5E]/75 text-sm md:text-[15px] leading-relaxed">
+            <p className="mt-3 md:mt-2 max-w-[19rem] md:max-w-sm mx-auto text-[#7A3B5E]/75 text-[12.5px] md:text-[15px] leading-[1.7] md:leading-relaxed">
               {current.desc}
             </p>
-            <p className="mt-3 font-display font-bold text-[#E8176D] text-xl md:text-2xl">{current.price}</p>
+            <p className="mt-4 md:mt-3 font-display font-bold text-[#E8176D] text-xl md:text-2xl">{current.price}</p>
           </motion.div>
         </AnimatePresence>
       </div>
 
       {/* ── Pagination + PDF ── */}
-      <div className="relative z-10 mt-5 flex items-center justify-between gap-6">
+      <div className="relative z-10 mt-6 md:mt-8 flex items-center justify-between gap-6">
         <div className="flex items-center gap-3" aria-label={`Item ${index + 1} of ${count}`}>
           <span className="font-display font-bold text-[#E8176D] text-lg leading-none">
             0{index + 1}
@@ -443,7 +443,7 @@ export default function MenuPreview() {
   }, [warm])
 
   return (
-    <section ref={sectionRef} id="menu" className="scroll-mt-20 md:scroll-mt-16 py-14 lg:py-16 relative overflow-hidden bg-[#FFDCEA]">
+    <section ref={sectionRef} id="menu" className="scroll-mt-20 md:scroll-mt-16 py-16 md:py-20 lg:py-24 relative overflow-hidden bg-[#FFDCEA]">
       {/* Flavour backdrop — the reference card's colours and corner artwork.
           On switch, the new world wipes out from behind the cup in an
           expanding circle while the decor pops in staggered; the old layer
@@ -544,7 +544,7 @@ export default function MenuPreview() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.7 }}
-          className="flex items-center justify-center gap-3 mb-5"
+          className="flex items-center justify-center gap-3 mb-6"
         >
           <img
             src="/realistic-vector-icon-illustration-whole-red-strawberry-covered-chocolate-chocolate-dripping.png"
@@ -566,7 +566,7 @@ export default function MenuPreview() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="flex gap-2 flex-wrap mb-5 justify-center"
+          className="flex gap-2 flex-wrap mb-7 md:mb-9 justify-center"
           role="tablist"
           aria-label="Menu categories"
         >
