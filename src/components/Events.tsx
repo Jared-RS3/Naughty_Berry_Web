@@ -34,7 +34,7 @@ const PACKAGES = [
     // on Enquire — a bullet list saying "Premium Live Station" never will.
     photo: '/Stand.webp',
     features: [
-      '50 Cups if your choice',
+      '50 Cups of your choice',
       'Dubai & Cream available as add on',
       'Premium Live Station',
       'Chocolate Tap',
