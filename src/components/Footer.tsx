@@ -12,12 +12,18 @@ import {
 import { useState, type FormEvent } from 'react'
 import { usePopupSchedule } from '../hooks/usePopupSchedule'
 import { mapsHref, pickNext, shortWhen } from '../lib/nextStop'
+import { EMAIL_RE } from '../lib/quote'
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 /** Same display face the rest of the site sets headings in (Gallery, Hero,
  *  SectionHeading) — these two headings were the only ones left on the default
  *  sans at weight 900, which read as a different typeface entirely. */
 const ARCHIVO = "'Archivo Black', system-ui, sans-serif"
+/** TODO: swap in Daybreak's live site — this is the only place it's referenced. */
+const DAYBREAK_URL = 'https://daybreaktech.agency'
+/** Alpha-only crop of the Daybreak wordmark, so the mark takes its colour from
+ *  the link (and its hover) rather than carrying the plate the original PNG had. */
+const DAYBREAK_MARK = 'url(/daybreak-mark.png) center / contain no-repeat'
 
 const CONTACT_OPTIONS = [
   {
@@ -38,7 +44,7 @@ const CONTACT_OPTIONS = [
     icon: MapPin,
     title: 'Find us',
     description: 'See where we’ll be popping up next.',
-    value: 'View upcoming locations',
+    value: 'View upcoming locations.',
     href: '#events',
   },
   {
@@ -72,12 +78,21 @@ export default function Footer() {
     }
   }
 
+  // NOTE: this form has no destination yet — nothing is stored or sent. It
+  // validates and gives feedback so the input can't carry junk once it is
+  // wired up, but until then a "subscriber" is not actually subscribed.
+  const [newsletterError, setNewsletterError] = useState<string | null>(null)
+
   const handleNewsletterSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (!email.trim()) return
+    const value = email.trim().slice(0, 254)
+    if (!EMAIL_RE.test(value)) {
+      setNewsletterError('Please enter a valid email address.')
+      return
+    }
 
-    console.log('Newsletter subscription:', email)
+    setNewsletterError(null)
     setEmail('')
   }
 
@@ -117,7 +132,7 @@ export default function Footer() {
                 style={{ fontFamily: ARCHIVO }}
               >
                 <span className="block text-[clamp(1.9rem,9.2vw,7.6rem)]">
-                  A Little Naughty
+                  A Little Naughty.
                 </span>
 
                 <span className="block text-[clamp(1.9rem,9.2vw,7.6rem)] text-[#E8176D]">
@@ -416,7 +431,7 @@ export default function Footer() {
 
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#D81464]">
-                    Stay in the loop
+                    Sign up to our newsletter - new flavours, pop-up dates, new products and more
                   </p>
                   <p className="mt-1 text-sm text-[#684756]">
                     New flavours, pop-up dates and sweet moments.
@@ -437,8 +452,16 @@ export default function Footer() {
                   type="email"
                   required
                   value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  onChange={(event) => {
+                    setEmail(event.target.value)
+                    if (newsletterError) setNewsletterError(null)
+                  }}
                   placeholder="Your email address"
+                  maxLength={254}
+                  autoComplete="email"
+                  inputMode="email"
+                  aria-invalid={newsletterError ? true : undefined}
+                  aria-describedby={newsletterError ? 'newsletter-error' : undefined}
                   className="min-w-0 flex-1 bg-transparent px-5 text-sm text-[#3B2116] outline-none placeholder:text-[#9B7586]/65"
                 />
 
@@ -449,6 +472,11 @@ export default function Footer() {
                   Subscribe
                 </button>
               </form>
+              {newsletterError && (
+                <p id="newsletter-error" className="mt-2 pl-5 text-[12px] font-semibold text-[#C01057]">
+                  {newsletterError}
+                </p>
+              )}
             </div>
 
             <div className="pointer-events-none absolute -bottom-11 right-5 hidden h-28 w-28 items-center justify-center rounded-full bg-[#3B2116]/5 md:flex">
@@ -567,6 +595,33 @@ export default function Footer() {
               />
               in Cape Town
             </p>
+          </div>
+
+          {/* Studio credit */}
+          <div className="mt-9 flex justify-center">
+            <a
+              href={DAYBREAK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-4 text-[#7A3B5E]/75 transition-colors duration-300 hover:text-[#E8176D]"
+            >
+              <span className="text-[12px] font-semibold uppercase tracking-[0.22em]">
+                Made by
+              </span>
+
+              <span
+                className="h-5 w-px bg-current opacity-40"
+                aria-hidden="true"
+              />
+
+              {/* Sized off the mark's own 214×42 ratio so it never distorts. */}
+              <span
+                role="img"
+                aria-label="Daybreak"
+                className="h-[23px] w-[117px] bg-current"
+                style={{ mask: DAYBREAK_MARK, WebkitMask: DAYBREAK_MARK }}
+              />
+            </a>
           </div>
         </div>
       </footer>

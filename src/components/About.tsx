@@ -34,14 +34,14 @@ const ARCHIVO = "'Archivo Black', system-ui, sans-serif"
 type Seg = { text: string; color: string }
 
 /** Each line is an array of segments so one line can mix berry + cocoa. */
-const STATEMENT: Seg[][] = [
-  [{ text: 'We make strawberries,', color: BERRY }],
-  [{ text: 'chocolate,', color: COCOA }, { text: 'joy, and', color: BERRY }],
-  [{ text: 'little moments', color: BERRY }],
-  [{ text: 'worth sharing.', color: BERRY }],
+const  TAGLINE: Seg[][] = [
+  // [{ text: 'More than,', color: BERRY }],
+  [{ text: 'More than', color: BERRY }, { text: 'desserts,', color: COCOA }, ],
+  [{ text: 'we create little moments', color: BERRY }],
+  [{ text: 'that turn into memories.', color: BERRY }],
 ]
 
-const TAGLINE: Seg[][] = [
+const STATEMENT: Seg[][] = [
   [{ text: 'Cape Town’s first', color: BERRY }],
   [{ text: 'strawberries &', color: BERRY }],
   [{ text: 'chocolate on tap.', color: COCOA }],

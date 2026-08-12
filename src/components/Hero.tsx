@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { MapPin, ArrowRight } from 'lucide-react'
 import { usePopupSchedule } from '../hooks/usePopupSchedule'
-import { pickNext, relativeLabel, shortWhen } from '../lib/nextStop'
+import { mapsHref, pickNext, stopHeadline } from '../lib/nextStop'
 import { useIsMobile } from '../hooks/useIsMobile'
 
 type HeroProps = {
@@ -29,6 +29,14 @@ function HeroLocationStrip({
   const prefersReducedMotion = useReducedMotion()
   const { schedule, loading, error } = usePopupSchedule()
   const next = error ? null : pickNext(schedule)
+  const headline = next ? stopHeadline(next.slot) : null
+
+  // Tapping the pill hands the venue address straight to the phone's maps app —
+  // the Google Maps universal link deep-links into the native app on both iOS
+  // and Android when it's installed, and opens the web map when it isn't. With
+  // no row or no address to hand over there is nothing to point at, so it falls
+  // back to scrolling down to the full schedule.
+  const venueHref = next && headline && next.slot.location ? mapsHref(next.slot) : null
 
   const shell = isNaughtyMode
     ? 'border-white/20 bg-white/10 text-[#FFD6EC] hover:bg-white/16'
@@ -53,8 +61,18 @@ function HeroLocationStrip({
       transition={{ duration: 0.7, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
       className={`z-30 ${wrapperClass}`}
     >
+      {/* The headline is a whole sentence now ("Next stop drops Monday"), so the
+          old "NEXT STOP" eyebrow and its divider would just say it twice — and
+          the eyebrow was desktop-only, which would have left mobile reading a
+          bare venue name. */}
       <motion.a
-        href="#next-stop"
+        href={venueHref ?? '#next-stop'}
+        {...(venueHref ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+        aria-label={
+          venueHref && next
+            ? `${headline} — open ${next.slot.location} in maps`
+            : undefined
+        }
         whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
         className={`flex max-w-full items-center gap-3 whitespace-nowrap rounded-full border px-4 py-2.5 transition-colors sm:gap-4 sm:px-6 sm:py-3 sm:backdrop-blur-md ${shell}`}
       >
@@ -65,27 +83,11 @@ function HeroLocationStrip({
           <span className="relative inline-flex h-2 w-2 rounded-full bg-current" />
         </span>
 
-        <span
-          className={`hidden shrink-0 text-[10px] font-bold uppercase tracking-[0.2em] sm:inline ${accent}`}
-        >
-          Next stop
-        </span>
-
-        <span className="h-4 w-px shrink-0 bg-current opacity-20" aria-hidden="true" />
-
         {loading ? (
           <span className="h-3 w-40 animate-pulse rounded-full bg-current opacity-20" />
-        ) : next ? (
-          <span className="min-w-0 truncate text-[12px] sm:text-sm">
-            <span className={`font-semibold ${strong}`}>{next.slot.location}</span>
-            <span className="opacity-70">
-              {' · '}
-              {next.date ? relativeLabel(next.date) : shortWhen(next)}
-            </span>
-          </span>
         ) : (
-          <span className="min-w-0 truncate text-[12px] sm:text-sm">
-            <span className={`font-semibold ${strong}`}>Next stop drops Thursday</span>
+          <span className={`min-w-0 truncate text-[12px] font-semibold sm:text-sm ${strong}`}>
+            {headline ?? 'See where we are next'}
           </span>
         )}
 
@@ -345,9 +347,9 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
           className="sm:hidden mx-auto mt-[clamp(10px,2.5svh,20px)] max-w-[clamp(232px,80vw,300px)] text-balance text-center font-semibold"
           style={{ color: c.copy, fontSize: 'clamp(13px, 3.7vw, 15px)', lineHeight: 1.55 }}
         >
-          Hand-dipped, fresh strawberries.
+          Fresh strawberries, Chocolate on Tap
           <br />
-          Made to delight.
+          Made to Remember.
         </motion.p>
 
         {/* Mobile CTA — in flow, centred under the composition. Its own button

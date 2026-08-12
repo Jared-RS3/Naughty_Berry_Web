@@ -1,3 +1,46 @@
 [build]
   command = "npm run build"
   publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# ── Security headers ────────────────────────────────────────────────────────
+# Applied to every response. The CSP is written against exactly what the site
+# loads today: Google Fonts, the Airtable form embed, and the Airtable REST API
+# for the pop-up schedule. Adding a new third-party script, font, iframe or API
+# means adding it here too, or the browser will silently refuse to load it.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # HSTS: once seen, never speak plain HTTP to this host again.
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    # Stop the browser second-guessing declared content types.
+    X-Content-Type-Options = "nosniff"
+    # Clickjacking: nobody frames this site but this site.
+    X-Frame-Options = "SAMEORIGIN"
+    # Don't leak full URLs (which can carry ?pkg= and other context) off-site.
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Hardware and background APIs this site has no use for.
+    Permissions-Policy = "accelerometer=(), autoplay=(self), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=(), interest-cohort=()"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Resource-Policy = "same-site"
+    # style-src needs 'unsafe-inline': Framer Motion animates via inline styles
+    # and index.html carries a critical inline <style>. Scripts do NOT get that
+    # exemption — the one inline script was moved to /boot-fallback.js so this
+    # can stay 'self'.
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self'; connect-src 'self' https://api.airtable.com; frame-src https://airtable.com; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
+
+# The enquiry endpoint must never be cached by a CDN or a browser.
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store, max-age=0"
+    X-Robots-Tag = "noindex"
+
+# Fingerprinted bundles are safe to cache forever.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

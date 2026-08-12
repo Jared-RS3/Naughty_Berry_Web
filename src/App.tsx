@@ -17,16 +17,23 @@ const Testimonials= lazy(() => import('./components/Testimonials'))
 const Gallery     = lazy(() => import('./components/Gallery'))
 const Footer      = lazy(() => import('./components/Footer'))
 const StoryPage   = lazy(() => import('./components/StoryPage'))
+const QuotePage   = lazy(() => import('./components/QuotePage'))
 
 /** Standalone routes. Plain <a> navigation, resolved by the SPA fallback in
  *  public/_redirects — no router dependency for the handful of pages here. */
-const isStoryRoute = () => window.location.pathname.replace(/\/+$/, '') === '/story'
+const ROUTES: Record<string, React.LazyExoticComponent<() => React.ReactElement>> = {
+  '/story': StoryPage,
+  '/quote': QuotePage,
+}
 
 function App() {
-  if (isStoryRoute()) {
+  const path = window.location.pathname.replace(/\/+$/, '') || '/'
+  const Route = ROUTES[path]
+
+  if (Route) {
     return (
       <Suspense fallback={null}>
-        <StoryPage />
+        <Route />
       </Suspense>
     )
   }

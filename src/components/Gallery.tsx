@@ -10,12 +10,12 @@ const GALLERY: GalleryItem[] = [
   { id: 3, label: 'Carry Bag', sub: 'Gift-ready', img: '/carry-bag.jpg' },
   { id: 4, label: 'Iced Tea Trio', sub: 'Sip with your crew', img: '/iced-tea-trio.jpg' },
   { id: 5, label: 'Service Window', sub: 'Straight to you', img: '/service-window.jpg' },
-  { id: 6, label: 'Iced Tea Sports', sub: 'Refresh & refuel', img: '/iced-tea-sports.jpg' },
+  // { id: 6, label: 'Iced Tea Sports', sub: 'Refresh & refuel', img: '/iced-tea-sports.jpg' },
   { id: 7, label: 'Iced Tea Duo', sub: 'Better together', img: '/iced-tea-duo.jpg' },
-  { id: 10, label: 'Team Trailer', sub: 'Behind the scenes', img: '/team-trailer.jpg' },
+  // { id: 10, label: 'Team Trailer', sub: 'Behind the scenes', img: '/team-trailer.jpg' },
   { id: 11, label: 'Trailer Night', sub: 'Night market magic', img: '/trailer-night.jpg' },
-  { id: 12, label: 'Trailer Day', sub: 'Come find us', img: '/trailer-day.jpg' },
-  { id: 13, label: 'Wedding Event', sub: 'Special occasions', img: '/wedding-event.jpg' },
+  // { id: 12, label: 'Trailer Day', sub: 'Come find us', img: '/trailer-day.jpg' },
+  // { id: 13, label: 'Wedding Event', sub: 'Special occasions', img: '/wedding-event.jpg' },
 ]
 
 interface GalleryItem {

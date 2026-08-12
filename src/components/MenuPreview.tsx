@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { Download, Star, Coffee, GlassWater, ArrowLeft, ArrowRight } from 'lucide-react'
+// Star comes back with the commented-out Combos category below.
+import { Download, Coffee, GlassWater, ArrowLeft, ArrowRight } from 'lucide-react'
 import { useIsMobile } from '../hooks/useIsMobile'
 
 /**
@@ -122,7 +123,7 @@ export const MENU_CATEGORIES = [
     items: [
       {
         name: 'Naughty Classic Cup',
-        desc: 'Fresh strawberries drenched in creamy milk chocolate, finished in front of you for a simple, indulgent treat that never misses.',
+        desc: 'Fresh strawberries drenched in creamy milk chocolate, indulgent treat that never misses.',
         price: 'R75',
         tag: null,
         cutout: '/menu-cups/classic.webp',
@@ -130,23 +131,42 @@ export const MENU_CATEGORIES = [
       },
       {
         name: 'Naughty Brownie Cup',
-        desc: 'Fresh strawberries with fudgey brownie bites, drenched in creamy milk chocolate for the perfect mix of fudgy and fresh.',
+        desc: 'Fresh strawberries with brownie bites, drenched in creamy milk chocolate for the perfect mix of fudgy and fresh.',
         price: 'R75',
         tag: null,
         cutout: '/menu-cups/brownie.webp',
         theme: THEME_BROWNIE,
       },
+      // Dubai and Cream each come two ways — with or without the brownie bites.
+      // They are separate items rather than one card saying "classic or brownie"
+      // because the cutouts are visibly different cups.
       {
-        name: 'Dubai Chocolate Strawberries',
-        desc: 'Our classic or brownie cup topped with our decadent kunafeh mixture of creamy pistachio cream and toasted kataifi pastry, drenched in creamy milk chocolate.',
+        name: 'Dubai Chocolate Cup',
+        desc: 'Fresh strawberries drenched in creamy milk chocolate, topped with our decadent kunafeh mixture of creamy pistachio cream and toasted kataifi pastry.',
+        price: 'R95',
+        tag: null,
+        cutout: '/menu-cups/dubai-choc.webp',
+        theme: THEME_DUBAI,
+      },
+      {
+        name: 'Dubai Chocolate Brownie Cup',
+        desc: 'Decadent kunafeh of pistachio cream and toasted kataifi pastry, over fresh strawberries and fudgey brownie bites drenched in creamy milk chocolate.',
         price: 'R95',
         tag: 'Best Seller',
         cutout: '/menu-cups/dubai.webp',
         theme: THEME_DUBAI,
       },
       {
-        name: 'New Naughty Cream Cup',
+        name: 'Naughty Cream Cup',
         desc: 'Fresh strawberries layered in a velvety sweetened cream, crowned with crunchy Lotus Biscoff crumbs.',
+        price: 'R95',
+        tag: 'New',
+        cutout: '/menu-cups/cream-plain.webp',
+        theme: THEME_CREAM,
+      },
+      {
+        name: 'Naughty Cream Brownie Cup',
+        desc: 'Fresh strawberries and fudgey brownie bites layered in a velvety sweetened cream, crowned with crunchy Lotus Biscoff crumbs.',
         price: 'R95',
         tag: 'New',
         cutout: '/menu-cups/cream.webp',
@@ -166,41 +186,41 @@ export const MENU_CATEGORIES = [
         desc: 'A smooth mix of sun-kissed strawberry and peach, served over ice. Simple, refreshing, and full of flavour.',
         price: 'R45',
         tag: 'New',
-        cutout: '/menu-cups/iced-tea.webp',
+        cutout: '/menu-cups/ice-tea-flat.webp',
         theme: THEME_ICED_TEA,
       },
     ],
   },
-  {
-    id: 'platters',
-    label: 'Combos',
-    word: 'COMBOS',
-    icon: Star,
-    color: '#FF6BAD',
-    items: [
-      {
-        name: 'Small Combo (20 pax)',
-        desc: '20 chocolate strawberries + 20 classic cups, beautifully presented',
-        price: 'R1 800',
-        tag: 'Events',
-        photo: '/carry-bag.jpg',
-      },
-      {
-        name: 'Medium Combo (40 pax)',
-        desc: '40 strawberries + 40 cups with mixed flavours, styled display',
-        price: 'R3 200',
-        tag: 'Events',
-        photo: '/setup.jpg',
-      },
-      {
-        name: 'Large Combo (80 pax)',
-        desc: 'Full event service — 80 pax, custom flavours, styled setup, team on-site',
-        price: 'From R5 500',
-        tag: 'Premium',
-        photo: '/market.jpg',
-      },
-    ],
-  },
+  // {
+  //   id: 'platters',
+  //   label: 'Combos',
+  //   word: 'COMBOS',
+  //   icon: Star,
+  //   color: '#FF6BAD',
+  //   items: [
+  //     {
+  //       name: 'Small Combo (20 pax)',
+  //       desc: '20 chocolate strawberries + 20 classic cups, beautifully presented',
+  //       price: 'R1 800',
+  //       tag: 'Events',
+  //       photo: '/carry-bag.jpg',
+  //     },
+  //     {
+  //       name: 'Medium Combo (40 pax)',
+  //       desc: '40 strawberries + 40 cups with mixed flavours, styled display',
+  //       price: 'R3 200',
+  //       tag: 'Events',
+  //       photo: '/setup.jpg',
+  //     },
+  //     {
+  //       name: 'Large Combo (80 pax)',
+  //       desc: 'Full event service — 80 pax, custom flavours, styled setup, team on-site',
+  //       price: 'From R5 500',
+  //       tag: 'Premium',
+  //       photo: '/market.jpg',
+  //     },
+  //   ],
+  // },
 ]
 
 type CarouselItem = {

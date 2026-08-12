@@ -110,12 +110,7 @@
     <div id="root"></div>
     <!-- Safety net: the app clears #boot as it takes over, but if the bundle
          never runs at all this stops the boot screen sealing the page shut. -->
-    <script>
-      setTimeout(function () {
-        var b = document.getElementById('boot')
-        if (b) b.remove()
-      }, 12000)
-    </script>
+    <script src="/boot-fallback.js" defer></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

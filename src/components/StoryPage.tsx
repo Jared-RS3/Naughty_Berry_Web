@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Instagram, MapPin } from 'lucide-react'
+// ArrowRight comes back with the "Book for an Event" button below.
+import { ArrowLeft, Instagram, MapPin } from 'lucide-react'
 import { STAGGER, POP, RISE } from '../motionPresets'
 
 /**
@@ -19,9 +20,9 @@ import { STAGGER, POP, RISE } from '../motionPresets'
 const ARCHIVO = "'Archivo Black', system-ui, sans-serif"
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 
-/** The intro sits directly under the headline — it is the longest run of copy on
- *  the page, so it gets its own full-width block rather than being squeezed into
- *  the hero column beside the photo. */
+/** The intro sits directly under the headline — the longest run of copy on the
+ *  page, paired with the stand itself so the opening band has something to look
+ *  at while the reader works through three paragraphs. */
 const INTRO = [
   'Naughty Berry is all about fun, flavour, and community. Inspired by our love for strawberries, chocolate, and everything pink, we brought it all together to create an experience that’s playful, welcoming, and a little bit indulgent.',
   'At the heart of Naughty Berry is connection, from our friendly, energetic team to the way we engage with every customer. We’re not just serving desserts, we’re creating moments. Think fresh, juicy locally sourced strawberries topped with smooth, premium chocolate, poured right in front of you and served with a smile.',
@@ -31,7 +32,7 @@ const INTRO = [
 const CHAPTERS = [
   {
     heading: 'Made with Love',
-    image: '/chocolate-pour.jpg',
+    image: '/made_with_love.jpg',
     alt: 'Melted couverture chocolate being poured over a cup of strawberries',
     focus: 'center 45%',
     body: [
@@ -40,7 +41,7 @@ const CHAPTERS = [
   },
   {
     heading: 'Sweet, Simple, Premium',
-    image: '/strawberry-drip.jpg',
+    image: '/Chocolate_Tap.webp',
     alt: 'A strawberry being dipped into premium melted chocolate',
     focus: 'center 55%',
     body: [
@@ -152,7 +153,7 @@ export default function StoryPage() {
           <motion.div variants={RISE} className="relative">
             <div className="overflow-hidden rounded-[26px] shadow-[0_28px_60px_rgba(180,40,95,0.22)]">
               <img
-                src="/trailer-day.jpg"
+                src="/brownie.jpg"
                 alt="Customers queuing at the pink Naughty Berry trailer"
                 fetchPriority="high"
                 className="aspect-[3/4] w-full object-cover"
@@ -178,56 +179,77 @@ export default function StoryPage() {
         </motion.div>
       </section>
 
-      {/* ── Intro: the three opening paragraphs, then the two calls to action ── */}
+      {/* ── Intro: the stand, the three opening paragraphs, then the calls to
+             action. Photo on the left, which sets the alternation the chapters
+             below pick up from. ── */}
       <section className="bg-[#FFF9ED]">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-90px' }}
           transition={{ duration: 0.65, ease: EASE_OUT }}
-          className="mx-auto max-w-3xl px-6 py-16 md:py-20"
+          className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 md:grid-cols-[0.88fr_1.12fr] md:gap-16 md:py-20"
         >
-          <div className="space-y-6">
-            {INTRO.map((p) => (
-              <p key={p.slice(0, 24)} className="text-[17px] leading-[1.75] text-[#7A3B5E]">
-                {p}
-              </p>
-            ))}
+          {/* Capped on mobile so the portrait crop doesn't push the copy a
+              full screen down the page. */}
+          <div className="mx-auto w-full max-w-sm md:max-w-none">
+            <div className="overflow-hidden rounded-[26px] shadow-[0_24px_55px_rgba(180,40,95,0.2)]">
+              <img
+                src="/Stand.webp"
+                alt="A Naughty Berry team member serving cups of strawberries from the branded stand"
+                loading="lazy"
+                className="aspect-[4/5] w-full object-cover"
+              />
+            </div>
           </div>
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3 md:justify-start">
-            <a
-              href="/#events"
-              className="group inline-flex items-center gap-2 rounded-full bg-[#E8176D] px-8 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#C01057]"
-            >
-              Book for an Event
-              <ArrowRight
-                size={14}
-                className="transition-transform duration-300 group-hover:translate-x-1"
-              />
-            </a>
+          <div>
+            <div className="space-y-6">
+              {INTRO.map((p) => (
+                <p key={p.slice(0, 24)} className="text-[17px] leading-[1.75] text-[#7A3B5E]">
+                  {p}
+                </p>
+              ))}
+            </div>
 
-            <a
-              href="https://www.instagram.com/naughtyberrycpt"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="nb-pill inline-flex items-center gap-2 px-8 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-[#E8176D] transition-colors hover:text-[#C01057]"
-            >
-              <Instagram size={15} />
-              Follow Our Journey
-            </a>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-3 md:justify-start">
+              {/* <a
+                href="/#events"
+                className="group inline-flex items-center gap-2 rounded-full bg-[#E8176D] px-8 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-colors hover:bg-[#C01057]"
+              >
+                Book for an Event
+                <ArrowRight
+                  size={14}
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                />
+              </a> */}
+
+              <a
+                href="https://www.instagram.com/naughtyberrycpt"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="nb-pill inline-flex items-center gap-2 px-8 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-[#E8176D] transition-colors hover:text-[#C01057]"
+              >
+                <Instagram size={15} />
+                Follow Our Journey
+              </a>
+            </div>
           </div>
         </motion.div>
       </section>
 
       {/* ── Chapters ── */}
       {CHAPTERS.map((c, i) => {
-        // Odd chapters flip the photo to the right and sit on a cream band, so
-        // the alternation is carried by the background as well as the layout.
-        const flipped = i % 2 === 1
+        // The intro above ends on a photo-left, cream band, so the chapters take
+        // over the alternation from the opposite side: photos start on the right
+        // and the cream band lands on the odd ones. The two run out of phase on
+        // purpose — that way neither the layout nor the background ever repeats
+        // itself twice in a row down the page.
+        const flipped = i % 2 === 0
+        const cream = i % 2 === 1
 
         return (
-          <section key={c.heading} className={flipped ? 'bg-[#FFF9ED]' : undefined}>
+          <section key={c.heading} className={cream ? 'bg-[#FFF9ED]' : undefined}>
             <motion.div
               initial={{ opacity: 0, y: 34 }}
               whileInView={{ opacity: 1, y: 0 }}

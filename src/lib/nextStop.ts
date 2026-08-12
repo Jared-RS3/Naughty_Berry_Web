@@ -70,6 +70,35 @@ export function shortWhen(next: NextStop): string {
 }
 
 export function mapsHref(slot: ScheduleSlot): string {
-  const query = [slot.location, slot.area, 'Cape Town'].filter(Boolean).join(', ')
+  // Venue / Location often already holds the full street address, down to the
+  // city and postal code. Area and "Cape Town" are there to disambiguate a bare
+  // venue name — appending them to a complete address just hands the geocoder
+  // the same city twice, so drop whichever the address already covers.
+  const parts = [slot.location, slot.area, 'Cape Town'].filter(Boolean)
+  const address = parts[0].toLowerCase()
+  const query = parts
+    .filter((part, i) => i === 0 || !address.includes(part.toLowerCase()))
+    .join(', ')
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+}
+
+/** The "Day of Week" dropdown carries the seven weekdays plus this one extra
+ *  choice, which is not a day at all — it is how the sheet says "name the place
+ *  instead of the day". */
+const LOCATION_OPTION = 'location'
+
+/**
+ * One-line answer for the hero pill, driven by the row's "Day of Week" dropdown.
+ *
+ * A weekday means the trailer is booked but not out yet, so the day is the
+ * useful thing to say. Picking "Location" instead means the row is describing
+ * where it is rather than when — then the stop is better named than dated, so
+ * the row's Event Name carries the line. Null when the row has neither, so the
+ * caller can fall back rather than render "Open at ".
+ */
+export function stopHeadline(slot: ScheduleSlot): string | null {
+  const day = slot.day.trim()
+  if (day && day.toLowerCase() !== LOCATION_OPTION) return `Next stop drops ${day}`
+  if (slot.eventName) return `Open at ${slot.eventName}`
+  return null
 }

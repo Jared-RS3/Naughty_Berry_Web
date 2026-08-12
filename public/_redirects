@@ -1,2 +1,4 @@
-# SPA fallback — /story is rendered by the app, not a file on disk.
-/*    /index.html   200
+# SPA fallback — /story and /quote are rendered by the app, not files on disk.
+# The functions path is listed first so it is never swallowed by the catch-all.
+/api/*        /.netlify/functions/:splat   200
+/*            /index.html                  200
