@@ -231,7 +231,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
             >
               Fresh Strawberries.
               <br />
-              Chocolate on Tap
+              Chocolate on Tap.
               <br />
               Made to Remember.
             </motion.p>
