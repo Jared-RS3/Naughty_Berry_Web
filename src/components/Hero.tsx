@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion'
-import { MapPin, ArrowRight } from 'lucide-react'
+import { MapPin, ArrowRight, ChevronRight } from 'lucide-react'
 import { usePopupSchedule } from '../hooks/usePopupSchedule'
 import { mapsHref, pickNext, stopHeadline } from '../lib/nextStop'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -74,7 +74,7 @@ function HeroLocationStrip({
             : undefined
         }
         whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
-        className={`flex max-w-full items-center gap-3 whitespace-nowrap rounded-full border px-4 py-2.5 transition-colors sm:gap-4 sm:px-6 sm:py-3 sm:backdrop-blur-md ${shell}`}
+        className={`group flex max-w-full items-center gap-3 whitespace-nowrap rounded-full border px-4 py-2.5 transition-colors sm:gap-4 sm:px-6 sm:py-3 sm:backdrop-blur-md ${shell}`}
       >
         <span className={`relative flex h-2 w-2 shrink-0 ${accent}`} aria-hidden="true">
           {!prefersReducedMotion && (
@@ -92,6 +92,16 @@ function HeroLocationStrip({
         )}
 
         <MapPin size={14} className={`shrink-0 ${accent}`} aria-hidden="true" />
+        {/* A disclosure chevron reads as "there's more here" without the
+            CTA weight of the hero's arrow-on-hover buttons — full opacity at
+            rest so it's obvious on first glance (and on touch, which never
+            triggers hover), with the same nudge-right cue on top for mouse users. */}
+        <ChevronRight
+          size={15}
+          strokeWidth={2.75}
+          className={`shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 ${accent}`}
+          aria-hidden="true"
+        />
       </motion.a>
     </motion.div>
   )

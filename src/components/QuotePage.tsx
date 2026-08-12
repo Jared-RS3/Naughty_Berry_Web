@@ -9,8 +9,6 @@ import {
   CalendarDays,
   Check,
   Crown,
-  CupSoda,
-  Droplet,
   GraduationCap,
   Heart,
   Info,
@@ -21,7 +19,7 @@ import {
   Pencil,
   Plus,
   Send,
-  Sparkles,
+  Star,
   Users,
   X,
 } from 'lucide-react'
@@ -29,14 +27,15 @@ import { burstConfetti } from '../lib/confetti'
 import { useTilt } from '../hooks/useTilt'
 import { useIsMobile } from '../hooks/useIsMobile'
 import {
-  ADDONS,
   CUP_TARGET,
+  SIGNATURE_CUP_TARGET,
   FLAVOURS,
   ICED_TEA_CAP,
   ICED_TEA_PRICE,
   UPGRADE,
   LIMITS,
   estimateTotal,
+  packageName,
   rands,
   toEnquiryPayload,
   totalCups as sumCups,
@@ -45,6 +44,14 @@ import {
   type PackageId,
   type Quote,
 } from '../lib/quote'
+
+/** Little Moments and Signature are both fixed-size boxes; Indulgent is sized
+ *  to the guest list instead. */
+function cupCapFor(pkg: PackageId | null): number | null {
+  if (pkg === 'little') return CUP_TARGET
+  if (pkg === 'signature') return SIGNATURE_CUP_TARGET
+  return null
+}
 
 /**
  * /quote — the event quote builder, on its own route so it gets a whole screen
@@ -93,6 +100,15 @@ const PKG_OPTIONS = [
     perks: ['25 cups, mixed', 'Delivered to you'],
   },
   {
+    id: 'signature' as const,
+    icon: Star,
+    name: 'Signature',
+    blurb: 'The Naughty Berry stand at your venue, a curated 50-cup spread, and our team serving all night.',
+    priceLine: 'From R7 750',
+    art: '/menu-cups/dubai.webp',
+    perks: ['50 cups, mixed', 'The stand, on-site', 'Chocolate tap'],
+  },
+  {
     id: 'indulgent' as const,
     icon: Crown,
     name: 'Indulgent',
@@ -102,14 +118,6 @@ const PKG_OPTIONS = [
     perks: ['The stand, on-site', 'Chocolate tap', 'Our team, all night'],
   },
 ]
-
-
-const ADDON_ICONS: Record<string, typeof Droplet> = {
-  'choc-tap': Droplet,
-  'dubai-station': Sparkles,
-  'cream-station': Sparkles,
-  'iced-tea-bar': CupSoda,
-}
 
 type StepKey = 'occasion' | 'package' | 'build' | 'details' | 'quote'
 
@@ -127,7 +135,7 @@ const ALL_STEPS: { key: StepKey; label: string }[] = [
 function lockedPackageFromUrl(): PackageId | null {
   if (typeof window === 'undefined') return null
   const p = new URLSearchParams(window.location.search).get('pkg')
-  return p === 'little' || p === 'indulgent' ? p : null
+  return p === 'little' || p === 'signature' || p === 'indulgent' ? p : null
 }
 
 /**
@@ -188,7 +196,6 @@ export default function QuotePage() {
   const [mix, setMix] = useState<Record<string, number>>({})
   const [icedTeas, setIcedTeas] = useState(0)
   const [guests, setGuests] = useState(80)
-  const [addons, setAddons] = useState<string[]>([])
   const [form, setForm] = useState({ name: '', email: '', phone: '', date: '', venue: '', notes: '' })
   const [confirming, setConfirming] = useState(false)
   const [submitState, setSubmitState] = useState<SubmitState>('idle')
@@ -216,28 +223,52 @@ export default function QuotePage() {
   }, [])
 
   const cups = useMemo(() => sumCups(mix), [mix])
-  const remaining = CUP_TARGET - cups
-  const estimate = estimateTotal(mix, icedTeas)
-  const little = pkg === 'little'
+  const capped = pkg === 'little' || pkg === 'signature'
+  const target = cupCapFor(pkg)
+  const remaining = (target ?? 0) - cups
+  const estimate = estimateTotal(pkg ?? 'little', mix, icedTeas)
 
-  // Only the Little Moments box is capped — an Indulgent spread is sized to the
-  // guest list, so its counts run free.
+  // Little Moments and Signature are both capped boxes — an Indulgent spread
+  // is sized to the guest list instead, so its counts run free.
   const bump = useCallback(
     (id: string, delta: number) => {
       setMix((m) => {
         // Recount inside the updater — the render-scope total goes stale when
         // two taps land in the same React batch, which is when the cap bites.
         const total = Object.values(m).reduce((a, b) => a + b, 0)
-        if (delta > 0 && little && total >= CUP_TARGET) return m
+        const cap = cupCapFor(pkg)
+        if (delta > 0 && cap !== null && total >= cap) return m
         const next = Math.max(0, (m[id] ?? 0) + delta)
         if (next === 0) {
-          const { [id]: _drop, ...rest } = m
+          const rest = { ...m }
+          delete rest[id]
           return rest
         }
         return { ...m, [id]: next }
       })
     },
-    [little]
+    [pkg]
+  )
+
+  // Typing a number directly is the fast path for anyone who doesn't want to
+  // tap "+" dozens of times to fill a 25- or 50-cup box.
+  const setCount = useCallback(
+    (id: string, value: number) => {
+      setMix((m) => {
+        const cap = cupCapFor(pkg)
+        const current = m[id] ?? 0
+        const others = Object.values(m).reduce((a, b) => a + b, 0) - current
+        let next = Math.max(0, Math.trunc(Number.isFinite(value) ? value : 0))
+        if (cap !== null) next = Math.min(next, Math.max(0, cap - others))
+        if (next === 0) {
+          const rest = { ...m }
+          delete rest[id]
+          return rest
+        }
+        return { ...m, [id]: next }
+      })
+    },
+    [pkg]
   )
 
   const stepKey = steps[step].key
@@ -246,7 +277,7 @@ export default function QuotePage() {
   const canProceed =
     stepKey === 'occasion' ? occasion !== null
     : stepKey === 'package' ? pkg !== null
-    : stepKey === 'build' ? (little ? cups === CUP_TARGET : true)
+    : stepKey === 'build' ? (capped ? cups === target : true)
     : stepKey === 'details' ? Object.keys(fieldErrors).length === 0
     : true
 
@@ -291,7 +322,6 @@ export default function QuotePage() {
     mix,
     icedTeas,
     guests,
-    addons,
     name: form.name.trim(),
     email: form.email.trim(),
     phone: form.phone.trim(),
@@ -375,35 +405,37 @@ export default function QuotePage() {
           >
             {stepKey === 'occasion' && <StepOccasion value={occasion} onPick={setOccasion} />}
             {stepKey === 'package' && <StepPackage value={pkg} onPick={setPkg} />}
-            {stepKey === 'build' && little && (
-              <StepMix
+            {stepKey === 'build' && capped && pkg && (
+              <StepBox
+                target={target ?? 0}
                 mix={mix}
                 cups={cups}
                 remaining={remaining}
+                estimate={estimate}
                 icedTeas={icedTeas}
                 onBump={bump}
+                onSet={setCount}
                 onIcedTeas={setIcedTeas}
                 onTopUp={() =>
                   setMix((m) => {
                     const total = Object.values(m).reduce((a, b) => a + b, 0)
-                    const gap = Math.max(0, CUP_TARGET - total)
+                    const gap = Math.max(0, (target ?? 0) - total)
                     return gap ? { ...m, classic: (m.classic ?? 0) + gap } : m
                   })
                 }
                 isMobile={isMobile}
               />
             )}
-            {stepKey === 'build' && !little && (
+            {stepKey === 'build' && pkg === 'indulgent' && (
               <StepStation
                 guests={guests}
-                addons={addons}
                 mix={mix}
                 isMobile={isMobile}
                 onGuests={setGuests}
                 onBump={bump}
-                onToggle={(id) =>
-                  setAddons((a) => (a.includes(id) ? a.filter((x) => x !== id) : [...a, id]))
-                }
+                onSet={setCount}
+                icedTeas={icedTeas}
+                onIcedTeas={setIcedTeas}
               />
             )}
             {stepKey === 'details' && (
@@ -437,7 +469,7 @@ export default function QuotePage() {
           Back
         </button>
 
-        {little && (stepKey === 'build' || stepKey === 'details') && (
+        {capped && (stepKey === 'build' || stepKey === 'details') && (
           <span className="hidden text-center sm:block">
             <span className="block text-sm font-bold text-[#E8176D]" aria-live="polite">
               Estimated {rands(estimate)}
@@ -658,11 +690,11 @@ function StepOccasion({ value, onPick }: { value: string | null; onPick: (v: str
 function StepPackage({ value, onPick }: { value: PackageId | null; onPick: (p: PackageId) => void }) {
   return (
     <div>
-      <StepHeading title="Choose your|package." sub="Both come with a lot of chocolate. Obviously." />
-      <div className="mx-auto grid max-w-4xl items-start gap-5 sm:grid-cols-2">
+      <StepHeading title="Choose your|package." sub="All of them come with a lot of chocolate. Obviously." />
+      <div className="mx-auto grid max-w-5xl items-start gap-5 sm:grid-cols-3">
         {PKG_OPTIONS.map(({ id, icon: Icon, name, blurb, priceLine, art, perks }, i) => {
           const on = value === id
-          const hero = id === 'indulgent'
+          const hero = id === 'indulgent' || id === 'signature'
           return (
             <motion.div
               key={id}
@@ -781,6 +813,7 @@ function StepPackage({ value, onPick }: { value: PackageId | null; onPick: (p: P
 function CupCarousel({
   mix,
   onBump,
+  onSet,
   isMobile,
   full = false,
   fullLabel = 'Box is full',
@@ -788,6 +821,7 @@ function CupCarousel({
 }: {
   mix: Record<string, number>
   onBump: (id: string, delta: number) => void
+  onSet?: (id: string, value: number) => void
   isMobile: boolean
   full?: boolean
   fullLabel?: string
@@ -967,50 +1001,96 @@ function CupCarousel({
             <Plus size={16} strokeWidth={2.5} />
           </button>
         </div>
+
+        {/* For anyone who'd rather not tap "+" dozens of times to fill a big
+            box — type the count directly. */}
+        {onSet && (
+          <div className="mt-3 flex items-center justify-center gap-2">
+            <label htmlFor={`qty-${flavour.id}`} className="text-[11px] font-semibold text-[#7A3B5E]/60">
+              or type a number
+            </label>
+            <input
+              id={`qty-${flavour.id}`}
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={mix[flavour.id] ?? 0}
+              onChange={(e) => onSet(flavour.id, Number(e.target.value))}
+              onFocus={(e) => e.target.select()}
+              aria-label={`Set ${flavour.name} count`}
+              className="w-16 rounded-full border border-[#E8176D]/20 bg-white/80 px-3 py-1.5 text-center text-[13px] font-bold text-[#3B2116] outline-none transition focus:border-[#E8176D] focus:ring-2 focus:ring-[#E8176D]/25"
+            />
+          </div>
+        )}
       </div>
     </>
   )
 }
 
-/* ─────────── Step 3a: the Little Moments box ─────────── */
+/* ─────────── Step 3a: the capped box — Little Moments or Signature ─────────── */
 
-function StepMix({
+function StepBox({
+  target,
   mix,
   cups,
   remaining,
+  estimate,
   icedTeas,
   onBump,
+  onSet,
   onIcedTeas,
   onTopUp,
   isMobile,
 }: {
+  target: number
   mix: Record<string, number>
   cups: number
   remaining: number
+  estimate: number
   icedTeas: number
   onBump: (id: string, delta: number) => void
+  onSet: (id: string, value: number) => void
   onIcedTeas: (n: number) => void
   onTopUp: () => void
   isMobile: boolean
 }) {
   const full = remaining === 0
+  const pct = target > 0 ? Math.min(100, (cups / target) * 100) : 0
 
   return (
     <div>
       <StepHeading
-        title="Build your|box of 25."
-        sub={`Spin the ring, tap a cup to drop it in. Dubai & Cream add ${rands(UPGRADE)} each.`}
+        title={`Build your|box of ${target}.`}
+        sub={`Spin the ring, tap a cup to drop it in — or type a number to skip the tapping. Dubai & Cream add ${rands(UPGRADE)} each.`}
       />
 
-      <EstimateNote className="mx-auto mb-8 max-w-2xl text-center" />
+      <EstimateNote className="mx-auto mb-6 max-w-2xl text-center" />
 
-      <CupCarousel mix={mix} onBump={onBump} isMobile={isMobile} full={full} />
+      {/* Mobile only: the desktop nav already surfaces the running price, and
+          the full box breakdown sits below the ring — but on a phone that's a
+          scroll away while you're mid-build, so a subtle strip up here keeps
+          both the price and progress in view above the carousel. */}
+      <div className="mx-auto mb-5 flex max-w-sm items-center gap-3 rounded-full bg-white/70 px-4 py-2 shadow-sm sm:hidden">
+        <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.1em] text-[#7A3B5E]">
+          {cups}/{target}
+        </span>
+        <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-[#E8176D]/15">
+          <motion.span
+            className="absolute inset-y-0 left-0 rounded-full bg-[#E8176D]"
+            animate={{ width: `${pct}%` }}
+            transition={{ type: 'spring', stiffness: 170, damping: 24 }}
+          />
+        </span>
+        <span className="shrink-0 text-[12px] font-bold text-[#E8176D]">{rands(estimate)}</span>
+      </div>
+
+      <CupCarousel mix={mix} onBump={onBump} onSet={onSet} isMobile={isMobile} full={full} />
 
       {/* ── Your box ── */}
       <div className="mx-auto max-w-2xl rounded-3xl bg-[#FFF9ED] p-6 shadow-[0_16px_36px_rgba(180,40,95,0.12)]">
         <div className="flex items-baseline justify-between">
           <span className="text-sm font-bold text-[#3B2116]">
-            {cups} / {CUP_TARGET} cups
+            {cups} / {target} cups
           </span>
           <span className={`text-[12px] font-semibold ${full ? 'text-[#E8176D]' : 'text-[#7A3B5E]/75'}`}>
             {full ? 'Perfect — that’s the lot!' : `${remaining} to go`}
@@ -1019,7 +1099,7 @@ function StepMix({
         <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#E8176D]/12">
           <motion.div
             className="h-full rounded-full bg-[#E8176D]"
-            animate={{ width: `${(cups / CUP_TARGET) * 100}%` }}
+            animate={{ width: `${pct}%` }}
             transition={{ type: 'spring', stiffness: 170, damping: 24 }}
           />
         </div>
@@ -1058,7 +1138,7 @@ function StepMix({
         )}
       </div>
 
-      {/* Iced teas ride along outside the box of 25 */}
+      {/* Iced teas ride along outside the capped box */}
       <div className="mx-auto mt-4 flex max-w-2xl items-center justify-between gap-4 rounded-3xl bg-[#FFF9ED] px-6 py-5 shadow-[0_16px_36px_rgba(180,40,95,0.1)]">
         <div className="flex items-center gap-3">
           <img src="/menu-cups/ice-tea-flat.webp" alt="" className="h-12 w-auto object-contain" draggable={false} />
@@ -1095,20 +1175,22 @@ function StepMix({
 
 function StepStation({
   guests,
-  addons,
   mix,
   isMobile,
   onGuests,
-  onToggle,
   onBump,
+  onSet,
+  icedTeas,
+  onIcedTeas,
 }: {
   guests: number
-  addons: string[]
   mix: Record<string, number>
   isMobile: boolean
   onGuests: (n: number) => void
-  onToggle: (id: string) => void
   onBump: (id: string, delta: number) => void
+  onSet: (id: string, value: number) => void
+  icedTeas: number
+  onIcedTeas: (n: number) => void
 }) {
   const chosen = Object.values(mix).reduce((a, b) => a + b, 0)
 
@@ -1174,6 +1256,7 @@ function StepStation({
       <CupCarousel
         mix={mix}
         onBump={onBump}
+        onSet={onSet}
         isMobile={isMobile}
         addLabel="Add to spread"
       />
@@ -1218,50 +1301,35 @@ function StepStation({
         )}
       </div>
 
-      <div className="mb-5 text-center">
-        <h2 className="uppercase text-[#3B2116] text-[clamp(1.05rem,2.2vw,1.4rem)]" style={{ fontFamily: ARCHIVO }}>
-          Add to the station
-        </h2>
-      </div>
-
-      <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
-        {ADDONS.map((a, i) => {
-          const Icon = ADDON_ICONS[a.id] ?? Sparkles
-          const on = addons.includes(a.id)
-          return (
-            <motion.div
-              key={a.id}
-              initial={{ opacity: 0, y: 26, rotateX: -12 }}
-              animate={{ opacity: 1, y: 0, rotateX: 0 }}
-              transition={{ delay: i * 0.06, duration: 0.45, ease: EASE_OUT }}
-            >
-              <TiltCard onClick={() => onToggle(a.id)} ariaPressed={on} active={on}>
-                <div
-                  className={`flex items-start gap-4 rounded-[26px] p-6 text-left ${
-                    on
-                      ? 'bg-[#E8176D] shadow-[0_24px_48px_rgba(192,16,87,0.34)]'
-                      : 'bg-[#FFF9ED] shadow-[0_16px_36px_rgba(180,40,95,0.12)]'
-                  }`}
-                >
-                  <span
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${on ? 'bg-white/15' : 'bg-[#FFF0F6]'}`}
-                    style={{ transform: 'translateZ(36px)' }}
-                  >
-                    <Icon size={19} style={{ color: on ? '#fff' : BERRY }} aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0" style={{ transform: 'translateZ(18px)' }}>
-                    <span className={`block text-[15px] font-bold ${on ? 'text-white' : 'text-[#3B2116]'}`}>
-                      {a.name}
-                    </span>
-                    <span className={`mt-1 block text-[13px] leading-snug ${on ? 'text-white/80' : 'text-[#7A3B5E]/80'}`}>
-                      {a.desc}
-                    </span>
-                  </span>
-                </div>
-              </TiltCard>
-            </motion.div>
-          )
-        })}
+      {/* Iced teas — the same simple quantity add-on as the capped boxes,
+          rather than another toggle card to tap. */}
+      <div className="mx-auto max-w-2xl flex items-center justify-between gap-4 rounded-3xl bg-[#FFF9ED] px-6 py-5 shadow-[0_16px_36px_rgba(180,40,95,0.1)]">
+        <div className="flex items-center gap-3">
+          <img src="/menu-cups/ice-tea-flat.webp" alt="" className="h-12 w-auto object-contain" draggable={false} />
+          <div>
+            <p className="text-[13px] font-bold text-[#3B2116]">Add Strawberry Peach Iced Teas?</p>
+            <p className="text-[12px] text-[#7A3B5E]/75">{rands(ICED_TEA_PRICE)} each · on the side</p>
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <button
+            onClick={() => onIcedTeas(Math.max(0, icedTeas - 1))}
+            disabled={icedTeas === 0}
+            aria-label="Remove one iced tea"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E8176D]/25 text-[#E8176D] transition hover:bg-[#E8176D] hover:text-white disabled:pointer-events-none disabled:opacity-30"
+          >
+            <Minus size={14} strokeWidth={2.5} />
+          </button>
+          <span className="w-6 text-center text-sm font-bold text-[#3B2116]">{icedTeas}</span>
+          <button
+            onClick={() => onIcedTeas(Math.min(ICED_TEA_CAP, icedTeas + 1))}
+            disabled={icedTeas >= ICED_TEA_CAP}
+            aria-label="Add one iced tea"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E8176D]/25 text-[#E8176D] transition hover:bg-[#E8176D] hover:text-white disabled:pointer-events-none disabled:opacity-30"
+          >
+            <Plus size={14} strokeWidth={2.5} />
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -1452,7 +1520,7 @@ function StepReview({
   onEdit: () => void
 }) {
   const tilt = useTilt(7)
-  const little = quote.pkg === 'little'
+  const capped = quote.pkg === 'little' || quote.pkg === 'signature'
   const dateLabel = quote.date
     ? new Date(`${quote.date}T00:00`).toLocaleDateString('en-ZA', {
         day: 'numeric',
@@ -1505,9 +1573,9 @@ function StepReview({
             </div>
             <div className={row}>
               <span className="text-[#7A3B5E]">Package</span>
-              <span className="font-bold">{little ? 'Little Moments' : 'Indulgent'}</span>
+              <span className="font-bold">{packageName(quote.pkg)}</span>
             </div>
-            {!little && (
+            {!capped && (
               <div className={row}>
                 <span className="text-[#7A3B5E]">Guests</span>
                 <span className="font-bold">{quote.guests}{quote.guests >= 300 ? '+' : ''}</span>
@@ -1524,7 +1592,7 @@ function StepReview({
           <div className="my-5 border-t border-dashed border-[#E8176D]/25" />
 
           <div className="space-y-2.5 text-[#3B2116]">
-            {little ? (
+            {capped ? (
               <>
                 {FLAVOURS.filter((f) => (quote.mix[f.id] ?? 0) > 0).map((f) => (
                   <div key={f.id} className={row}>
@@ -1534,12 +1602,6 @@ function StepReview({
                     </span>
                   </div>
                 ))}
-                {quote.icedTeas > 0 && (
-                  <div className={row}>
-                    <span>{quote.icedTeas} × Iced Tea</span>
-                    <span className="font-semibold">{rands(quote.icedTeas * ICED_TEA_PRICE)}</span>
-                  </div>
-                )}
               </>
             ) : (
               <>
@@ -1551,19 +1613,21 @@ function StepReview({
                     <span className="font-semibold">In the spread</span>
                   </div>
                 ))}
-                {ADDONS.filter((a) => quote.addons.includes(a.id)).map((a) => (
-                  <div key={a.id} className={row}>
-                    <span>{a.name}</span>
-                    <span className="font-semibold">Add-on</span>
-                  </div>
-                ))}
               </>
+            )}
+            {quote.icedTeas > 0 && (
+              <div className={row}>
+                <span>{quote.icedTeas} × Iced Tea</span>
+                <span className="font-semibold">
+                  {capped ? rands(quote.icedTeas * ICED_TEA_PRICE) : 'Add-on'}
+                </span>
+              </div>
             )}
           </div>
 
           <div className="my-5 border-t border-dashed border-[#E8176D]/25" />
 
-          {little ? (
+          {capped ? (
             <div className="flex items-baseline justify-between" style={{ transform: 'translateZ(22px)' }}>
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#7A3B5E]">
                 Estimated from
@@ -1662,9 +1726,9 @@ function ConfirmDialog({
               Send this quote?
             </h2>
             <p className="mt-3 text-[14px] leading-relaxed text-[#7A3B5E]">
-              We’ll send your {quote.pkg === 'little' ? 'Little Moments' : 'Indulgent'} request
-              {quote.pkg === 'little' ? ` (${rands(estimate)} estimated)` : ''} to the team, and email
-              you a formal quote with the final price within 24 hours.
+              We’ll send your {packageName(quote.pkg)} request
+              {quote.pkg === 'little' || quote.pkg === 'signature' ? ` (${rands(estimate)} estimated)` : ''} to
+              the team, and email you a formal quote with the final price within 24 hours.
             </p>
             <p className="mt-3 text-[11.5px] leading-relaxed text-[#7A3B5E]/70">
               {ESTIMATE_NOTE_SHORT}

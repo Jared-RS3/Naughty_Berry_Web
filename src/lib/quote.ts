@@ -10,16 +10,15 @@
  * is just a number the client chose.
  */
 
-export type PackageId = 'little' | 'indulgent'
+export type PackageId = 'little' | 'signature' | 'indulgent'
 
 export interface Quote {
   occasion: string
   pkg: PackageId
-  /** flavour id → cup count. Only meaningful for the Little Moments box. */
+  /** flavour id → cup count. Meaningless for the uncapped Indulgent spread. */
   mix: Record<string, number>
   icedTeas: number
   guests: number
-  addons: string[]
   name: string
   email: string
   phone: string
@@ -30,10 +29,32 @@ export interface Quote {
 
 export const CUP_TARGET = 25
 export const BASE_PRICE = 1675
+/** Signature is the same "capped box" shape as Little Moments, just bigger —
+ *  50 cups plus the on-site stand, staffed for the event. */
+export const SIGNATURE_CUP_TARGET = 50
+export const SIGNATURE_BASE_PRICE = 7750
 /** Menu gap between a R75 cup and a R95 Dubai/Cream, charged per upgraded cup. */
 export const UPGRADE = 20
 export const ICED_TEA_PRICE = 45
 export const ICED_TEA_CAP = 40
+
+/** Little Moments and Signature are both fixed-size boxes; Indulgent is sized
+ *  to the guest list instead, so it has no cap. */
+export function cupCapFor(pkg: PackageId): number | null {
+  if (pkg === 'little') return CUP_TARGET
+  if (pkg === 'signature') return SIGNATURE_CUP_TARGET
+  return null
+}
+
+export function basePriceFor(pkg: PackageId): number {
+  return pkg === 'signature' ? SIGNATURE_BASE_PRICE : BASE_PRICE
+}
+
+export function packageName(pkg: PackageId): string {
+  if (pkg === 'little') return 'Little Moments'
+  if (pkg === 'signature') return 'Signature'
+  return 'Indulgent'
+}
 
 export interface Flavour {
   id: string
@@ -103,25 +124,18 @@ export const FLAVOURS: Flavour[] = [
   },
 ]
 
-export const ADDONS = [
-  { id: 'choc-tap', name: 'Chocolate Tap', desc: 'Our signature flowing tap, poured live.' },
-  { id: 'dubai-station', name: 'Dubai Kunafeh Bar', desc: 'Pistachio cream & kataifi, on the side.' },
-  { id: 'cream-station', name: 'Naughty Cream Bar', desc: 'Sweet cream and Biscoff crumb station.' },
-  { id: 'iced-tea-bar', name: 'Iced Tea Bar', desc: 'Strawberry-peach over ice, all night.' },
-]
-
 export function totalCups(mix: Record<string, number>) {
   return Object.values(mix).reduce((a, b) => a + b, 0)
 }
 
 /** The figure shown on screen. The server recomputes this independently before
  *  writing anything — this copy is for display only and is never posted. */
-export function estimateTotal(mix: Record<string, number>, icedTeas: number) {
+export function estimateTotal(pkg: PackageId, mix: Record<string, number>, icedTeas: number) {
   const upgraded = FLAVOURS.reduce(
     (sum, f) => sum + (f.upcharge > 0 ? (mix[f.id] ?? 0) : 0),
     0
   )
-  return BASE_PRICE + upgraded * UPGRADE + icedTeas * ICED_TEA_PRICE
+  return basePriceFor(pkg) + upgraded * UPGRADE + icedTeas * ICED_TEA_PRICE
 }
 
 /** en-ZA groups thousands with a space — "R1 675". */
@@ -201,7 +215,6 @@ export function toEnquiryPayload(q: Quote, startedAt: number, honeypot: string) 
     mix: q.mix,
     icedTeas: q.icedTeas,
     guests: q.guests,
-    addons: q.addons,
     name: q.name,
     email: q.email,
     phone: q.phone,

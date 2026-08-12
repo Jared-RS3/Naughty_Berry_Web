@@ -107,7 +107,7 @@ const EMAIL_RE = /^[^\s@,;:<>()[\]\\]{1,64}@[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9]
 const PHONE_RE = /^[+()\d][\d\s()+-]{5,31}$/
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
-const PACKAGES = new Set(['little', 'indulgent'])
+const PACKAGES = new Set(['little', 'signature', 'indulgent'])
 const OCCASIONS = new Set([
   'Wedding', 'Birthday', 'Corporate Event', 'Graduation',
   'Baby Shower', 'Year End', 'Girls Night', 'Something Else',
@@ -115,7 +115,6 @@ const OCCASIONS = new Set([
 const FLAVOUR_IDS = new Set([
   'classic', 'brownie', 'dubai', 'dubai-brownie', 'cream', 'cream-brownie',
 ])
-const ADDON_IDS = new Set(['choc-tap', 'dubai-station', 'cream-station', 'iced-tea-bar'])
 
 const BUCKET: Record<string, 'classic' | 'brownie' | 'dubai' | 'cream'> = {
   classic: 'classic',
@@ -143,18 +142,26 @@ const FLAVOUR_LABEL: Record<string, string> = {
   'cream-brownie': 'Cream Brownie',
 }
 
-const ADDON_LABEL: Record<string, string> = {
-  'choc-tap': 'Chocolate Tap',
-  'dubai-station': 'Dubai Kunafeh Bar',
-  'cream-station': 'Naughty Cream Bar',
-  'iced-tea-bar': 'Iced Tea Bar',
-}
-
 const CUP_TARGET = 25
+const SIGNATURE_CUP_TARGET = 50
 const MAX_CUPS_PER_FLAVOUR = 500
 const MAX_TOTAL_CUPS = 2000
 const MAX_ICED_TEAS = 40
 const MAX_GUESTS = 5000
+
+/** Little Moments and Signature are both fixed-size boxes; Indulgent is sized
+ *  to the guest list instead, so it has no cap. Mirrors cupCapFor in
+ *  src/lib/quote.ts — kept independent because this file is the one that
+ *  actually enforces it. */
+function cupCapFor(pkg: string): number | null {
+  if (pkg === 'little') return CUP_TARGET
+  if (pkg === 'signature') return SIGNATURE_CUP_TARGET
+  return null
+}
+
+function basePriceFor(pkg: string): number {
+  return pkg === 'signature' ? 7750 : 1675
+}
 
 function intIn(value: unknown, min: number, max: number, fallback: number): number {
   // Only ever coerce a number or a string. `Number({ toString: 1 })` throws
@@ -194,6 +201,10 @@ function validate(input: Json): Validated | { error: string } {
 
   const pkg = typeof input.pkg === 'string' && PACKAGES.has(input.pkg) ? input.pkg : null
   if (!pkg) return { error: 'Please choose a package.' }
+  const cap = cupCapFor(pkg)
+  const capped = cap !== null
+  // Kept for the branches below that only ever meant "the little box" —
+  // Signature now shares that shape, just at a different size.
   const little = pkg === 'little'
 
   // Unknown occasions are recorded verbatim in the notes rather than rejected —
@@ -217,16 +228,14 @@ function validate(input: Json): Validated | { error: string } {
     }
   }
   if (totalCups > MAX_TOTAL_CUPS) return { error: 'That is more cups than we can quote online.' }
-  if (little && totalCups !== CUP_TARGET) {
-    return { error: `A Little Moments box is exactly ${CUP_TARGET} cups.` }
+  if (capped && totalCups !== cap) {
+    return { error: `A ${little ? 'Little Moments' : 'Signature'} box is exactly ${cap} cups.` }
   }
 
-  const addons = Array.isArray(input.addons)
-    ? [...new Set(input.addons.filter((a): a is string => typeof a === 'string' && ADDON_IDS.has(a)))]
-    : []
-
-  const icedTeas = little ? intIn(input.icedTeas, 0, MAX_ICED_TEAS, 0) : 0
-  const guests = little ? CUP_TARGET : intIn(input.guests, 1, MAX_GUESTS, 80)
+  // Iced tea rides along as a simple quantity add-on on every package, not
+  // just the capped boxes.
+  const icedTeas = intIn(input.icedTeas, 0, MAX_ICED_TEAS, 0)
+  const guests = capped ? cap : intIn(input.guests, 1, MAX_GUESTS, 80)
 
   const venue = field(input.venue, LIMITS.venue)
   const notes = field(input.notes, LIMITS.notes, { multiline: true })
@@ -255,12 +264,11 @@ function validate(input: Json): Validated | { error: string } {
   // just a number an attacker chose.
   const UPGRADE = 20
   const ICED_TEA_PRICE = 45
-  const BASE_PRICE = 1675
   const upgraded = Object.entries(mix).reduce(
     (sum, [id, n]) => sum + (BUCKET[id] === 'dubai' || BUCKET[id] === 'cream' ? n : 0),
     0
   )
-  const estimate = BASE_PRICE + upgraded * UPGRADE + icedTeas * ICED_TEA_PRICE
+  const estimate = basePriceFor(pkg) + upgraded * UPGRADE + icedTeas * ICED_TEA_PRICE
   const rands = (n: number) => `R${n.toLocaleString('en-ZA')}`
 
   const counts = { classic: 0, brownie: 0, dubai: 0, cream: 0 }
@@ -273,13 +281,12 @@ function validate(input: Json): Validated | { error: string } {
   const specialRequests = [
     `Occasion: ${rawOccasion}`,
     mixLine
-      ? `${little ? 'Cup mix' : 'Requested spread'}: ${mixLine}`
-      : little
+      ? `${capped ? 'Cup mix' : 'Requested spread'}: ${mixLine}`
+      : capped
         ? null
         : 'Spread: not specified — suggest a mix',
-    little ? null : `Add-ons: ${addons.map((a) => ADDON_LABEL[a]).join(', ') || 'none selected'}`,
-    little && icedTeas > 0 ? `Iced teas: ${icedTeas}` : null,
-    little
+    icedTeas > 0 ? `Iced teas: ${icedTeas}` : null,
+    capped
       ? `Estimated total (cups only, excl. travel/setup/other fees): ${rands(estimate)} — final quote still to be emailed`
       : null,
     phone ? `Phone: ${phone}` : null,
@@ -287,6 +294,12 @@ function validate(input: Json): Validated | { error: string } {
   ]
     .filter(Boolean)
     .join('\n')
+
+  const PACKAGE_LABEL: Record<string, string> = {
+    little: 'Little moments ',
+    signature: 'Signature ',
+    indulgent: 'Indulgent ',
+  }
 
   // ── The allowlist. Only these columns are ever written. ──
   const fields: Json = {
@@ -298,7 +311,7 @@ function validate(input: Json): Validated | { error: string } {
     'Status': 'New Lead',
     'Date Captured': new Date().toISOString().slice(0, 10),
     'Estimated Headcount': guests,
-    'Package selected': little ? 'Little moments ' : 'Indulgent ',
+    'Package selected': PACKAGE_LABEL[pkg],
     'Cup Selection': [...new Set(Object.keys(mix).map((id) => CUP_SELECT[BUCKET[id]]))],
     'Classic cups': counts.classic,
     'Brownie cups': counts.brownie,

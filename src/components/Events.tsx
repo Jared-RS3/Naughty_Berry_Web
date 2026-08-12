@@ -23,7 +23,7 @@ const PACKAGES = [
     cta: 'Enquire Now',
   },
   {
-    id: 'medium',
+    id: 'signature',
     icon: Star,
     name: 'Signature',
     subtitle: '50 guests',
@@ -45,7 +45,7 @@ const PACKAGES = [
   },
   
   {
-    id: 'medium',
+    id: 'large',
     icon: Star,
     name: 'Indulgent',
     subtitle: '50+ guests',
@@ -81,7 +81,12 @@ const OCCASIONS = [
 
 /** "Enquire Now" hands off to the /quote builder with the package preselected,
  *  so the visitor lands in the flow already one answer ahead. */
-const quoteHref = (pkgId: string) => `/quote?pkg=${pkgId === 'small' ? 'little' : 'indulgent'}`
+const PKG_TO_QUOTE: Record<string, string> = {
+  small: 'little',
+  signature: 'signature',
+  large: 'indulgent',
+}
+const quoteHref = (pkgId: string) => `/quote?pkg=${PKG_TO_QUOTE[pkgId] ?? 'indulgent'}`
 
 export default function Events() {
 
@@ -182,7 +187,7 @@ export default function Events() {
                   // 400px the two labels end up all but touching, and the photo
                   // already does the "pick this one" work.
                   <span className="absolute top-6 right-6 hidden text-[10px] font-bold tracking-[0.18em] uppercase text-white/85 sm:block">
-                    {/* Most Popular */}
+                    {/* Most Popular */
                   </span>
                 )}
 
