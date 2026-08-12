@@ -187,7 +187,7 @@ export default function Events() {
                   // 400px the two labels end up all but touching, and the photo
                   // already does the "pick this one" work.
                   <span className="absolute top-6 right-6 hidden text-[10px] font-bold tracking-[0.18em] uppercase text-white/85 sm:block">
-                    {/* Most Popular */
+                    {/* Most Popular */}
                   </span>
                 )}
 
