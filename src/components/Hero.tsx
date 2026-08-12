@@ -229,11 +229,11 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
               className="text-left font-semibold"
               style={{ color: c.copy, fontSize: 'clamp(11px, 1.42cqw, 19px)', lineHeight: 1.42 }}
             >
-              Hand-dipped.
+              Fresh Strawberries.
               <br />
-              Fresh strawberries.
+              Chocolate on Tap
               <br />
-              Made to delight.
+              Made to Remember.
             </motion.p>
           </div>
 
