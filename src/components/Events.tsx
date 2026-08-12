@@ -25,6 +25,28 @@ const PACKAGES = [
   {
     id: 'medium',
     icon: Star,
+    name: 'Signature',
+    subtitle: '50 guests',
+    price: 'Starting From R7750',
+    featured: true,
+    // The one thing this package has that Little Moments cannot: the branded
+    // stand itself, staffed, at your venue. Showing it is what earns the click
+    // on Enquire — a bullet list saying "Premium Live Station" never will.
+    photo: '/Stand.webp',
+    features: [
+      '50 Cups if your choice',
+      'Dubai & Cream available as add on',
+      'Premium Live Station',
+      'Chocolate Tap',
+      'Full Service for Duration of Event',
+      'On Site Service',
+    ],
+    cta: 'Enquire Now',
+  },
+  
+  {
+    id: 'medium',
+    icon: Star,
     name: 'Indulgent',
     subtitle: '50+ guests',
     // price: 'From R4 500',
