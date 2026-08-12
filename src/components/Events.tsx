@@ -131,7 +131,7 @@ export default function Events() {
 
         {/* Packages — two cards now, so a capped, centred 2-up grid instead of
             thirds that left a phantom empty column on the right. */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20 items-start max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 items-start max-w-4xl mx-auto">
           {PACKAGES.map((pkg, i) => {
             const Icon = pkg.icon
             const featured = !!pkg.featured
