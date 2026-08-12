@@ -1,40 +1,15 @@
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, Clock, Instagram, ChevronLeft, ChevronRight } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Instagram } from 'lucide-react'
 import SectionHeading from './SectionHeading'
 import { usePopupSchedule } from '../hooks/usePopupSchedule'
 
-const PER_PAGE = 3
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 
 export default function FindUs() {
-  const { schedule, loading, error } = usePopupSchedule()
-  const [page, setPage] = useState(0)
-  const [dir, setDir] = useState(1)
-
-  const sorted = [...schedule].sort((a, b) => {
-    const da = new Date(a.date).getTime()
-    const db = new Date(b.date).getTime()
-    if (isNaN(da) || isNaN(db)) return 0
-    return db - da
-  })
-
-  const totalPages = Math.max(1, Math.ceil(sorted.length / PER_PAGE))
-  const pageSlots = sorted.slice(page * PER_PAGE, (page + 1) * PER_PAGE)
-  const canLeft = page > 0
-  const canRight = page < totalPages - 1
-
-  const go = (newPage: number) => {
-    setDir(newPage > page ? 1 : -1)
-    setPage(newPage)
-  }
-
-  const arrowClass = (enabled: boolean) =>
-    `w-11 h-11 rounded-full flex items-center justify-center transition-colors ${
-      enabled
-        ? 'nb-pill text-[#E8176D] hover:bg-[#E8176D] hover:text-white cursor-pointer'
-        : 'text-[#E8176D]/25 cursor-default'
-    }`
+  // The schedule carousel that used to live here is gone; the hook stays
+  // because the section still reports an Airtable outage, and because it shares
+  // one cached fetch with the hero pill and the footer map card.
+  const { error } = usePopupSchedule()
 
   return (
     <section
