@@ -191,7 +191,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
                 >
                   <button
                     onClick={() => handleNavClick(href)}
-                    className={`text-[22px] font-display font-bold transition-colors cursor-pointer ${
+                    className={`text-[22px] font-bold transition-colors cursor-pointer ${
                       isNaughtyMode
                         ? 'text-[#FFE4F5] hover:text-[#FF4DAE]'
                         : 'text-[#2D1225] hover:text-[#E8176D]'

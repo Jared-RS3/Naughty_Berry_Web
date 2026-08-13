@@ -301,7 +301,7 @@ export default function Testimonials() {
               <motion.div
                 style={{
                   ...(pinned ? { opacity: headOpacity, scale: headScale, y: headY } : {}),
-                  fontFamily: "'Archivo Black', system-ui, sans-serif",
+                  fontFamily: 'var(--font-display)',
                   fontSize: 'min(16.5cqw, 250px)',
                   lineHeight: 1,
                   letterSpacing: '-0.02em',
@@ -442,7 +442,7 @@ export default function Testimonials() {
                     opacity: mHeadOpacity,
                     scale: mHeadScale,
                     y: mHeadY,
-                    fontFamily: "'Archivo Black', system-ui, sans-serif",
+                    fontFamily: 'var(--font-display)',
                     fontSize: 'min(21cqw, 116px)',
                     lineHeight: 1,
                     letterSpacing: '-0.02em',
@@ -566,7 +566,7 @@ export default function Testimonials() {
               aria-hidden="true"
               className="absolute inset-x-0 top-3 z-0 text-center select-none pointer-events-none"
               style={{
-                fontFamily: "'Archivo Black', system-ui, sans-serif",
+                fontFamily: 'var(--font-display)',
                 fontSize: 'min(17cqw, 110px)',
                 lineHeight: 1,
                 letterSpacing: '-0.02em',

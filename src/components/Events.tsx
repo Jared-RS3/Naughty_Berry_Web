@@ -201,7 +201,7 @@ export default function Events() {
                 <h3
                   className="mt-6 uppercase text-2xl leading-none"
                   style={{
-                    fontFamily: "'Archivo Black', system-ui, sans-serif",
+                    fontFamily: 'var(--font-display)',
                     color: featured ? '#fff' : '#3B2116',
                   }}
                 >
@@ -264,7 +264,7 @@ export default function Events() {
           {/* <div className="text-center mb-8">
             <h3
               className="uppercase leading-[1.05] text-[clamp(1.5rem,3.4vw,2.5rem)]"
-              style={{ fontFamily: "'Archivo Black', system-ui, sans-serif" }}
+              style={{ fontFamily: 'var(--font-display)' }}
             >
               <span className="text-[#E8176D]">Let’s make it </span>
               <span className="text-[#3B2116]">sweet.</span>

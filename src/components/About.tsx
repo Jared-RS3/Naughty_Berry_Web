@@ -29,7 +29,6 @@ import { usePinProgress } from '../hooks/usePinProgress'
 
 const BERRY = '#E8176D'
 const COCOA = '#3B2116'
-const ARCHIVO = "'Archivo Black', system-ui, sans-serif"
 
 type Seg = { text: string; color: string }
 
@@ -259,7 +258,7 @@ export default function About() {
 
                 <h2
                   className="min-w-0 uppercase leading-[1.03] text-[clamp(1.7rem,3.9vw,3.6rem)]"
-                  style={{ fontFamily: ARCHIVO }}
+                  style={{ fontFamily: 'var(--font-display)' }}
                 >
                   <FillBlock
                     lines={STATEMENT}
@@ -354,7 +353,7 @@ export default function About() {
 
             <h2
               className="uppercase leading-[1.08] text-[clamp(1.7rem,8vw,2.6rem)]"
-              style={{ fontFamily: ARCHIVO }}
+              style={{ fontFamily: 'var(--font-display)' }}
             >
               <FillBlock
                 lines={STATEMENT}

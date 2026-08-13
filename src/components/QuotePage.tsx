@@ -73,7 +73,6 @@ function cupCapFor(pkg: PackageId | null): number | null {
  * Airtable, because writing needs a token the browser must never hold.
  */
 
-const ARCHIVO = "'Archivo Black', system-ui, sans-serif"
 const BERRY = '#E8176D'
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 
@@ -439,7 +438,7 @@ export default function QuotePage() {
     <Shell>
       {/* Progress rail */}
       <div className="mx-auto mb-10 flex max-w-3xl items-center gap-3 px-1">
-        <span className="font-display text-lg font-bold leading-none text-[#E8176D]">
+        <span className="font-display text-lg leading-none text-[#E8176D]">
           0{step + 1}
         </span>
         <span className="relative block h-[3px] flex-1 overflow-hidden rounded-full bg-[#E8176D]/15">
@@ -659,7 +658,7 @@ function StepHeading({ title, sub }: { title: string; sub: string }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: EASE_OUT }}
         className="uppercase leading-[1.02] text-[clamp(1.6rem,4.4vw,2.9rem)]"
-        style={{ fontFamily: ARCHIVO }}
+        style={{ fontFamily: 'var(--font-display)' }}
       >
         {/* `|` splits the headline onto its own lines, alternating berry/cocoa
             the way every other heading on the site does. */}
@@ -846,7 +845,7 @@ function StepPackage({ value, onPick }: { value: PackageId | null; onPick: (p: P
 
                     <p
                       className={`mt-4 uppercase text-xl leading-none ${on || hero ? 'text-white' : 'text-[#3B2116]'}`}
-                      style={{ fontFamily: ARCHIVO, transform: 'translateZ(34px)' }}
+                      style={{ fontFamily: 'var(--font-display)', transform: 'translateZ(34px)' }}
                     >
                       {name}
                     </p>
@@ -1050,7 +1049,7 @@ function CupCarousel({
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25 }}
           >
-            <h2 className="font-display text-lg font-bold uppercase tracking-[0.14em] text-[#E8176D]">
+            <h2 className="font-display text-lg uppercase tracking-[0.14em] text-[#E8176D]">
               {flavour.name}
             </h2>
             <p className="mx-auto mt-1.5 max-w-sm text-[13px] leading-relaxed text-[#7A3B5E]/80">
@@ -1503,7 +1502,7 @@ function StepStation({
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 400, damping: 20 }}
           className="text-[clamp(2.6rem,7vw,4rem)] leading-none text-[#E8176D]"
-          style={{ fontFamily: ARCHIVO }}
+          style={{ fontFamily: 'var(--font-display)' }}
           aria-live="polite"
         >
           {guests}
@@ -1532,7 +1531,7 @@ function StepStation({
              fixed box, so the guest count is a guide, not a limit. The chips
              below keep every flavour's count visible while you spin. ── */}
       <div className="mb-5 text-center">
-        <h2 className="uppercase text-[#3B2116] text-[clamp(1.05rem,2.2vw,1.4rem)]" style={{ fontFamily: ARCHIVO }}>
+        <h2 className="uppercase text-[#3B2116] text-[clamp(1.05rem,2.2vw,1.4rem)]" style={{ fontFamily: 'var(--font-display)' }}>
           Choose your spread
         </h2>
         <p className="mt-2 text-[13.5px] text-[#7A3B5E]/80">
@@ -1887,7 +1886,7 @@ function StepReview({
               className="mx-auto h-9 w-9 object-contain"
               draggable={false}
             />
-            <p className="mt-2 uppercase text-[16px] text-[#E8176D]" style={{ fontFamily: ARCHIVO }}>
+            <p className="mt-2 uppercase text-[16px] text-[#E8176D]" style={{ fontFamily: 'var(--font-display)' }}>
               Naughty Berry
             </p>
             <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#7A3B5E]/60">
@@ -2061,7 +2060,7 @@ function ConfirmDialog({
             <span className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF0F6]">
               <Send size={20} className="text-[#E8176D]" aria-hidden="true" />
             </span>
-            <h2 id="confirm-title" className="uppercase text-xl leading-tight text-[#3B2116]" style={{ fontFamily: ARCHIVO }}>
+            <h2 id="confirm-title" className="uppercase text-xl leading-tight text-[#3B2116]" style={{ fontFamily: 'var(--font-display)' }}>
               Send this quote?
             </h2>
             <p className="mt-3 text-[14px] leading-relaxed text-[#7A3B5E]">
@@ -2133,7 +2132,7 @@ function SentScreen({ name }: { name: string }) {
         <PartyPopper size={34} className="text-[#E8176D]" aria-hidden="true" />
       </motion.span>
 
-      <h1 className="uppercase leading-[1.08] text-white text-[clamp(1.5rem,4vw,2.3rem)]" style={{ fontFamily: ARCHIVO }}>
+      <h1 className="uppercase leading-[1.08] text-white text-[clamp(1.5rem,4vw,2.3rem)]" style={{ fontFamily: 'var(--font-display)' }}>
         Sweet! It’s on its way.
       </h1>
       <p className="mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-white/85">

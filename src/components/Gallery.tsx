@@ -136,7 +136,7 @@ export default function Gallery() {
               <div className="mt-5 text-center">
                 <h3
                   className="uppercase text-xl text-white"
-                  style={{ fontFamily: "'Archivo Black', system-ui, sans-serif" }}
+                  style={{ fontFamily: 'var(--font-display)' }}
                 >
                   {selected.label}
                 </h3>

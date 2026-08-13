@@ -19,7 +19,6 @@ import { ArrowLeft, Instagram } from 'lucide-react'
  * /privacy-policy#cookies and /privacy-policy#your-rights.
  */
 
-const ARCHIVO = "'Archivo Black', system-ui, sans-serif"
 
 /* ────────────────────────── Business identity ──────────────────────────
  *
@@ -119,7 +118,7 @@ export function Section({
     <section id={id} className="scroll-mt-24 border-t border-[#E8176D]/10 pt-10 first:border-t-0 first:pt-0">
       <h2
         className="uppercase leading-[1.1] tracking-[-0.01em] text-[clamp(1.25rem,2.4vw,1.7rem)] text-[#3B2116]"
-        style={{ fontFamily: ARCHIVO }}
+        style={{ fontFamily: 'var(--font-display)' }}
       >
         {heading}
       </h2>
@@ -373,7 +372,7 @@ export default function LegalLayout({
 
         <h1
           className="uppercase leading-[0.95] tracking-[-0.03em] text-[clamp(2.2rem,7vw,4.6rem)] text-[#3B2116]"
-          style={{ fontFamily: ARCHIVO }}
+          style={{ fontFamily: 'var(--font-display)' }}
         >
           {title}
         </h1>

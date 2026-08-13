@@ -52,7 +52,7 @@ export default function FindUs() {
             </p>
             <h3
               className="uppercase leading-[1.05] text-[clamp(1.5rem,3.2vw,2.4rem)]"
-              style={{ fontFamily: "'Archivo Black', system-ui, sans-serif" }}
+              style={{ fontFamily: 'var(--font-display)' }}
             >
               <span className="text-[#3B2116]">Follow </span>
               <span className="text-[#E8176D]">@naughtyberrycpt</span>

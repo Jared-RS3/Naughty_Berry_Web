@@ -9,7 +9,6 @@ import { STAGGER, POP, RISE } from '../motionPresets'
  * read as a chapter rather than a block of copy.
  */
 
-const ARCHIVO = "'Archivo Black', system-ui, sans-serif"
 
 export default function SectionHeading({
   eyebrow,
@@ -55,7 +54,7 @@ export default function SectionHeading({
           aria-hidden="true"
           className="select-none pointer-events-none whitespace-nowrap"
           style={{
-            fontFamily: ARCHIVO,
+            fontFamily: 'var(--font-display)',
             fontSize: 'min(13.5cqw, 176px)',
             lineHeight: 0.86,
             letterSpacing: '-0.02em',
@@ -67,7 +66,7 @@ export default function SectionHeading({
         <h2
           className="relative z-10 uppercase leading-[1.02] text-[clamp(1.35rem,3.5cqw,2.55rem)] text-[#3B2116]"
           style={{
-            fontFamily: ARCHIVO,
+            fontFamily: 'var(--font-display)',
             // Just enough tuck to bind the sentence to the word above it —
             // any more and the two sets of caps start reading as one blur.
             marginTop: 'clamp(-20px, -1.5cqw, -4px)',

@@ -15,10 +15,6 @@ import { mapsHref, pickNext, shortWhen } from '../lib/nextStop'
 import { EMAIL_RE } from '../lib/quote'
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
-/** Same display face the rest of the site sets headings in (Gallery, Hero,
- *  SectionHeading) — these two headings were the only ones left on the default
- *  sans at weight 900, which read as a different typeface entirely. */
-const ARCHIVO = "'Archivo Black', system-ui, sans-serif"
 /** TODO: swap in Daybreak's live site — this is the only place it's referenced. */
 const DAYBREAK_URL = 'https://daybreaktech.agency'
 /** Alpha-only crop of the Daybreak wordmark, so the mark takes its colour from
@@ -129,7 +125,7 @@ export default function Footer() {
 
               <h2
                 className="mx-auto max-w-[560px] text-center uppercase leading-[0.9] tracking-[-0.045em] text-[#3B2116] md:mx-0 md:text-left"
-                style={{ fontFamily: ARCHIVO }}
+                style={{ fontFamily: 'var(--font-display)' }}
               >
                 <span className="block text-[clamp(1.9rem,9.2vw,7.6rem)]">
                   A Little Naughty.
@@ -295,7 +291,7 @@ export default function Footer() {
 
                 <h3
                   className="uppercase leading-[0.92] tracking-[-0.04em] text-[#E8176D]"
-                  style={{ fontFamily: ARCHIVO }}
+                  style={{ fontFamily: 'var(--font-display)' }}
                 >
                   <span className="block text-[clamp(2rem,9vw,5.8rem)] md:text-[clamp(3rem,5vw,5.8rem)]">
                     We pop up.

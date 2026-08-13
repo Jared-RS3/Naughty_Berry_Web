@@ -17,7 +17,6 @@ import { STAGGER, POP, RISE } from '../motionPresets'
  * part of the site on its own.
  */
 
-const ARCHIVO = "'Archivo Black', system-ui, sans-serif"
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 
 /** The intro sits directly under the headline — the longest run of copy on the
@@ -139,7 +138,7 @@ export default function StoryPage() {
               variants={RISE}
               className="mt-6 uppercase leading-[0.95]"
               style={{
-                fontFamily: ARCHIVO,
+                fontFamily: 'var(--font-display)',
                 fontSize: 'min(8.8cqw, 62px)',
                 letterSpacing: '-0.02em',
               }}
@@ -277,7 +276,7 @@ export default function StoryPage() {
 
                 <h2
                   className="mt-6 uppercase leading-[1.02] text-[clamp(1.75rem,3.8vw,2.7rem)] text-[#3B2116]"
-                  style={{ fontFamily: ARCHIVO }}
+                  style={{ fontFamily: 'var(--font-display)' }}
                 >
                   {c.heading}
                 </h2>
@@ -313,7 +312,7 @@ export default function StoryPage() {
 
           <h2
             className="relative uppercase leading-[1.08] text-white text-[clamp(1.6rem,4vw,2.6rem)]"
-            style={{ fontFamily: ARCHIVO }}
+            style={{ fontFamily: 'var(--font-display)' }}
           >
             From Cape Town, with Love
           </h2>

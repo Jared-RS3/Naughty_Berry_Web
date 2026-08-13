@@ -309,7 +309,7 @@ function CupCarousel({
           aria-hidden="true"
           className="absolute left-1/2 top-[22%] -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none whitespace-nowrap"
           style={{
-            fontFamily: "'Archivo Black', system-ui, sans-serif",
+            fontFamily: 'var(--font-display)',
             fontSize: isMobile
               ? `${Math.min(24, 96 / word.length)}cqw`
               : `${Math.min(16.5, 68 / word.length)}cqw`,
@@ -416,13 +416,13 @@ function CupCarousel({
                 {current.tag}
               </span>
             )}
-            <h3 className="font-display font-bold uppercase tracking-[0.16em] text-[#E8176D] text-lg md:text-xl">
+            <h3 className="font-display uppercase tracking-[0.16em] text-[#E8176D] text-lg md:text-xl">
               {current.name}
             </h3>
             <p className="mt-3 md:mt-2 max-w-[19rem] md:max-w-sm mx-auto text-[#7A3B5E]/75 text-[12.5px] md:text-[15px] leading-[1.7] md:leading-relaxed">
               {current.desc}
             </p>
-            <p className="mt-4 md:mt-3 font-display font-bold text-[#E8176D] text-xl md:text-2xl">{current.price}</p>
+            <p className="mt-4 md:mt-3 font-display text-[#E8176D] text-xl md:text-2xl">{current.price}</p>
           </motion.div>
         </AnimatePresence>
       </div>
@@ -430,7 +430,7 @@ function CupCarousel({
       {/* ── Pagination + PDF ── */}
       <div className="relative z-10 mt-6 md:mt-8 flex items-center justify-between gap-6">
         <div className="flex items-center gap-3" aria-label={`Item ${index + 1} of ${count}`}>
-          <span className="font-display font-bold text-[#E8176D] text-lg leading-none">
+          <span className="font-display text-[#E8176D] text-lg leading-none">
             0{index + 1}
           </span>
           <span className="relative block h-[2px] w-24 sm:w-40 bg-[#E8176D]/15 overflow-hidden rounded-full">

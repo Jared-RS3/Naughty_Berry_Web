@@ -137,7 +137,7 @@ function HeroLocationStrip({
           >
             {/* <span
               className="-rotate-3 text-[11px] font-extrabold italic leading-none sm:text-[12px]"
-              style={{ fontFamily: "'Nunito', system-ui, sans-serif" }}
+              style={{ fontFamily: 'var(--font-body)' }}
             >
               click me
             </span> */}
@@ -267,7 +267,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
             animate={loaded ? 'visible' : 'hidden'}
             className="absolute inset-0 z-0 flex flex-col items-center justify-center text-center select-none pointer-events-none"
             style={{
-              fontFamily: "'Archivo Black', system-ui, sans-serif",
+              fontFamily: 'var(--font-display)',
               lineHeight: 0.9,
               letterSpacing: '-0.012em',
               // On mobile the words read big and bold behind the cup but leave

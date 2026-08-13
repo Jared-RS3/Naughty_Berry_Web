@@ -10,7 +10,6 @@ import { mapsHref, pickNext, relativeLabel } from '../lib/nextStop'
  * two can never disagree about where the trailer is.
  */
 
-const ARCHIVO = "'Archivo Black', system-ui, sans-serif"
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 
 /** Shared shell so the loading, empty and loaded states are literally the same
@@ -64,7 +63,7 @@ export default function NextStop() {
             </p>
             <p
               className="mt-3 uppercase leading-[1.05] text-white text-[clamp(1.35rem,3.4vw,2.1rem)]"
-              style={{ fontFamily: ARCHIVO }}
+              style={{ fontFamily: 'var(--font-display)' }}
             >
               Still being locked in
             </p>
@@ -118,7 +117,7 @@ export default function NextStop() {
 
           <h2
             className="mt-2 uppercase leading-[1.02] text-white text-[clamp(1.7rem,4.4vw,3rem)]"
-            style={{ fontFamily: ARCHIVO }}
+            style={{ fontFamily: 'var(--font-display)' }}
           >
             {slot.location}
           </h2>
