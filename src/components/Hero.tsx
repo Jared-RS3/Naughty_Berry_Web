@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { MapPin, ArrowRight, ChevronRight } from 'lucide-react'
 import { usePopupSchedule } from '../hooks/usePopupSchedule'
-import { isDayOff, mapsHref, pickNext, stopHeadline } from '../lib/nextStop'
+import { isScheduleOff, mapsHref, pickNext, stopHeadline } from '../lib/nextStop'
 import { useIsMobile } from '../hooks/useIsMobile'
 
 type HeroProps = {
@@ -34,9 +34,11 @@ function HeroLocationStrip({
   // "Off" in the Day of Week dropdown is the sheet saying the trailer isn't out.
   // There is no stop to point at, and the generic "See where we are next" would
   // still read as a live sighting — so the pill leaves the hero entirely rather
-  // than sitting there with nothing to say. It only disappears once the schedule
+  // than sitting there with nothing to say. Asked of the whole schedule, not of
+  // `next`: an Off row whose date has passed is no longer the "next stop", but
+  // it is still the sheet's current answer. It only disappears once the schedule
   // has actually loaded, so the placeholder still holds the space while fetching.
-  if (!loading && next && isDayOff(next.slot)) return null
+  if (!loading && isScheduleOff(schedule)) return null
 
   // Tapping the pill hands the venue address straight to the phone's maps app —
   // the Google Maps universal link deep-links into the native app on both iOS
@@ -77,11 +79,15 @@ function HeroLocationStrip({
         {...(venueHref ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
         aria-label={
           venueHref && next
-            ? `${headline} — open ${next.slot.location} in maps`
+            ? `${headline} — get directions to ${next.slot.location}`
             : undefined
         }
         whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
-        className={`group flex max-w-full items-center gap-3 whitespace-nowrap rounded-full border px-4 py-2.5 transition-colors sm:gap-4 sm:px-6 sm:py-3 sm:backdrop-blur-md ${shell}`}
+        /* `relative` so the "click me" doodle can hang off the pill itself
+           rather than off the centring wrapper, whose width the pill doesn't
+           fill — that keeps the arrow pointing at the real right-hand edge
+           whatever the venue name does to the pill's width. */
+        className={`group relative flex max-w-full items-center gap-3 whitespace-nowrap rounded-full border px-4 py-2.5 transition-colors sm:gap-4 sm:px-6 sm:py-3 sm:backdrop-blur-md ${shell}`}
       >
         <span className={`relative flex h-2 w-2 shrink-0 ${accent}`} aria-hidden="true">
           {!prefersReducedMotion && (
@@ -91,7 +97,7 @@ function HeroLocationStrip({
         </span>
 
         {loading ? (
-          <span className="h-3 w-40 animate-pulse rounded-full bg-current opacity-20" />
+          <span className="h-3 w-32 shrink animate-pulse rounded-full bg-current opacity-20 sm:w-40" />
         ) : (
           <span className={`min-w-0 truncate text-[12px] font-semibold sm:text-sm ${strong}`}>
             {headline ?? 'See where we are next'}
@@ -109,6 +115,51 @@ function HeroLocationStrip({
           className={`shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 ${accent}`}
           aria-hidden="true"
         />
+
+        {/* Hand-drawn "click me" — the pill states its business plainly, so the
+            only thing left to say is that it's pressable, and a doodle says that
+            without another button competing with View Menu for the eye. It hangs
+            below the pill rather than beside it so it costs the venue name no
+            width, and tucks inside the pill's right edge so it can't be clipped
+            by the hero's overflow on a narrow phone. Hidden while the schedule
+            loads — nothing to click at yet. */}
+        {!loading && (
+          <motion.span
+            aria-hidden="true"
+            className={`pointer-events-none absolute right-1 top-full flex translate-y-0.5 items-end gap-0.5 ${accent}`}
+            animate={prefersReducedMotion ? undefined : { y: [0, 2.5, 0] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <span
+              className="-rotate-3 text-[11px] font-extrabold italic leading-none sm:text-[12px]"
+              style={{ fontFamily: "'Nunito', system-ui, sans-serif" }}
+            >
+              click me
+            </span>
+            {/* Curls up and to the right, landing on the chevron. */}
+            <svg
+              width="26"
+              height="20"
+              viewBox="0 0 34 26"
+              fill="none"
+              className="mb-0.5 shrink-0"
+            >
+              <path
+                d="M3 22C12 21 24 18 29 6"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+              />
+              <path
+                d="M30.7 16.4L29 6L20.5 12.2"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </motion.span>
+        )}
       </motion.a>
     </motion.div>
   )

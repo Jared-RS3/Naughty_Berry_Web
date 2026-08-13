@@ -1425,13 +1425,13 @@ function StepStation({
           aria-live="polite"
         >
           {guests}
-          {guests >= 300 ? '+' : ''}
+          {guests >= 400 ? '+' : ''}
         </motion.p>
         <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#7A3B5E]">guests</p>
         <input
           type="range"
           min={50}
-          max={300}
+          max={400}
           step={10}
           value={guests}
           onChange={(e) => onGuests(Number(e.target.value))}
@@ -1810,7 +1810,7 @@ function StepReview({
             {!capped && (
               <div className={row}>
                 <span className="text-[#7A3B5E]">Guests</span>
-                <span className="font-bold">{quote.guests}{quote.guests >= 300 ? '+' : ''}</span>
+                <span className="font-bold">{quote.guests}{quote.guests >= 400 ? '+' : ''}</span>
               </div>
             )}
             {quote.venue && (

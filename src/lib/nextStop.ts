@@ -95,18 +95,51 @@ export function isDayOff(slot: ScheduleSlot): boolean {
 }
 
 /**
+ * The row that describes the trailer *right now*, which is not always the same
+ * as the next stop. `pickNext` deliberately ignores anything already behind us,
+ * but "Off" is set on the row the sheet is currently sitting on — and that row
+ * goes stale the moment its date passes, which would quietly switch the badge
+ * back on. So: the next stop if one is booked, otherwise the most recent row
+ * behind us, otherwise an undated row (clearing the date is the other way a row
+ * stops being an appearance).
+ */
+export function currentSlot(schedule: ScheduleSlot[]): ScheduleSlot | null {
+  const next = pickNext(schedule)
+  if (next) return next.slot
+
+  const past = schedule
+    .map((slot) => ({ slot, date: parseDate(slot.date) }))
+    .filter((x): x is { slot: ScheduleSlot; date: Date } => x.date !== null)
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+
+  return past[0]?.slot ?? schedule[0] ?? null
+}
+
+/** Whether the sheet is currently saying the trailer isn't out. Answered off the
+ *  whole schedule rather than one row so picking "Off" hides the live badge
+ *  whatever the row's date says. */
+export function isScheduleOff(schedule: ScheduleSlot[]): boolean {
+  const slot = currentSlot(schedule)
+  return slot ? isDayOff(slot) : false
+}
+
+/**
  * One-line answer for the hero pill, driven by the row's "Day of Week" dropdown.
  *
- * A weekday means the trailer is booked but not out yet, so the day is the
- * useful thing to say. Picking "Location" instead means the row is describing
- * where it is rather than when — then the stop is better named than dated, so
- * the row's Event Name carries the line. Null when the row has neither, so the
- * caller can fall back rather than render "Open at ".
+ * The Event Name is the whole line — "Oranjezight Market" is what someone
+ * recognises, repeats and navigates to, and dressing it up with the weekday or
+ * an "Open at" prefix only spends the pill's narrow width on words that aren't
+ * the destination. The row's Venue / Location is the address behind the tap, not
+ * something to print: it's a full street address that would swamp the pill.
+ * Falls back to the day only when the row is unnamed, and null when it has
+ * neither, so the caller can render its own placeholder rather than an empty tag.
  */
 export function stopHeadline(slot: ScheduleSlot): string | null {
   const day = slot.day.trim()
   if (isDayOff(slot)) return null
+
+  const place = slot.eventName.trim()
+  if (place) return place
   if (day && day.toLowerCase() !== LOCATION_OPTION) return `Next stop drops ${day}`
-  if (slot.eventName) return `Open at ${slot.eventName}`
   return null
 }
