@@ -9,10 +9,8 @@ import {
   MessageCircle,
   Navigation,
 } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
 import { usePopupSchedule } from '../hooks/usePopupSchedule'
 import { mapsHref, pickNext, shortWhen } from '../lib/nextStop'
-import { EMAIL_RE } from '../lib/quote'
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 /** TODO: swap in Daybreak's live site — this is the only place it's referenced. */
@@ -53,7 +51,6 @@ const CONTACT_OPTIONS = [
 ]
 
 export default function Footer() {
-  const [email, setEmail] = useState('')
   // Same shared Airtable fetch the hero and NextStop use, so the card on the
   // map below is the live stop rather than a hard-coded one that goes stale.
   const { schedule, loading, error } = usePopupSchedule()
@@ -74,23 +71,11 @@ export default function Footer() {
     }
   }
 
-  // NOTE: this form has no destination yet — nothing is stored or sent. It
-  // validates and gives feedback so the input can't carry junk once it is
-  // wired up, but until then a "subscriber" is not actually subscribed.
-  const [newsletterError, setNewsletterError] = useState<string | null>(null)
-
-  const handleNewsletterSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-
-    const value = email.trim().slice(0, 254)
-    if (!EMAIL_RE.test(value)) {
-      setNewsletterError('Please enter a valid email address.')
-      return
-    }
-
-    setNewsletterError(null)
-    setEmail('')
-  }
+  // The newsletter block below is commented out, so its email state, its submit
+  // handler and their imports (useState, FormEvent, EMAIL_RE) went with it —
+  // `tsc -b` runs with noUnusedLocals and fails the Netlify build on dead
+  // declarations, which is exactly what it did here. Turning the sign-up back on
+  // means restoring those three imports along with the JSX; see the block below.
 
   return (
     <>
