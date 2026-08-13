@@ -239,7 +239,7 @@ export default function About() {
           data-cup-sticky-stage
           className={pinned ? 'sticky top-0 h-screen overflow-hidden' : 'relative py-28'}
         >
-          <div className="h-full max-w-[86rem] mx-auto px-6 lg:px-10 flex flex-col justify-center">
+          <div className="h-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-10 flex flex-col justify-center">
             <div className="grid grid-cols-[1.32fr_0.68fr] gap-12 items-center">
               {/* Left: the statement, filling word by word */}
               <div className="min-w-0">

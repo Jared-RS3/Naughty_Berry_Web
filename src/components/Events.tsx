@@ -108,10 +108,10 @@ export default function Events() {
         }}
       />
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
         <SectionHeading
           eyebrow="Events & Catering"
-          word="EVENTS"
+          word="PACKAGES"
           title={['','']}
           // title={['We cater for', 'any occasion.']}
           lead="From intimate birthdays to full-scale weddings, our signature chocolate taps bring fresh strawberries, flowing chocolate and a little extra sweetness to every celebration."
@@ -134,9 +134,11 @@ export default function Events() {
           ))}
         </div>
 
-        {/* Packages — two cards now, so a capped, centred 2-up grid instead of
-            thirds that left a phantom empty column on the right. */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 items-start max-w-4xl mx-auto">
+        {/* Packages — three cards across. The cap is sized to the 3-up grid, not
+            to the 2-up one this used to be: max-w-4xl (896px) was left over from
+            the two-card layout and squeezed three cards into two cards' width,
+            which is what put the huge empty gutters either side of this block. */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 items-start max-w-6xl mx-auto">
           {PACKAGES.map((pkg, i) => {
             const Icon = pkg.icon
             const featured = !!pkg.featured

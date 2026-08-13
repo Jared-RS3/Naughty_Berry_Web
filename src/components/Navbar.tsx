@@ -13,14 +13,14 @@ type NavbarProps = {
 
 const links = [
   { label: 'Menu', href: '#menu' },
-  { label: 'Events', href: '#events' },
+  { label: 'Book Now', href: '#events' },
   { label: 'About', href: '#about' },
   { label: 'Contact', href: '#contact' },
 ]
 
 const mobileLinks = [
   { label: 'Menu', href: '#menu' },
-  { label: 'Events', href: '#events' },
+  { label: 'Book Now', href: '#events' },
   { label: 'Find Us', href: '#findus' },
   { label: 'Gallery', href: '#gallery' },
   { label: 'About', href: '#about' },
@@ -94,6 +94,33 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
               </li>
             ))}
           </ul>
+
+          {/* Mobile booking CTA (left).
+              The top-left of the mobile bar was dead space — the desktop links
+              that live there are `hidden md:flex` — so the one action worth
+              having above the fold takes it.
+              Deliberately the cream nb-pill and not a solid berry button: the
+              hero already carries a berry "View Menu" CTA a little below this,
+              and two berry blobs in the top third of a phone screen compete
+              instead of leading. Cream on pink reads as elegant and still sits
+              forward of the flat page. */}
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={() => handleNavClick('#events')}
+            /* px-3 / 0.12em rather than the roomier px-3.5 / 0.14em the desktop
+               chrome uses: the logo is absolutely centred, so on a 320px screen
+               the pill and the logo's leaf close to within a few pixels. This
+               keeps clear air between them there without reading as cramped on
+               a normal-width phone. */
+            className={`md:hidden flex items-center h-8 px-3 rounded-full text-[10px] font-bold uppercase tracking-[0.12em] transition-colors duration-200 ${
+              isNaughtyMode
+                ? 'bg-[#3A1140]/85 text-[#FFB3E0] shadow-[0_8px_20px_rgba(0,0,0,0.28)]'
+                : 'nb-pill text-[#E8176D]'
+            }`}
+            aria-label="Book Naughty Berry for your event"
+          >
+            Book Now
+          </motion.button>
 
           {/* Center Logo (absolutely centred) */}
           <a

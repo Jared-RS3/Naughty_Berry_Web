@@ -49,7 +49,7 @@ const CHAPTERS = [
   },
   {
     heading: 'The Naughty Berry Club',
-    image: '/market.jpg',
+    image: '/Club.JPG',
     alt: 'The pink Naughty Berry trailer parked at a Cape Town weekend market',
     // Both outdoor shots are landscape; cropping them to the column's portrait
     // frame from the centre fills the top half with empty sky.

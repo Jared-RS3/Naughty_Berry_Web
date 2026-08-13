@@ -16,7 +16,7 @@ export default function FindUs() {
       id="findus"
       className="py-24 lg:py-32 relative overflow-hidden bg-[#FFDCEA] scroll-mt-20"
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
         <SectionHeading
           eyebrow="Find Us"
           word="FIND US"

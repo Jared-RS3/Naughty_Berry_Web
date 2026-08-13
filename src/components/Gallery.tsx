@@ -5,17 +5,18 @@ import { X, Instagram } from 'lucide-react'
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 
+/**
+ * Every tile is cropped to the same 4:5 portrait so the wall reads as one grid
+ * instead of a ragged masonry — the source photos are a mix of 2:3, 3:2 and 1:1.
+ * `focus` shifts the crop window where centring would clip the subject.
+ */
 const GALLERY: GalleryItem[] = [
-  { id: 2, label: 'Choc Drip Night', sub: 'Late night vibes', img: '/choc-drip-night.jpg' },
-  { id: 3, label: 'Carry Bag', sub: 'Gift-ready', img: '/carry-bag.jpg' },
-  { id: 4, label: 'Iced Tea Trio', sub: 'Sip with your crew', img: '/iced-tea-trio.jpg' },
-  { id: 5, label: 'Service Window', sub: 'Straight to you', img: '/service-window.jpg' },
-  // { id: 6, label: 'Iced Tea Sports', sub: 'Refresh & refuel', img: '/iced-tea-sports.jpg' },
-  { id: 7, label: 'Iced Tea Duo', sub: 'Better together', img: '/iced-tea-duo.jpg' },
-  // { id: 10, label: 'Team Trailer', sub: 'Behind the scenes', img: '/team-trailer.jpg' },
-  { id: 11, label: 'Trailer Night', sub: 'Night market magic', img: '/trailer-night.jpg' },
-  // { id: 12, label: 'Trailer Day', sub: 'Come find us', img: '/trailer-day.jpg' },
-  // { id: 13, label: 'Wedding Event', sub: 'Special occasions', img: '/wedding-event.jpg' },
+  { id: 2, label: 'Cups In Hand', sub: 'Served at your event', img: '/gallery_1.JPG' },
+  { id: 3, label: 'The Cart', sub: 'Rolls right in', img: '/gallery_2.JPG' },
+  { id: 4, label: 'Iced Tea Trio', sub: 'Sip with your crew', img: '/gallery_3.JPG', focus: '50% 42%' },
+  { id: 5, label: 'Carry Bag', sub: 'Gift-ready', img: '/gallery_4.JPG', focus: '50% 60%' },
+  { id: 7, label: 'Wedding Days', sub: 'Sweeter together', img: '/gallery_5.JPG', focus: '50% 35%' },
+  { id: 11, label: 'Choc Drip Night', sub: 'Night market magic', img: '/gallery_6.JPG', focus: '50% 40%' },
 ]
 
 interface GalleryItem {
@@ -23,6 +24,8 @@ interface GalleryItem {
   label: string
   sub: string
   img: string
+  /** object-position for the 4:5 crop; defaults to centre. */
+  focus?: string
 }
 
 export default function Gallery() {
@@ -42,7 +45,7 @@ export default function Gallery() {
       id="gallery"
       className="py-24 lg:py-32 relative overflow-hidden bg-[#FFDCEA] scroll-mt-20"
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
         <SectionHeading
           eyebrow="Gallery"
           word="GALLERY"
@@ -51,29 +54,39 @@ export default function Gallery() {
           className="mb-14"
         />
 
-        {/* Masonry */}
-        <div className="columns-2 md:columns-3 lg:columns-4 gap-4 md:gap-6">
+        {/* Even 2×3 grid — six photos land as two full rows, no ragged edge */}
+        <div className="mx-auto grid max-w-[1120px] grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6">
           {GALLERY.map((item, i) => (
             <motion.button
               key={item.id}
               type="button"
               onClick={() => setSelected(item)}
               aria-label={`View ${item.label}`}
-              className="block w-full break-inside-avoid mb-4 md:mb-6 rounded-[22px] overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8176D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFDCEA]"
+              className="group relative block aspect-[4/5] w-full overflow-hidden rounded-[22px] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8176D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFDCEA]"
               style={{ boxShadow: '0 18px 40px rgba(180, 40, 95, 0.12)' }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: '-60px' }}
               whileHover={prefersReducedMotion ? undefined : { y: -6 }}
-              transition={{ duration: 0.55, delay: (i % 4) * 0.06, ease: EASE_OUT }}
+              transition={{ duration: 0.55, delay: (i % 3) * 0.08, ease: EASE_OUT }}
             >
               <img
                 src={item.img}
                 alt={item.label}
                 loading="lazy"
-                className="w-full h-auto block"
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                style={{ objectPosition: item.focus ?? '50% 50%' }}
                 draggable={false}
               />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#2D1225]/75 to-transparent px-4 pb-4 pt-10 text-left opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+                <p
+                  className="uppercase text-white text-[13px] sm:text-[15px] leading-tight"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
+                  {item.label}
+                </p>
+                <p className="mt-0.5 text-[11px] text-white/70">{item.sub}</p>
+              </div>
             </motion.button>
           ))}
         </div>
@@ -124,13 +137,14 @@ export default function Gallery() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.94, opacity: 0 }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className="max-w-lg w-full"
+              className="w-full max-w-[820px]"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Uncropped here — the grid already shows the 4:5 version */}
               <img
                 src={selected.img}
                 alt={selected.label}
-                className="w-full max-h-[70vh] object-cover rounded-[22px]"
+                className="mx-auto block max-h-[74vh] w-auto max-w-full rounded-[22px] object-contain"
                 draggable={false}
               />
               <div className="mt-5 text-center">

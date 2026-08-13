@@ -95,23 +95,23 @@ export default function PrivacyPolicyPage() {
             ['Trading name', BUSINESS.tradingName],
             [
               'Registered name',
-              <Detail value={BUSINESS.registeredName} placeholder="registered company name" />,
+              <Detail value={"Naughty Berry (Pty) Ltd"} placeholder="registered company name" />,
             ],
             [
               'Registration number',
-              <Detail value={BUSINESS.registrationNumber} placeholder="CIPC registration number" />,
+              <Detail value={"2023/205936/07"} placeholder="CIPC registration number" />,
             ],
             [
               'Address',
-              <Detail value={BUSINESS.address} placeholder="business address" />,
+              <Detail value={"Kenwyn, Cape Town, 7580"} placeholder="business address" />,
             ],
-            ['Email', <A href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</A>],
+            ['Email', <A href={`mailto:${"naughtyberryfinance@gmail.com"}`}>{BUSINESS.email}</A>],
             [
               'Telephone',
               BUSINESS.phone ? (
                 BUSINESS.phone
               ) : (
-                <Detail value={null} placeholder="contact number" />
+                <Detail value={"079 328 1500"} placeholder="contact number" />
               ),
             ],
             ['Website', <A href={BUSINESS.siteUrl}>{BUSINESS.site}</A>],
@@ -123,7 +123,7 @@ export default function PrivacyPolicyPage() {
 
         <p>
           Our Information Officer, appointed under sections 55 and 56 of POPIA, is{' '}
-          <Detail value={BUSINESS.informationOfficer} placeholder="name of Information Officer" />
+          <Detail value={"Yaaseen Van Der Fort"} placeholder="name of Information Officer" />
           , contactable at{' '}
           {BUSINESS.informationOfficerEmail ? (
             <A href={`mailto:${BUSINESS.informationOfficerEmail}`}>

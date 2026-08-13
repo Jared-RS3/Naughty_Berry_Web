@@ -16,13 +16,15 @@ const EASE_OUT = [0.22, 1, 0.36, 1] as const
  *  panel — the section never changes shape as the data lands. */
 function Panel({ children }: { children: React.ReactNode }) {
   return (
-    <section id="next-stop" className="relative bg-[#FFDCEA] px-6 pb-16 pt-2 lg:px-10 lg:pb-20 scroll-mt-24">
+    <section id="next-stop" className="relative bg-[#FFDCEA] px-4 pb-16 pt-2 sm:px-6 lg:px-10 lg:pb-20 scroll-mt-24">
       <motion.div
         initial={{ opacity: 0, y: 26 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-60px' }}
         transition={{ duration: 0.6, ease: EASE_OUT }}
-        className="nb-card-berry relative mx-auto max-w-7xl overflow-hidden px-7 py-8 sm:px-10 sm:py-10"
+        /* 1480 = the 1560px spine minus its lg padding, so this slab's edges
+           land exactly under where the hero and navbar content starts. */
+        className="nb-card-berry relative mx-auto max-w-[1480px] overflow-hidden px-7 py-8 sm:px-10 sm:py-10"
       >
         {/* Warm highlight so the flat berry slab still has some depth to it. */}
         <div

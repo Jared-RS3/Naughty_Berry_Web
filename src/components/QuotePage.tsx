@@ -544,7 +544,7 @@ export default function QuotePage() {
             <span className="block text-sm font-bold text-[#E8176D]" aria-live="polite">
               Estimated {rands(estimate)}
             </span>
-            <span className="block text-[10.5px] text-[#7A3B5E]/70">excl. travel &amp; setup</span>
+            <span className="block text-[10.5px] text-[#7A3B5E]/70">includes travel fee</span>
           </span>
         )}
 

@@ -10,6 +10,19 @@ type HeroProps = {
 }
 
 /**
+ * Mobile location pill on/off switch.
+ *
+ * Set to false to take the pill off phones. It is hidden in place rather than
+ * unmounted, so its box stays in the hero column and every other hero element —
+ * the cup, the layered headline, the sub-copy, the CTA — keeps the exact
+ * position it has while the pill is on. Deleting the pill's JSX instead of
+ * using this flag is what makes the composition jump.
+ *
+ * Desktop's pill is absolutely positioned and is not governed by this.
+ */
+const SHOW_MOBILE_LOCATION_PILL = true
+
+/**
  * Live location strip along the bottom of the hero. The full NextStop panel is
  * one scroll away, but "where are you right now?" is the first thing a visitor
  * wants from a roaming trailer — so it gets answered inside the first screen.
@@ -20,11 +33,19 @@ function HeroLocationStrip({
   isNaughtyMode,
   loaded,
   placement = 'bottom',
+  show = true,
 }: {
   isNaughtyMode: boolean
   loaded: boolean
   /** Mobile floats it above the title; desktop keeps it along the bottom. */
   placement?: 'top' | 'bottom'
+  /** Switches the pill off *without* removing its box. The mobile pill is the
+   *  first thing in the hero column's flow, so dropping it from the tree pulls
+   *  the cup, the sub-copy and the CTA up the screen by its height plus its
+   *  margin. Hiding it instead of unmounting it means it keeps occupying
+   *  exactly its own space and nothing else in the hero moves. Desktop is
+   *  absolutely positioned and never had this problem either way. */
+  show?: boolean
 }) {
   const prefersReducedMotion = useReducedMotion()
   const { schedule, loading, error } = usePopupSchedule()
@@ -70,12 +91,20 @@ function HeroLocationStrip({
       ? 'flex justify-center mb-[clamp(12px,3svh,24px)] sm:hidden'
       : 'absolute inset-x-4 top-34 justify-center hidden sm:flex'
 
+  /* `invisible`, not `hidden`/unmounted: visibility:hidden stops the pill
+     painting and taking taps while leaving its box in the layout, so the slot
+     it reserves is by definition the pill's own size — there is no hard-coded
+     placeholder height to drift out of sync when the pill's padding or type
+     size changes. */
+  const hiddenClass = show ? '' : ' invisible pointer-events-none'
+
   return (
     <motion.div
       initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
       animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
       transition={{ duration: 0.7, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      className={`z-30 ${wrapperClass}`}
+      className={`z-30 ${wrapperClass}${hiddenClass}`}
+      aria-hidden={!show || undefined}
     >
       {/* The headline is a whole sentence now ("Next stop drops Monday"), so the
           old "NEXT STOP" eyebrow and its divider would just say it twice — and
@@ -247,8 +276,19 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
         style={{ containerType: 'inline-size' }}
       >
         {/* Mobile announcement pill — first in the hero column so it sits a
-            fixed distance below the nav. Desktop's pill is the pinned one below. */}
-        <HeroLocationStrip isNaughtyMode={isNaughtyMode} loaded={loaded} placement="top" />
+            fixed distance below the nav. Desktop's pill is the pinned one below.
+
+            To switch it off, flip SHOW_MOBILE_LOCATION_PILL at the top of this
+            file rather than deleting or commenting out this line: the pill is
+            in the column's flow, so removing it from the tree would lift the
+            cup, the sub-copy and the CTA by its height plus its margin. The
+            flag hides it in place, and the rest of the hero stays put. */}
+        <HeroLocationStrip
+          isNaughtyMode={isNaughtyMode}
+          loaded={loaded}
+          placement="top"
+          show={SHOW_MOBILE_LOCATION_PILL}
+        />
 
         {/* Stage — desktop height tracks the reference 1100×618 ratio via cqw;
             mobile is height-aware (svh) and bounded so it hugs the cup instead

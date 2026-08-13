@@ -102,16 +102,21 @@ export default function Footer() {
         <div className="pointer-events-none absolute right-[-10rem] top-56 h-[30rem] w-[30rem] rounded-full bg-[#FFC0DC]/45 blur-[130px]" />
 
         <div className="relative mx-auto max-w-[1500px] px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
-          {/* Contact hero */}
-          <div className="grid items-center gap-12 lg:min-h-[620px] lg:grid-cols-[0.78fr_1.22fr] lg:gap-4">
+          {/* Contact hero — the trailer photo that used to fill the right-hand
+              column is gone, so this is one centred statement rather than a
+              two-column split. The headline is the whole composition now: it
+              gets the full container width instead of the 0.78fr sliver it had
+              while it was sharing the row, which is what kept it wrapping small
+              beside the picture. */}
+          <div className="py-6 lg:py-12">
             <motion.div
               initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.25 }}
               transition={{ duration: 0.7, ease: EASE_OUT }}
-              className="relative z-20 max-w-xl lg:pl-6 xl:pl-12"
+              className="relative z-20 mx-auto max-w-6xl text-center"
             >
-              <div className="mb-8 flex items-center justify-center gap-3 md:justify-start">
+              <div className="mb-8 flex items-center justify-center gap-3">
                 <span className="text-lg" aria-hidden="true">
                   🍓
                 </span>
@@ -123,61 +128,29 @@ export default function Footer() {
                 </p>
               </div>
 
+              {/* The vw term and the max-w-6xl wrapper are tuned together so each
+                  sentence holds a single line at every width — two clean lines,
+                  not four ragged ones. Raising either (a wider clamp, a narrower
+                  wrapper) puts "Naughty." back on its own line. */}
               <h2
-                className="mx-auto max-w-[560px] text-center uppercase leading-[0.9] tracking-[-0.045em] text-[#3B2116] md:mx-0 md:text-left"
+                className="mx-auto uppercase leading-[0.88] tracking-[-0.045em] text-[#3B2116]"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
-                <span className="block text-[clamp(1.9rem,9.2vw,7.6rem)]">
+                <span className="block text-[clamp(2rem,7.9vw,6.4rem)]">
                   A Little Naughty.
                 </span>
 
-                <span className="block text-[clamp(1.9rem,9.2vw,7.6rem)] text-[#E8176D]">
+                <span className="block text-[clamp(2rem,7.9vw,6.4rem)] text-[#E8176D]">
                   A Lot Delicious.
                 </span>
               </h2>
 
-              <p className="mx-auto mt-8 max-w-sm text-center text-base leading-7 text-[#674255] sm:text-lg md:mx-0 md:text-left">
+              <p className="mx-auto mt-8 max-w-md text-center text-base leading-7 text-[#674255] sm:text-lg">
                 Got a question, an idea or an event in mind? We’d love to hear
                 from you.
               </p>
             </motion.div>
 
-            {/* Trailer image */}
-            <motion.div
-              initial={{ opacity: 0, x: 55, scale: 0.97 }}
-              whileInView={{ opacity: 1, x: 0, scale: 1 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{
-                duration: 0.85,
-                delay: 0.08,
-                ease: EASE_OUT,
-              }}
-              className="relative flex min-h-[240px] items-center justify-center sm:min-h-[460px] lg:min-h-[650px]"
-            >
-              <div className="pointer-events-none absolute inset-x-[12%] bottom-[7%] h-[25%] rounded-[50%] bg-[#AF416D]/15 blur-[60px]" />
-
-              <div className="pointer-events-none absolute left-[8%] top-[16%] hidden lg:block">
-                <div className="relative h-20 w-20">
-                  {[0, 30, 60, 90, 120, 150].map((rotation) => (
-                    <span
-                      key={rotation}
-                      className="absolute left-1/2 top-1/2 h-px w-16 origin-left bg-[#E8176D]/28"
-                      style={{
-                        transform: `rotate(${rotation}deg)`,
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <img
-                src="/Naughty_Berry_Trailer.webp"
-                alt="Naughty Berry pink dessert trailer"
-                loading="lazy"
-                decoding="async"
-                className="relative z-10 h-auto max-h-[690px] w-full max-w-[900px] object-contain drop-shadow-[0_35px_50px_rgba(102,37,67,0.16)]"
-              />
-            </motion.div>
           </div>
 
           {/* Contact cards */}
@@ -322,20 +295,9 @@ export default function Footer() {
               </div>
 
               <div className="relative hidden min-h-[300px] md:block">
-                <div className="absolute left-[39%] top-[42%]">
-                  <div className="relative">
-                    <div className="absolute -inset-5 rounded-full bg-[#E8176D]/12 blur-xl" />
-                    <img
-                      src="/Naughty_Berry_Trailer.webp"
-                      alt=""
-                      aria-hidden="true"
-                      loading="lazy"
-                      decoding="async"
-                      className="relative h-24 w-32 rounded-xl object-cover shadow-xl"
-                    />
-                  </div>
-                </div>
-
+                {/* The trailer thumbnail that sat at 39%/42% is gone; its glow
+                    ring went with it rather than being left to render as a
+                    stray pink smudge over the map with nothing inside it. */}
                 <MapPin
                   size={38}
                   strokeWidth={1.7}
@@ -416,7 +378,7 @@ export default function Footer() {
           </motion.div>
 
           {/* Newsletter */}
-          <div className="relative mt-9 overflow-hidden rounded-[25px] border border-[#E8176D]/12 bg-white/35 px-6 py-7 sm:px-9">
+          {/* <div className="relative mt-9 overflow-hidden rounded-[25px] border border-[#E8176D]/12 bg-white/35 px-6 py-7 sm:px-9">
             <div className="grid items-center gap-7 lg:grid-cols-[0.8fr_1.2fr]">
               <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
                 <Mail
@@ -477,7 +439,7 @@ export default function Footer() {
               {/* Says out loud what the NOTE above the handler says in code: this
                   form has no destination. /privacy-policy §4 states the same, and
                   both have to change on the day it is wired up. */}
-              <p className="text-[11px] leading-relaxed text-[#7A3B5E]/60 lg:col-start-2">
+              {/* <p className="text-[11px] leading-relaxed text-[#7A3B5E]/60 lg:col-start-2">
                 Sign-ups aren’t live yet — nothing is stored or sent. Follow{' '}
                 <a
                   href="https://www.instagram.com/naughtyberrycpt"
@@ -501,7 +463,8 @@ export default function Footer() {
             <div className="pointer-events-none absolute -bottom-11 right-5 hidden h-28 w-28 items-center justify-center rounded-full bg-[#3B2116]/5 md:flex">
               <span className="text-6xl">🍓</span>
             </div>
-          </div>
+          </div> */}
+          
         </div>
       </section>
 
