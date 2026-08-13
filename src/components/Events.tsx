@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import SectionHeading from './SectionHeading'
-import { Users, Star, Check, Sparkles } from 'lucide-react'
+import { Users, Star, Check } from 'lucide-react'
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 
