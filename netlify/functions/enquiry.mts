@@ -104,7 +104,11 @@ const field = (value: unknown, max: number, opts?: { multiline?: boolean }) =>
 // Deliberately permissive on the local part, strict on shape. Full RFC 5322 is
 // not worth implementing; rejecting a valid address costs a real lead.
 const EMAIL_RE = /^[^\s@,;:<>()[\]\\]{1,64}@[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)+$/
-const PHONE_RE = /^[+()\d][\d\s()+-]{5,31}$/
+/** Mirrors PHONE_RE in src/lib/quote.ts — ten digits starting 0, or the same
+ *  number as +27/27 plus nine. Matched after punctuation is stripped, and kept
+ *  independent of the client copy because this is the one that actually holds. */
+const PHONE_RE = /^(?:\+?27|0)\d{9}$/
+const normalisePhone = (s: string) => s.replace(/[\s()\-.]/g, '')
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 const PACKAGES = new Set(['little', 'signature', 'indulgent'])
@@ -189,7 +193,9 @@ function validate(input: Json): Validated | { error: string } {
   if (name.length < 2) return { error: 'Please give us a name we can use.' }
   if (!email && !phone) return { error: 'We need an email address or a phone number.' }
   if (email && !EMAIL_RE.test(email)) return { error: 'That email address does not look right.' }
-  if (phone && !PHONE_RE.test(phone)) return { error: 'That phone number does not look right.' }
+  if (phone && !PHONE_RE.test(normalisePhone(phone))) {
+    return { error: 'Enter a valid 10-digit number, like 082 123 4567.' }
+  }
 
   const pkg = typeof input.pkg === 'string' && PACKAGES.has(input.pkg) ? input.pkg : null
   if (!pkg) return { error: 'Please choose a package.' }

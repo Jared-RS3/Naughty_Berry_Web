@@ -162,10 +162,17 @@ export const LIMITS = {
 
 export const EMAIL_RE =
   /^[^\s@,;:<>()[\]\\]{1,64}@[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)+$/
-/** Leading digit/+/( then 8–31 more, i.e. 9–32 characters total. Sized off a
- *  local mobile written plainly — "0821234567" is ten characters, so a stricter
- *  minimum silently rejects the most common number on the form. */
-export const PHONE_RE = /^[+()\d][\d\s()+-]{8,31}$/
+/**
+ * South African numbers, matched after the punctuation people naturally type is
+ * stripped: ten digits starting 0 ("082 123 4567"), or the same number written
+ * internationally as +27 / 27 followed by nine. Punctuation is removed rather
+ * than rejected — bouncing a correct number over a bracket costs a real lead,
+ * and the stored value is normalised anyway.
+ */
+export const PHONE_RE = /^(?:\+?27|0)\d{9}$/
+
+/** Drops spaces, dashes, dots and brackets so the pattern above sees digits. */
+export const normalisePhone = (s: string) => s.replace(/[\s()\-.]/g, '')
 
 export type FieldErrors = Partial<Record<'name' | 'email' | 'phone' | 'date' | 'venue' | 'notes', string>>
 
@@ -183,15 +190,23 @@ export function validateDetails(f: {
   const email = f.email.trim()
   const phone = f.phone.trim()
 
-  if (name.length < 2) errors.name = 'Please tell us your name.'
+  if (name.length < 2) errors.name = 'Please enter your name — at least 2 characters.'
   else if (name.length > LIMITS.name) errors.name = `Keep it under ${LIMITS.name} characters.`
 
+  // One contact route is required, not both. Each is still validated on its own
+  // so a visitor who fills only the phone still gets told when it is malformed.
   if (!email && !phone) {
-    errors.email = 'Give us an email or a phone number so we can reply.'
-  } else {
-    if (email && !EMAIL_RE.test(email)) errors.email = 'That email address doesn’t look right.'
+    errors.email = 'Enter an email address or a phone number so we can reply.'
+    errors.phone = 'Enter an email address or a phone number so we can reply.'
+  }
+  if (email) {
     if (email.length > LIMITS.email) errors.email = 'That email address is too long.'
-    if (phone && !PHONE_RE.test(phone)) errors.phone = 'That phone number doesn’t look right.'
+    else if (!EMAIL_RE.test(email)) {
+      errors.email = 'Enter a valid email address, like you@example.com.'
+    }
+  }
+  if (phone && !PHONE_RE.test(normalisePhone(phone))) {
+    errors.phone = 'Enter a valid 10-digit number, like 082 123 4567.'
   }
 
   if (f.date) {

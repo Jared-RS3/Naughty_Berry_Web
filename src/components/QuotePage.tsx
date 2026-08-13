@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import {
+  AlertCircle,
   ArrowLeft,
   ArrowRight,
   Baby,
@@ -503,7 +504,8 @@ export default function QuotePage() {
               <StepDetails
                 form={form}
                 onChange={setForm}
-                errors={showErrors ? fieldErrors : {}}
+                errors={fieldErrors}
+                showAll={showErrors}
                 honeypot={honeypot}
                 onHoneypot={setHoneypot}
               />
@@ -1554,33 +1556,52 @@ function StepDetails({
   form,
   onChange,
   errors,
+  showAll,
   honeypot,
   onHoneypot,
 }: {
   form: FormState
   onChange: (f: FormState) => void
   errors: FieldErrors
+  /** Set once "Next" has been pressed: reveal every problem, not just visited ones. */
+  showAll: boolean
   honeypot: string
   onHoneypot: (v: string) => void
 }) {
+  // Complaining while someone is still mid-word is hostile, and staying silent
+  // until they press Next hides the problem until it blocks them. Blur is the
+  // moment they have finished with a field and can act on the answer.
+  const [touched, setTouched] = useState<Partial<Record<keyof FieldErrors, boolean>>>({})
+  const shown = (k: keyof FieldErrors) => ((showAll || touched[k]) ? errors[k] : undefined)
+
   const set =
     (k: keyof FormState) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       onChange({ ...form, [k]: e.target.value })
 
-  const cls = (k: keyof FieldErrors) =>
-    `${inputCls} ${errors[k] ? 'border-[#C01057] ring-2 ring-[#C01057]/20' : ''}`
+  const blur = (k: keyof FieldErrors) => () => setTouched((t) => ({ ...t, [k]: true }))
 
-  const Err = ({ k }: { k: keyof FieldErrors }) =>
-    errors[k] ? (
-      <p id={`q-${k}-error`} className="mt-1.5 text-[12px] font-semibold text-[#C01057]">
-        {errors[k]}
+  const cls = (k: keyof FieldErrors) =>
+    `${inputCls} ${shown(k) ? 'border-[#C01057] ring-2 ring-[#C01057]/20' : ''}`
+
+  const Err = ({ k }: { k: keyof FieldErrors }) => {
+    const msg = shown(k)
+    return msg ? (
+      <p
+        id={`q-${k}-error`}
+        role="alert"
+        className="mt-1.5 flex items-start gap-1.5 text-[12px] font-semibold text-[#C01057]"
+      >
+        <AlertCircle size={13} strokeWidth={2.5} className="mt-[1px] shrink-0" />
+        <span>{msg}</span>
       </p>
     ) : null
+  }
 
   const a11y = (k: keyof FieldErrors) => ({
-    'aria-invalid': errors[k] ? true : undefined,
-    'aria-describedby': errors[k] ? `q-${k}-error` : undefined,
+    onBlur: blur(k),
+    'aria-invalid': shown(k) ? true : undefined,
+    'aria-describedby': shown(k) ? `q-${k}-error` : undefined,
   })
 
   return (
