@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Download, Instagram, Menu, X, Moon, Sun } from 'lucide-react'
+// Moon/Sun come back with the naughty-mode toggle below, which is commented
+// out — left out of the import so `tsc -b` (and therefore `npm run build`)
+// doesn't fail on two unused names.
+import { Download, Instagram, Menu, X } from 'lucide-react'
 import { scrollToSelector } from '../lib/smoothScroll'
 
 type NavbarProps = {
@@ -111,13 +114,13 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
           {/* Right Actions */}
           <div className="flex items-center gap-2 sm:gap-3 ml-auto md:ml-0">
             {/* Naughty / light toggle — subtle icon */}
-            <button
+            {/* <button
               onClick={onToggleNaughtyMode}
               aria-label={isNaughtyMode ? 'Switch to light mode' : 'Get Naughty (dark mode)'}
               className={`hidden md:flex items-center justify-center w-9 h-9 rounded-full transition-colors duration-200 ${linkClass}`}
             >
               {isNaughtyMode ? <Sun size={17} strokeWidth={1.6} /> : <Moon size={17} strokeWidth={1.6} />}
-            </button>
+            </button> */}
 
             <a
               href="https://www.instagram.com/naughtyberrycpt"

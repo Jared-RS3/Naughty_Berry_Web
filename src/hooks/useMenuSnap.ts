@@ -33,7 +33,23 @@ export function useMenuSnap() {
     let safety = 0
     let disposed = false
 
-    const navOffset = () => (window.matchMedia('(min-width: 768px)').matches ? 15 : 20)
+    /**
+     * Where the menu comes to rest, as a gap in px between the top of the
+     * viewport and the top of #menu. It is subtracted from the scroll target, so
+     * it reads backwards from what it does: a SMALLER number scrolls the page
+     * further down and tucks the menu tighter under the navbar; a larger one
+     * stops earlier and leaves the menu sitting lower on screen.
+     *
+     * This is the dial to turn if the lock parks too high or too low. Negative
+     * pulls the section's top edge above the viewport, which is fine — #menu
+     * carries py-16/20/24, so the first 64–96px of it is padding and the heading
+     * has room to spare. Roughly -32 (lg) / -16 (md) is where that padding runs
+     * out and the heading starts going behind the 64px navbar; that is the floor.
+     */
+    const REST_GAP_DESKTOP = -20
+    const REST_GAP_MOBILE = -6
+    const navOffset = () =>
+      window.matchMedia('(min-width: 768px)').matches ? REST_GAP_DESKTOP : REST_GAP_MOBILE
     // Only an outright fling skips the lock; normal and brisk scrolling engage.
     const FAST = 5.5 // px/ms
     // How much deliberate intent breaks the hold, per input.

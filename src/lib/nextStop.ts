@@ -126,20 +126,24 @@ export function isScheduleOff(schedule: ScheduleSlot[]): boolean {
 /**
  * One-line answer for the hero pill, driven by the row's "Day of Week" dropdown.
  *
- * The Event Name is the whole line — "Oranjezight Market" is what someone
- * recognises, repeats and navigates to, and dressing it up with the weekday or
- * an "Open at" prefix only spends the pill's narrow width on words that aren't
- * the destination. The row's Venue / Location is the address behind the tap, not
- * something to print: it's a full street address that would swamp the pill.
- * Falls back to the day only when the row is unnamed, and null when it has
- * neither, so the caller can render its own placeholder rather than an empty tag.
+ * The dropdown is the switch between the pill's two sentences. A weekday means
+ * the sheet is announcing *when* the next drop lands and the place isn't settled
+ * yet, so the day is the news — it wins over the Event Name, which on those rows
+ * is usually a working title. "Location" means the opposite: name the place, and
+ * "Oranjezight Market" is what someone recognises, repeats and navigates to.
+ *
+ * Either way the row's Venue / Location stays off the pill — it's a full street
+ * address that would swamp it, and it's already the destination behind the tap.
+ * Returns null when the row has neither a day nor a name (and whenever it's Off)
+ * so the caller can render its own placeholder rather than an empty tag.
  */
 export function stopHeadline(slot: ScheduleSlot): string | null {
   const day = slot.day.trim()
   if (isDayOff(slot)) return null
 
-  const place = slot.eventName.trim()
-  if (place) return place
   if (day && day.toLowerCase() !== LOCATION_OPTION) return `Next stop drops ${day}`
+
+  const place = slot.eventName.trim()
+  if (place) return `Next stop ${place}`
   return null
 }

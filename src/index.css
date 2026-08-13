@@ -48,12 +48,23 @@
   --color-text-mid:     #7A3B5E;
   --color-white:        #FFFFFF;
 
-  /* Fonts */
-  /* NOTE: /public/fonts/HossRound-*.woff2 are not in the repo, so 'Hoss Round'
-     never loads. Fall back to Nunito (loaded via Google Fonts) instead of
-     `cursive`, which rendered as an unintended italic script. */
-  --font-display: 'Hoss Round', 'Nunito', system-ui, sans-serif;
-  --font-head:    'Hoss Round', 'Nunito', system-ui, sans-serif;
+  /* ── Fonts ──
+     Two families and only two: Archivo Black sets every display line (the
+     giant section words, headings, product names, prices, counters), Nunito
+     sets everything else.
+
+     --font-display is the single name for the display face. Both ways of
+     asking for it resolve here — the `font-display` utility class and the
+     `style={{ fontFamily: 'var(--font-display)' }}` props the headings use —
+     so a heading can no longer silently land on the body face. It used to:
+     'Hoss Round' headed these stacks, but /public/fonts/HossRound-*.woff2 are
+     not in the repo, so it never loaded and --font-display quietly meant
+     Nunito. That is why the menu's product names and prices, and the quote
+     builder's step number and flavour name, were set in Nunito Bold while the
+     headings beside them were Archivo Black. The phantom family is gone rather
+     than left in the stack to mislead the next reader. */
+  --font-display: 'Archivo Black', system-ui, sans-serif;
+  --font-head:    'Archivo Black', system-ui, sans-serif;
   --font-body:    'Nunito', system-ui, sans-serif;
 
   /* Radii */

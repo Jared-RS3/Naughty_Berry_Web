@@ -477,6 +477,29 @@ export default function Footer() {
                   {newsletterError}
                 </p>
               )}
+
+              {/* Says out loud what the NOTE above the handler says in code: this
+                  form has no destination. /privacy-policy §4 states the same, and
+                  both have to change on the day it is wired up. */}
+              <p className="text-[11px] leading-relaxed text-[#7A3B5E]/60 lg:col-start-2">
+                Sign-ups aren’t live yet — nothing is stored or sent. Follow{' '}
+                <a
+                  href="https://www.instagram.com/naughtyberrycpt"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[#E8176D] underline decoration-[#E8176D]/30 underline-offset-2 hover:text-[#C01057]"
+                >
+                  @naughtyberrycpt
+                </a>{' '}
+                for drops in the meantime. See our{' '}
+                <a
+                  href="/privacy-policy"
+                  className="font-semibold text-[#E8176D] underline decoration-[#E8176D]/30 underline-offset-2 hover:text-[#C01057]"
+                >
+                  Privacy Policy
+                </a>
+                .
+              </p>
             </div>
 
             <div className="pointer-events-none absolute -bottom-11 right-5 hidden h-28 w-28 items-center justify-center rounded-full bg-[#3B2116]/5 md:flex">

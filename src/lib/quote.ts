@@ -119,6 +119,19 @@ export const TOPPINGS: Topping[] = [
   },
 ]
 
+/**
+ * The cut-outs in `img` are 1000px-tall masters, sized for the home page menu.
+ * Nothing in the builder shows them anywhere near that big, so every screen here
+ * asks for the derivative that matches what it actually paints — see
+ * scripts/quote-cup-sizes.mjs, which generates them.
+ *
+ *   480  the cup carousel, 210–240px tall
+ *   112  topping tabs, box chips, the iced-tea row, 24–48px tall
+ */
+export type CupSize = 480 | 112
+export const cupSrc = (img: string, size: CupSize) =>
+  img.replace(/\.webp$/, `-${size}.webp`)
+
 export function totalCups(mix: Record<string, number>) {
   return Object.values(mix).reduce((a, b) => a + b, 0)
 }

@@ -32,6 +32,7 @@ import {
   SIGNATURE_CUP_TARGET,
   FLAVOURS,
   TOPPINGS,
+  cupSrc,
   ICED_TEA_CAP,
   ICED_TEA_PRICE,
   TOPPING_PRICE,
@@ -233,15 +234,22 @@ export default function QuotePage() {
   const remaining = (target ?? 0) - cups
 
   // A topping dresses a cup that already exists, so the ceiling is however many
-  // cups the package produces: the fixed box for the capped two, the guest list
-  // for the Indulgent station. The toppings SHARE that budget rather than each
-  // getting one — a 25-cup box cannot carry 25 Dubai and 25 Cream, because that
-  // would be 50 cups.
+  // cups are actually IN the order — not how many the box holds. Thirteen cups
+  // into a 50-cup box there are thirteen cups to top; offering fifty is how you
+  // get "50 topped cups" billed onto an order containing thirteen. The cap grows
+  // as the box fills, so a finished 50-cup box can top all fifty.
   //
-  // Applied on read rather than written back into state, so swapping packages
-  // down and back restores the original pick instead of losing it. Earlier
+  // Indulgent has no box and its spread is optional — "leave it blank and we'll
+  // suggest a mix for N guests" — so the guest count stands in while nothing is
+  // picked, and the pick takes over once it runs past the guest list.
+  //
+  // The toppings SHARE that budget rather than each getting one: a 25-cup box
+  // cannot carry 25 Dubai and 25 Cream, because that would be 50 cups.
+  //
+  // Applied on read rather than written back into state, so trimming the box and
+  // refilling it restores the original pick instead of losing it. Earlier
   // toppings get first call on the budget, keeping the trim deterministic.
-  const toppingCap = capped ? (target ?? 0) : guests
+  const toppingCap = capped ? cups : Math.max(cups, guests)
 
   const toppings = useMemo(() => {
     const out: Record<string, number> = {}
@@ -574,6 +582,22 @@ export default function QuotePage() {
           {stepKey === 'package' && 'Choose a package to continue'}
           {stepKey === 'build' && remaining > 0 && `${remaining} more cup${remaining === 1 ? '' : 's'} to fill your box`}
           {stepKey === 'details' && 'We need your name and one way to reach you'}
+        </p>
+      )}
+
+      {/* POPIA s18: the visitor has to be told what happens to their details at
+          the point they hand them over, not three clicks away in a footer. This
+          is the only step that collects any, so it is the only step that says so. */}
+      {stepKey === 'details' && (
+        <p className="mx-auto mt-4 max-w-3xl text-right text-[12px] leading-relaxed text-[#7A3B5E]/70">
+          We use your details only to quote and to plan your event. See our{' '}
+          <a
+            href="/privacy-policy"
+            className="font-semibold text-[#E8176D] underline decoration-[#E8176D]/30 underline-offset-2 hover:text-[#C01057]"
+          >
+            Privacy Policy
+          </a>
+          .
         </p>
       )}
 
@@ -969,8 +993,11 @@ function CupCarousel({
                 >
                   <span className="relative block">
                     <img
-                      src={f.img}
+                      src={cupSrc(f.img, 480)}
                       alt=""
+                      width={370}
+                      height={480}
+                      decoding="async"
                       className="h-[210px] w-auto object-contain transition-transform duration-300 group-hover:-translate-y-2 sm:h-[240px]"
                       style={{ filter: 'drop-shadow(0 24px 26px rgba(80,30,55,0.32))' }}
                       draggable={false}
@@ -1122,22 +1149,30 @@ function ToppingStrip({
       </div>
 
       {/* A cup wears at most one topping, so the two together can never exceed
-          the number of cups in the order. */}
-      <div className="mb-3 flex items-center gap-3">
-        <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.1em] text-[#7A3B5E]">
-          {chosen}/{cap} topped
-        </span>
-        <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-[#E8176D]/15">
-          <motion.span
-            className="absolute inset-y-0 left-0 rounded-full bg-[#E8176D]"
-            animate={{ width: `${cap > 0 ? Math.min(100, (chosen / cap) * 100) : 0}%` }}
-            transition={{ type: 'spring', stiffness: 170, damping: 24 }}
-          />
-        </span>
-        <span className="shrink-0 text-[11px] font-semibold text-[#7A3B5E]/75">
-          {left > 0 ? `${left} plain` : 'every cup topped'}
-        </span>
-      </div>
+          the number of cups in the order — and with an empty box there is
+          nothing to top yet, which the meter would otherwise report as the
+          cheerful "0/0 · every cup topped". */}
+      {cap === 0 ? (
+        <p className="mb-3 rounded-2xl bg-[#E8176D]/[0.07] px-4 py-2.5 text-[12px] text-[#7A3B5E]">
+          Add some cups first — toppings go on top of the cups you’ve picked.
+        </p>
+      ) : (
+        <div className="mb-3 flex items-center gap-3">
+          <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.1em] text-[#7A3B5E]">
+            {chosen}/{cap} topped
+          </span>
+          <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-[#E8176D]/15">
+            <motion.span
+              className="absolute inset-y-0 left-0 rounded-full bg-[#E8176D]"
+              animate={{ width: `${Math.min(100, (chosen / cap) * 100)}%` }}
+              transition={{ type: 'spring', stiffness: 170, damping: 24 }}
+            />
+          </span>
+          <span className="shrink-0 text-[11px] font-semibold text-[#7A3B5E]/75">
+            {left > 0 ? `${left} plain` : 'every cup topped'}
+          </span>
+        </div>
+      )}
 
       {/* The cup picture does the explaining — "Dubai topping" means nothing to
           anyone who hasn't already seen one. */}
@@ -1163,8 +1198,11 @@ function ToppingStrip({
                 />
               )}
               <img
-                src={t.img}
+                src={cupSrc(t.img, 112)}
                 alt=""
+                width={86}
+                height={112}
+                decoding="async"
                 className="relative h-11 w-auto shrink-0 object-contain sm:h-12"
                 draggable={false}
               />
@@ -1185,8 +1223,8 @@ function ToppingStrip({
         })}
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-4">
-        <p className="text-[12px] leading-snug text-[#7A3B5E]/85">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <p className="min-w-0 flex-1 text-[12px] leading-snug text-[#7A3B5E]/85">
           {topping.blurb}
           {count > 0 && (
             <span className="block font-semibold text-[#7A3B5E]">
@@ -1212,6 +1250,33 @@ function ToppingStrip({
           >
             <Plus size={14} strokeWidth={2.5} />
           </button>
+        </div>
+
+        {/* Same escape hatch the cup carousel offers: topping a 50-cup box one
+            tap at a time is nobody's idea of a good time. `onSet` clamps to the
+            shared budget, so an over-typed number lands on whatever is left
+            rather than being rejected. Its own full-width row so the blurb keeps
+            its space and the field lines up under the stepper. */}
+        <div className="flex basis-full items-center justify-end gap-2">
+          <label
+            htmlFor={`topping-qty-${topping.id}`}
+            className="text-[11px] font-semibold text-[#7A3B5E]/60"
+          >
+            or type a number
+          </label>
+          <input
+            id={`topping-qty-${topping.id}`}
+            type="number"
+            inputMode="numeric"
+            min={0}
+            max={count + left}
+            value={count}
+            disabled={cap === 0}
+            onChange={(e) => onSet(topping.id, Number(e.target.value))}
+            onFocus={(e) => e.target.select()}
+            aria-label={`Set how many cups wear the ${topping.name}`}
+            className="w-16 rounded-full border border-[#E8176D]/20 bg-white/80 px-3 py-1.5 text-center text-[13px] font-bold text-[#3B2116] outline-none transition focus:border-[#E8176D] focus:ring-2 focus:ring-[#E8176D]/25 disabled:opacity-40"
+          />
         </div>
       </div>
 
@@ -1317,7 +1382,15 @@ function StepBox({
                 animate={{ opacity: 1, scale: 1 }}
                 className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[12px] font-semibold text-[#3B2116] shadow-sm"
               >
-                <img src={f.img} alt="" className="h-6 w-auto object-contain" draggable={false} />
+                <img
+                  src={cupSrc(f.img, 112)}
+                  alt=""
+                  width={86}
+                  height={112}
+                  decoding="async"
+                  className="h-6 w-auto object-contain"
+                  draggable={false}
+                />
                 {f.short} ×{mix[f.id]}
                 <button
                   onClick={() => onBump(f.id, -1)}
@@ -1346,7 +1419,16 @@ function StepBox({
       {/* Iced teas ride along outside the capped box */}
       <div className="mx-auto mt-4 flex max-w-2xl items-center justify-between gap-4 rounded-3xl bg-[#FFF9ED] px-6 py-5 shadow-[0_16px_36px_rgba(180,40,95,0.1)]">
         <div className="flex items-center gap-3">
-          <img src="/menu-cups/ice-tea-flat.webp" alt="" className="h-12 w-auto object-contain" draggable={false} />
+          <img
+            src="/menu-cups/ice-tea-flat-112.webp"
+            alt=""
+            width={67}
+            height={112}
+            decoding="async"
+            loading="lazy"
+            className="h-12 w-auto object-contain"
+            draggable={false}
+          />
           <div>
             <p className="text-[13px] font-bold text-[#3B2116]">Add Strawberry Peach Iced Teas?</p>
             <p className="text-[12px] text-[#7A3B5E]/75">{rands(ICED_TEA_PRICE)} each · on the side</p>
@@ -1488,7 +1570,15 @@ function StepStation({
                   animate={{ opacity: 1, scale: 1 }}
                   className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[12px] font-semibold text-[#3B2116] shadow-sm"
                 >
-                  <img src={f.img} alt="" className="h-6 w-auto object-contain" draggable={false} />
+                  <img
+                  src={cupSrc(f.img, 112)}
+                  alt=""
+                  width={86}
+                  height={112}
+                  decoding="async"
+                  className="h-6 w-auto object-contain"
+                  draggable={false}
+                />
                   {f.short} ×{mix[f.id]}
                   <button
                     onClick={() => onBump(f.id, -1)}
@@ -1518,7 +1608,16 @@ function StepStation({
           rather than another toggle card to tap. */}
       <div className="mx-auto mt-4 max-w-2xl flex items-center justify-between gap-4 rounded-3xl bg-[#FFF9ED] px-6 py-5 shadow-[0_16px_36px_rgba(180,40,95,0.1)]">
         <div className="flex items-center gap-3">
-          <img src="/menu-cups/ice-tea-flat.webp" alt="" className="h-12 w-auto object-contain" draggable={false} />
+          <img
+            src="/menu-cups/ice-tea-flat-112.webp"
+            alt=""
+            width={67}
+            height={112}
+            decoding="async"
+            loading="lazy"
+            className="h-12 w-auto object-contain"
+            draggable={false}
+          />
           <div>
             <p className="text-[13px] font-bold text-[#3B2116]">Add Strawberry Peach Iced Teas?</p>
             <p className="text-[12px] text-[#7A3B5E]/75">{rands(ICED_TEA_PRICE)} each · on the side</p>

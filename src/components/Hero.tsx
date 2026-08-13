@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { MapPin, ArrowRight, ChevronRight } from 'lucide-react'
 import { usePopupSchedule } from '../hooks/usePopupSchedule'
-import { isScheduleOff, mapsHref, pickNext, stopHeadline } from '../lib/nextStop'
+import { currentSlot, isScheduleOff, mapsHref, stopHeadline } from '../lib/nextStop'
 import { useIsMobile } from '../hooks/useIsMobile'
 
 type HeroProps = {
@@ -28,8 +28,15 @@ function HeroLocationStrip({
 }) {
   const prefersReducedMotion = useReducedMotion()
   const { schedule, loading, error } = usePopupSchedule()
-  const next = error ? null : pickNext(schedule)
-  const headline = next ? stopHeadline(next.slot) : null
+  // `currentSlot`, not `pickNext`: the pill answers "what does the sheet say
+  // right now?", and the sheet is a standing weekly answer whose Date field goes
+  // stale the moment that day passes. `pickNext` ignores everything behind us,
+  // so a row dated yesterday blanked the pill down to "See where we are next"
+  // even though its Day of Week was still the live answer — while the Off check
+  // below, which already read `currentSlot`, was looking at that very row. One
+  // source for both halves now, so they cannot disagree.
+  const slot = error ? null : currentSlot(schedule)
+  const headline = slot ? stopHeadline(slot) : null
 
   // "Off" in the Day of Week dropdown is the sheet saying the trailer isn't out.
   // There is no stop to point at, and the generic "See where we are next" would
@@ -45,7 +52,7 @@ function HeroLocationStrip({
   // and Android when it's installed, and opens the web map when it isn't. With
   // no row or no address to hand over there is nothing to point at, so it falls
   // back to scrolling down to the full schedule.
-  const venueHref = next && headline && next.slot.location ? mapsHref(next.slot) : null
+  const venueHref = slot && headline && slot.location ? mapsHref(slot) : null
 
   const shell = isNaughtyMode
     ? 'border-white/20 bg-white/10 text-[#FFD6EC] hover:bg-white/16'
@@ -78,9 +85,7 @@ function HeroLocationStrip({
         href={venueHref ?? '#next-stop'}
         {...(venueHref ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
         aria-label={
-          venueHref && next
-            ? `${headline} — get directions to ${next.slot.location}`
-            : undefined
+          venueHref && slot ? `${headline} — get directions to ${slot.location}` : undefined
         }
         whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
         /* `relative` so the "click me" doodle can hang off the pill itself
@@ -137,7 +142,7 @@ function HeroLocationStrip({
               click me
             </span> */}
             {/* Curls up and to the right, landing on the chevron. */}
-            <svg
+            {/* <svg
               width="26"
               height="20"
               viewBox="0 0 34 26"
@@ -157,7 +162,7 @@ function HeroLocationStrip({
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-            </svg>
+            </svg> */}
           </motion.span>
         )}
       </motion.a>

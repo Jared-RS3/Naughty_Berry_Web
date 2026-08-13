@@ -18,12 +18,21 @@ const Gallery     = lazy(() => import('./components/Gallery'))
 const Footer      = lazy(() => import('./components/Footer'))
 const StoryPage   = lazy(() => import('./components/StoryPage'))
 const QuotePage   = lazy(() => import('./components/QuotePage'))
+const PrivacyPolicyPage = lazy(() => import('./components/PrivacyPolicyPage'))
+const CookiePolicyPage  = lazy(() => import('./components/CookiePolicyPage'))
+const TermsPage         = lazy(() => import('./components/TermsPage'))
 
 /** Standalone routes. Plain <a> navigation, resolved by the SPA fallback in
  *  public/_redirects — no router dependency for the handful of pages here. */
 const ROUTES: Record<string, React.LazyExoticComponent<() => React.ReactElement>> = {
   '/story': StoryPage,
   '/quote': QuotePage,
+  // The footer and the quote form's consent line link to these three. Without a
+  // route the SPA fallback served them the home page instead — worse than a 404,
+  // because the link looks like it worked and the policy is simply missing.
+  '/privacy-policy': PrivacyPolicyPage,
+  '/cookie-policy': CookiePolicyPage,
+  '/terms': TermsPage,
 }
 
 function App() {

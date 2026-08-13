@@ -261,7 +261,7 @@ export default function Events() {
           transition={{ duration: 0.7, ease: EASE_OUT }}
           className="scroll-mt-24"
         >
-          <div className="text-center mb-8">
+          {/* <div className="text-center mb-8">
             <h3
               className="uppercase leading-[1.05] text-[clamp(1.5rem,3.4vw,2.5rem)]"
               style={{ fontFamily: "'Archivo Black', system-ui, sans-serif" }}
@@ -273,25 +273,12 @@ export default function Events() {
               Rather keep it classic? The form below works too — either way we’ll
               come back to you within 24 hours.
             </p>
-          </div>
+          </div> */}
 
           {/* Signpost to the builder, for anyone who scrolled past the package
               cards without clicking one. */}
-          <div className="mb-8 text-center">
-            <motion.a
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              href="/quote"
-              className="inline-flex items-center gap-2.5 rounded-full bg-[#E8176D] px-8 py-4 text-[12px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_14px_32px_rgba(232,23,109,0.32)] transition-colors hover:bg-[#C01057]"
-            >
-              <Sparkles size={15} />
-              Build your quote
-            </motion.a>
-            <p className="mt-3 text-[13px] text-[#7A3B5E]/70">
-              Takes about a minute — and it’s a lot more fun than a form.
-            </p>
-          </div>
-
+     
+{/* 
           <div className="nb-card overflow-hidden">
             <iframe
               title="Naughty Berry event enquiry form"
@@ -301,7 +288,23 @@ export default function Events() {
               className="block w-full"
               style={{ background: 'transparent', border: 'none' }}
             />
-          </div>
+          </div> */}
+
+          {/* POPIA s18 notice at the point of collection. This form is Airtable's
+              own page inside a frame on ours, so the disclosure has to sit out
+              here — we cannot put anything inside the frame. */}
+          {/* <p className="mt-4 text-center text-[12.5px] leading-relaxed text-[#7A3B5E]/70">
+            This form is hosted by Airtable, and what you send goes straight to
+            them on our behalf. We use it only to quote and to plan your event —
+            see our{' '}
+            <a
+              href="/privacy-policy"
+              className="font-semibold text-[#E8176D] underline decoration-[#E8176D]/30 underline-offset-2 hover:text-[#C01057]"
+            >
+              Privacy Policy
+            </a>
+            .
+          </p> */}
         </motion.div>
       </div>
     </section>
