@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { MapPin, ArrowRight, ChevronRight } from 'lucide-react'
 import { usePopupSchedule } from '../hooks/usePopupSchedule'
-import { mapsHref, pickNext, stopHeadline } from '../lib/nextStop'
+import { isDayOff, mapsHref, pickNext, stopHeadline } from '../lib/nextStop'
 import { useIsMobile } from '../hooks/useIsMobile'
 
 type HeroProps = {
@@ -30,6 +30,13 @@ function HeroLocationStrip({
   const { schedule, loading, error } = usePopupSchedule()
   const next = error ? null : pickNext(schedule)
   const headline = next ? stopHeadline(next.slot) : null
+
+  // "Off" in the Day of Week dropdown is the sheet saying the trailer isn't out.
+  // There is no stop to point at, and the generic "See where we are next" would
+  // still read as a live sighting — so the pill leaves the hero entirely rather
+  // than sitting there with nothing to say. It only disappears once the schedule
+  // has actually loaded, so the placeholder still holds the space while fetching.
+  if (!loading && next && isDayOff(next.slot)) return null
 
   // Tapping the pill hands the venue address straight to the phone's maps app —
   // the Google Maps universal link deep-links into the native app on both iOS

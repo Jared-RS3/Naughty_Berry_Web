@@ -353,10 +353,18 @@ function validate(input: Json): Validated | { error: string } {
     ],
     'Classic cups': counts.classic,
     'Brownie cups': counts.brownie,
-    'Dubai cups': counts.dubai,
-    'Cream cups': counts.cream,
+    'Dubai topping cups': counts.dubai,
+    'Cream topping cups': counts.cream,
+    'Iced teas': icedTeas,
+    // The exact answer, alongside the four-way "Event type" this collapses into.
+    'Occasion': OCCASIONS.has(rawOccasion) ? rawOccasion : 'Something Else',
     'Special Requests': field(specialRequests, 4000, { multiline: true }),
   }
+  // Only the capped boxes have a figure worth storing — an Indulgent spread is
+  // priced around the event, so writing a base price there would read as a quote
+  // nobody gave.
+  if (capped) fields['Estimated total'] = estimate
+  if (phone) fields['Phone'] = phone
   if (date) fields['Event Date'] = date
   if (venue) fields['Venue / Location'] = venue
 

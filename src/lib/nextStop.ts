@@ -82,10 +82,17 @@ export function mapsHref(slot: ScheduleSlot): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
 }
 
-/** The "Day of Week" dropdown carries the seven weekdays plus this one extra
- *  choice, which is not a day at all — it is how the sheet says "name the place
- *  instead of the day". */
+/** The "Day of Week" dropdown carries the seven weekdays plus two choices that
+ *  are not days at all: "Location" is how the sheet says "name the place instead
+ *  of the day", and "Off" is how it says the trailer isn't going out. */
 const LOCATION_OPTION = 'location'
+const OFF_OPTION = 'off'
+
+/** "Off" means there is no stop to point at — the callers hide their live
+ *  location badge entirely rather than dressing the row up as an appearance. */
+export function isDayOff(slot: ScheduleSlot): boolean {
+  return slot.day.trim().toLowerCase() === OFF_OPTION
+}
 
 /**
  * One-line answer for the hero pill, driven by the row's "Day of Week" dropdown.
@@ -98,6 +105,7 @@ const LOCATION_OPTION = 'location'
  */
 export function stopHeadline(slot: ScheduleSlot): string | null {
   const day = slot.day.trim()
+  if (isDayOff(slot)) return null
   if (day && day.toLowerCase() !== LOCATION_OPTION) return `Next stop drops ${day}`
   if (slot.eventName) return `Open at ${slot.eventName}`
   return null
