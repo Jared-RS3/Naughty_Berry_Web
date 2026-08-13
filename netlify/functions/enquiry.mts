@@ -124,14 +124,6 @@ const BUCKET: Record<string, 'classic' | 'brownie'> = {
  *  number now means "cups wearing this topping" rather than "cups of this kind". */
 const TOPPING_IDS = new Set(['dubai', 'cream'])
 
-/** Exact Airtable option strings — trailing spaces included, deliberately. */
-const CUP_SELECT = {
-  classic: 'Classic Cup',
-  brownie: 'Naughty Brownie Cup ',
-  dubai: 'Dubai Cup',
-  cream: 'Cream Cup ',
-} as const
-
 const FLAVOUR_LABEL: Record<string, string> = {
   classic: 'Naughty Classic',
   brownie: 'Naughty Brownie',
@@ -336,7 +328,7 @@ function validate(input: Json): Validated | { error: string } {
 
   // ── The allowlist. Only these columns are ever written. ──
   const fields: Json = {
-    'Lead Name': name,
+    'Name': name,
     'Contact Details': [email, phone].filter(Boolean).join(' · '),
     'Email Address': email,
     'Source': 'Website',
@@ -345,12 +337,6 @@ function validate(input: Json): Validated | { error: string } {
     'Date Captured': new Date().toISOString().slice(0, 10),
     'Estimated Headcount': guests,
     'Package selected': PACKAGE_LABEL[pkg],
-    'Cup Selection': [
-      ...new Set([
-        ...Object.keys(mix).map((id) => CUP_SELECT[BUCKET[id]]),
-        ...Object.keys(toppings).map((id) => CUP_SELECT[id as 'dubai' | 'cream']),
-      ]),
-    ],
     'Classic cups': counts.classic,
     'Brownie cups': counts.brownie,
     'Dubai topping cups': counts.dubai,
