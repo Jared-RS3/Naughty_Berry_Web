@@ -130,12 +130,12 @@ function HeroLocationStrip({
             animate={prefersReducedMotion ? undefined : { y: [0, 2.5, 0] }}
             transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <span
+            {/* <span
               className="-rotate-3 text-[11px] font-extrabold italic leading-none sm:text-[12px]"
               style={{ fontFamily: "'Nunito', system-ui, sans-serif" }}
             >
               click me
-            </span>
+            </span> */}
             {/* Curls up and to the right, landing on the chevron. */}
             <svg
               width="26"
