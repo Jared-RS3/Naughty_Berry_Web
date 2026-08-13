@@ -17,6 +17,10 @@ export interface Quote {
   pkg: PackageId
   /** flavour id → cup count. Meaningless for the uncapped Indulgent spread. */
   mix: Record<string, number>
+  /** topping id → how many cups wear it. Priced on top of the box, so unlike
+   *  `mix` these do not add cups — they dress cups `mix` already counted, which
+   *  is why the two toppings together cannot exceed the cup count. */
+  toppings: Record<string, number>
   icedTeas: number
   guests: number
   name: string
@@ -33,8 +37,9 @@ export const BASE_PRICE = 1675
  *  50 cups plus the on-site stand, staffed for the event. */
 export const SIGNATURE_CUP_TARGET = 50
 export const SIGNATURE_BASE_PRICE = 7750
-/** Menu gap between a R75 cup and a R95 Dubai/Cream, charged per upgraded cup. */
-export const UPGRADE = 20
+/** Dubai and Cream are not menu cups — they are toppings, charged per cup you
+ *  put one on. Same R20 gap the old R95 cups carried, just billed as an add-on. */
+export const TOPPING_PRICE = 20
 export const ICED_TEA_PRICE = 45
 export const ICED_TEA_CAP = 40
 
@@ -61,19 +66,19 @@ export interface Flavour {
   name: string
   short: string
   img: string
-  upcharge: number
-  /** Which of the Leads table's four cup buckets this flavour counts toward. */
-  bucket: 'classic' | 'brownie' | 'dubai' | 'cream'
+  /** Which of the Leads table's cup buckets this flavour counts toward. */
+  bucket: 'classic' | 'brownie'
   blurb: string
 }
 
+/** Every cup on the builder's menu costs the same now — what used to be the
+ *  R95 Dubai and Cream cups moved out to TOPPINGS below. */
 export const FLAVOURS: Flavour[] = [
   {
     id: 'classic',
     name: 'Naughty Classic',
     short: 'Classic',
     img: '/menu-cups/classic.webp',
-    upcharge: 0,
     bucket: 'classic',
     blurb: 'Fresh strawberries drenched in creamy milk chocolate.',
   },
@@ -82,45 +87,35 @@ export const FLAVOURS: Flavour[] = [
     name: 'Naughty Brownie',
     short: 'Brownie',
     img: '/menu-cups/brownie.webp',
-    upcharge: 0,
     bucket: 'brownie',
     blurb: 'Fudgey brownie bites folded through the chocolate.',
   },
+]
+
+export interface Topping {
+  id: string
+  name: string
+  short: string
+  img: string
+  blurb: string
+}
+
+/** Paid add-ons, offered on all three packages. The image is the finished cup,
+ *  because "Dubai topping" means nothing to anyone who hasn't seen one. */
+export const TOPPINGS: Topping[] = [
   {
     id: 'dubai',
-    name: 'Dubai Chocolate',
+    name: 'Dubai topping',
     short: 'Dubai',
     img: '/menu-cups/dubai-choc.webp',
-    upcharge: UPGRADE,
-    bucket: 'dubai',
     blurb: 'Pistachio cream and toasted kataifi on top.',
   },
   {
-    id: 'dubai-brownie',
-    name: 'Dubai Brownie',
-    short: 'Dubai + Brownie',
-    img: '/menu-cups/dubai.webp',
-    upcharge: UPGRADE,
-    bucket: 'dubai',
-    blurb: 'The kunafeh, with brownie bites underneath.',
-  },
-  {
     id: 'cream',
-    name: 'Naughty Cream',
+    name: 'Cream topping',
     short: 'Cream',
     img: '/menu-cups/cream-plain.webp',
-    upcharge: UPGRADE,
-    bucket: 'cream',
     blurb: 'Velvety sweet cream, crowned with Biscoff crumb.',
-  },
-  {
-    id: 'cream-brownie',
-    name: 'Cream Brownie',
-    short: 'Cream + Brownie',
-    img: '/menu-cups/cream.webp',
-    upcharge: UPGRADE,
-    bucket: 'cream',
-    blurb: 'Cream and brownie, layered through the berries.',
   },
 ]
 
@@ -128,14 +123,27 @@ export function totalCups(mix: Record<string, number>) {
   return Object.values(mix).reduce((a, b) => a + b, 0)
 }
 
+/**
+ * Cups wearing a topping, across both toppings. A cup takes at most one, so
+ * this can never exceed the number of cups in the order — the two toppings
+ * share one budget rather than getting a full one each.
+ */
+export function totalToppings(toppings: Record<string, number>) {
+  return TOPPINGS.reduce((sum, t) => sum + (toppings[t.id] ?? 0), 0)
+}
+
 /** The figure shown on screen. The server recomputes this independently before
  *  writing anything — this copy is for display only and is never posted. */
-export function estimateTotal(pkg: PackageId, mix: Record<string, number>, icedTeas: number) {
-  const upgraded = FLAVOURS.reduce(
-    (sum, f) => sum + (f.upcharge > 0 ? (mix[f.id] ?? 0) : 0),
-    0
+export function estimateTotal(
+  pkg: PackageId,
+  icedTeas: number,
+  toppings: Record<string, number>
+) {
+  return (
+    basePriceFor(pkg) +
+    totalToppings(toppings) * TOPPING_PRICE +
+    icedTeas * ICED_TEA_PRICE
   )
-  return basePriceFor(pkg) + upgraded * UPGRADE + icedTeas * ICED_TEA_PRICE
 }
 
 /** en-ZA groups thousands with a space — "R1 675". */
@@ -213,6 +221,7 @@ export function toEnquiryPayload(q: Quote, startedAt: number, honeypot: string) 
     occasion: q.occasion,
     pkg: q.pkg,
     mix: q.mix,
+    toppings: q.toppings,
     icedTeas: q.icedTeas,
     guests: q.guests,
     name: q.name,

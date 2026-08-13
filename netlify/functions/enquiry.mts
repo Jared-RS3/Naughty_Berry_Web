@@ -112,18 +112,17 @@ const OCCASIONS = new Set([
   'Wedding', 'Birthday', 'Corporate Event', 'Graduation',
   'Baby Shower', 'Year End', 'Girls Night', 'Something Else',
 ])
-const FLAVOUR_IDS = new Set([
-  'classic', 'brownie', 'dubai', 'dubai-brownie', 'cream', 'cream-brownie',
-])
+const FLAVOUR_IDS = new Set(['classic', 'brownie'])
 
-const BUCKET: Record<string, 'classic' | 'brownie' | 'dubai' | 'cream'> = {
+const BUCKET: Record<string, 'classic' | 'brownie'> = {
   classic: 'classic',
   brownie: 'brownie',
-  dubai: 'dubai',
-  'dubai-brownie': 'dubai',
-  cream: 'cream',
-  'cream-brownie': 'cream',
 }
+
+/** Dubai and Cream left the cup menu and came back as paid toppings. They still
+ *  land in the same two Leads columns, so the reporting side is unchanged — the
+ *  number now means "cups wearing this topping" rather than "cups of this kind". */
+const TOPPING_IDS = new Set(['dubai', 'cream'])
 
 /** Exact Airtable option strings — trailing spaces included, deliberately. */
 const CUP_SELECT = {
@@ -136,10 +135,11 @@ const CUP_SELECT = {
 const FLAVOUR_LABEL: Record<string, string> = {
   classic: 'Naughty Classic',
   brownie: 'Naughty Brownie',
-  dubai: 'Dubai Chocolate',
-  'dubai-brownie': 'Dubai Brownie',
-  cream: 'Naughty Cream',
-  'cream-brownie': 'Cream Brownie',
+}
+
+const TOPPING_LABEL: Record<string, string> = {
+  dubai: 'Dubai topping',
+  cream: 'Cream topping',
 }
 
 const CUP_TARGET = 25
@@ -237,6 +237,31 @@ function validate(input: Json): Validated | { error: string } {
   const icedTeas = intIn(input.icedTeas, 0, MAX_ICED_TEAS, 0)
   const guests = capped ? cap : intIn(input.guests, 1, MAX_GUESTS, 80)
 
+  // Toppings dress cups that `mix` already counted, so they add no cups of their
+  // own — which is exactly why they need their own ceiling. It is the number of
+  // cups there are to put a topping on, and the two toppings SHARE it: a 25-cup
+  // box cannot carry 25 Dubai and 25 Cream. Over-count is clamped rather than
+  // rejected, since the builder already bounds it and a larger number means a
+  // crafted body rather than a typo. Fixed id order keeps the trim deterministic.
+  const toppingsIn = (input.toppings && typeof input.toppings === 'object' && !Array.isArray(input.toppings))
+    ? (input.toppings as Json)
+    : {}
+  const toppingCap = capped ? cap : guests
+  const toppings: Record<string, number> = {}
+  let totalToppings = 0
+  let toppingRoom = toppingCap
+  for (const id of TOPPING_IDS) {
+    const n = Math.min(
+      intIn(toppingsIn[id], 0, MAX_CUPS_PER_FLAVOUR, 0),
+      Math.max(0, toppingRoom)
+    )
+    if (n > 0) {
+      toppings[id] = n
+      totalToppings += n
+      toppingRoom -= n
+    }
+  }
+
   const venue = field(input.venue, LIMITS.venue)
   const notes = field(input.notes, LIMITS.notes, { multiline: true })
 
@@ -262,20 +287,27 @@ function validate(input: Json): Validated | { error: string } {
 
   // Money is computed here, never accepted from the client — a posted total is
   // just a number an attacker chose.
-  const UPGRADE = 20
+  const TOPPING_PRICE = 20
   const ICED_TEA_PRICE = 45
-  const upgraded = Object.entries(mix).reduce(
-    (sum, [id, n]) => sum + (BUCKET[id] === 'dubai' || BUCKET[id] === 'cream' ? n : 0),
-    0
-  )
-  const estimate = basePriceFor(pkg) + upgraded * UPGRADE + icedTeas * ICED_TEA_PRICE
+  const estimate =
+    basePriceFor(pkg) + totalToppings * TOPPING_PRICE + icedTeas * ICED_TEA_PRICE
   const rands = (n: number) => `R${n.toLocaleString('en-ZA')}`
 
+  // The Dubai and Cream columns count topped cups rather than cups of that
+  // flavour, so they are filled from `toppings`, not from the mix. The cups
+  // themselves still count under Classic/Brownie — a topped cup is one of those
+  // wearing a topping, and counting it twice would overstate the box.
   const counts = { classic: 0, brownie: 0, dubai: 0, cream: 0 }
   for (const [id, n] of Object.entries(mix)) counts[BUCKET[id]] += n
+  counts.dubai = toppings.dubai ?? 0
+  counts.cream = toppings.cream ?? 0
 
   const mixLine = Object.entries(mix)
     .map(([id, n]) => `${n}× ${FLAVOUR_LABEL[id]}`)
+    .join(', ')
+
+  const toppingLine = Object.entries(toppings)
+    .map(([id, n]) => `${n}× ${TOPPING_LABEL[id]}`)
     .join(', ')
 
   const specialRequests = [
@@ -285,6 +317,7 @@ function validate(input: Json): Validated | { error: string } {
       : capped
         ? null
         : 'Spread: not specified — suggest a mix',
+    toppingLine ? `Toppings (${rands(TOPPING_PRICE)} per cup): ${toppingLine}` : null,
     icedTeas > 0 ? `Iced teas: ${icedTeas}` : null,
     capped
       ? `Estimated total (cups only, excl. travel/setup/other fees): ${rands(estimate)} — final quote still to be emailed`
@@ -312,7 +345,12 @@ function validate(input: Json): Validated | { error: string } {
     'Date Captured': new Date().toISOString().slice(0, 10),
     'Estimated Headcount': guests,
     'Package selected': PACKAGE_LABEL[pkg],
-    'Cup Selection': [...new Set(Object.keys(mix).map((id) => CUP_SELECT[BUCKET[id]]))],
+    'Cup Selection': [
+      ...new Set([
+        ...Object.keys(mix).map((id) => CUP_SELECT[BUCKET[id]]),
+        ...Object.keys(toppings).map((id) => CUP_SELECT[id as 'dubai' | 'cream']),
+      ]),
+    ],
     'Classic cups': counts.classic,
     'Brownie cups': counts.brownie,
     'Dubai cups': counts.dubai,
@@ -431,7 +469,10 @@ async function handle(req: Request, context: Context): Promise<Response> {
       'Content-Type': 'application/json',
     },
     // No typecast: every select value is already one this code chose from a
-    // fixed list, so coercion could only ever paper over a bug.
+    // fixed list, so coercion could only ever paper over a bug. Note the flip
+    // side — adding a package or cup here means adding the matching option in
+    // the base too, or every submission 422s. That is what happened to
+    // Signature, whose option the table was missing until it was added.
     body: JSON.stringify({ records: [{ fields: result.fields }] }),
     signal: AbortSignal.timeout(10_000),
   }).catch((e: unknown) => {

@@ -30,15 +30,17 @@ import {
   CUP_TARGET,
   SIGNATURE_CUP_TARGET,
   FLAVOURS,
+  TOPPINGS,
   ICED_TEA_CAP,
   ICED_TEA_PRICE,
-  UPGRADE,
+  TOPPING_PRICE,
   LIMITS,
   estimateTotal,
   packageName,
   rands,
   toEnquiryPayload,
   totalCups as sumCups,
+  totalToppings as sumToppings,
   validateDetails,
   type FieldErrors,
   type PackageId,
@@ -194,6 +196,8 @@ export default function QuotePage() {
   const [occasion, setOccasion] = useState<string | null>(null)
   const [pkg, setPkg] = useState<PackageId | null>(lockedPkg)
   const [mix, setMix] = useState<Record<string, number>>({})
+  /** What the visitor actually tapped. `toppings` below is this, capped. */
+  const [pickedToppings, setPickedToppings] = useState<Record<string, number>>({})
   const [icedTeas, setIcedTeas] = useState(0)
   const [guests, setGuests] = useState(80)
   const [form, setForm] = useState({ name: '', email: '', phone: '', date: '', venue: '', notes: '' })
@@ -226,7 +230,57 @@ export default function QuotePage() {
   const capped = pkg === 'little' || pkg === 'signature'
   const target = cupCapFor(pkg)
   const remaining = (target ?? 0) - cups
-  const estimate = estimateTotal(pkg ?? 'little', mix, icedTeas)
+
+  // A topping dresses a cup that already exists, so the ceiling is however many
+  // cups the package produces: the fixed box for the capped two, the guest list
+  // for the Indulgent station. The toppings SHARE that budget rather than each
+  // getting one — a 25-cup box cannot carry 25 Dubai and 25 Cream, because that
+  // would be 50 cups.
+  //
+  // Applied on read rather than written back into state, so swapping packages
+  // down and back restores the original pick instead of losing it. Earlier
+  // toppings get first call on the budget, keeping the trim deterministic.
+  const toppingCap = capped ? (target ?? 0) : guests
+
+  const toppings = useMemo(() => {
+    const out: Record<string, number> = {}
+    let left = toppingCap
+    for (const t of TOPPINGS) {
+      const n = Math.min(pickedToppings[t.id] ?? 0, Math.max(0, left))
+      if (n > 0) {
+        out[t.id] = n
+        left -= n
+      }
+    }
+    return out
+  }, [pickedToppings, toppingCap])
+
+  const estimate = estimateTotal(pkg ?? 'little', icedTeas, toppings)
+
+  const setTopping = useCallback(
+    (id: string, value: number) => {
+      setPickedToppings((t) => {
+        // Whatever the other topping already claimed is not available to this
+        // one, so the room left is the shared budget minus its total.
+        const others = TOPPINGS.reduce(
+          (sum, x) => (x.id === id ? sum : sum + Math.max(0, t[x.id] ?? 0)),
+          0
+        )
+        const room = Math.max(0, toppingCap - Math.min(others, toppingCap))
+        const next = Math.min(
+          room,
+          Math.max(0, Math.trunc(Number.isFinite(value) ? value : 0))
+        )
+        if (next === 0) {
+          const rest = { ...t }
+          delete rest[id]
+          return rest
+        }
+        return { ...t, [id]: next }
+      })
+    },
+    [toppingCap]
+  )
 
   // Little Moments and Signature are both capped boxes — an Indulgent spread
   // is sized to the guest list instead, so its counts run free.
@@ -320,6 +374,7 @@ export default function QuotePage() {
     occasion: occasion ?? '',
     pkg: pkg ?? 'little',
     mix,
+    toppings,
     icedTeas,
     guests,
     name: form.name.trim(),
@@ -413,9 +468,12 @@ export default function QuotePage() {
                 remaining={remaining}
                 estimate={estimate}
                 icedTeas={icedTeas}
+                toppings={toppings}
+                toppingCap={toppingCap}
                 onBump={bump}
                 onSet={setCount}
                 onIcedTeas={setIcedTeas}
+                onTopping={setTopping}
                 onTopUp={() =>
                   setMix((m) => {
                     const total = Object.values(m).reduce((a, b) => a + b, 0)
@@ -436,6 +494,9 @@ export default function QuotePage() {
                 onSet={setCount}
                 icedTeas={icedTeas}
                 onIcedTeas={setIcedTeas}
+                toppings={toppings}
+                toppingCap={toppingCap}
+                onTopping={setTopping}
               />
             )}
             {stepKey === 'details' && (
@@ -926,11 +987,6 @@ function CupCarousel({
                         </motion.span>
                       )}
                     </AnimatePresence>
-                    {f.upcharge > 0 && (
-                      <span className="absolute -left-1 top-1 rounded-full bg-[#FFF9ED] px-2 py-0.5 text-[10px] font-bold text-[#E8176D] shadow">
-                        +{rands(f.upcharge)}
-                      </span>
-                    )}
                   </span>
                 </button>
               </motion.div>
@@ -1027,6 +1083,145 @@ function CupCarousel({
   )
 }
 
+/* ─────────── Dubai & Cream: the paid topping strip ─────────── */
+
+/**
+ * Dubai and Cream used to be cups on the menu. They are toppings now — charged
+ * per cup you put one on, rather than per cup in the box — so they sit out here
+ * with the iced teas instead of competing for space inside the cap.
+ *
+ * Both share one strip because it is the same decision made twice: the tabs only
+ * steer which topping the counter is pointed at, and each keeps its own count,
+ * so switching tabs never silently drops the other one.
+ */
+function ToppingStrip({
+  toppings,
+  cap,
+  onSet,
+}: {
+  toppings: Record<string, number>
+  cap: number
+  onSet: (id: string, n: number) => void
+}) {
+  const [active, setActive] = useState(0)
+  const topping = TOPPINGS[active]
+  const count = toppings[topping.id] ?? 0
+  const chosen = sumToppings(toppings)
+  /** Cups still plain — the room any topping has left to grow into. */
+  const left = Math.max(0, cap - chosen)
+
+  return (
+    <div className="mx-auto mt-4 max-w-2xl rounded-3xl bg-[#FFF9ED] p-5 shadow-[0_16px_36px_rgba(180,40,95,0.1)]">
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <p className="text-[13px] font-bold text-[#3B2116]">Add a topping?</p>
+        <p className="text-[12px] text-[#7A3B5E]/75">
+          {rands(TOPPING_PRICE)} each · goes on top of your cups
+        </p>
+      </div>
+
+      {/* A cup wears at most one topping, so the two together can never exceed
+          the number of cups in the order. */}
+      <div className="mb-3 flex items-center gap-3">
+        <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.1em] text-[#7A3B5E]">
+          {chosen}/{cap} topped
+        </span>
+        <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-[#E8176D]/15">
+          <motion.span
+            className="absolute inset-y-0 left-0 rounded-full bg-[#E8176D]"
+            animate={{ width: `${cap > 0 ? Math.min(100, (chosen / cap) * 100) : 0}%` }}
+            transition={{ type: 'spring', stiffness: 170, damping: 24 }}
+          />
+        </span>
+        <span className="shrink-0 text-[11px] font-semibold text-[#7A3B5E]/75">
+          {left > 0 ? `${left} plain` : 'every cup topped'}
+        </span>
+      </div>
+
+      {/* The cup picture does the explaining — "Dubai topping" means nothing to
+          anyone who hasn't already seen one. */}
+      <div role="tablist" aria-label="Toppings" className="flex gap-1.5 rounded-full bg-white/70 p-1.5">
+        {TOPPINGS.map((t, i) => {
+          const on = i === active
+          const n = toppings[t.id] ?? 0
+          return (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={on}
+              onClick={() => setActive(i)}
+              className={`relative flex flex-1 items-center justify-center gap-2 rounded-full px-2 py-1.5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8176D] sm:px-3 ${
+                on ? 'text-white' : 'text-[#7A3B5E] hover:text-[#E8176D]'
+              }`}
+            >
+              {on && (
+                <motion.span
+                  layoutId="topping-tab"
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  className="absolute inset-0 rounded-full bg-[#E8176D] shadow-[0_8px_18px_rgba(232,23,109,0.35)]"
+                />
+              )}
+              <img
+                src={t.img}
+                alt=""
+                className="relative h-11 w-auto shrink-0 object-contain sm:h-12"
+                draggable={false}
+              />
+              <span className="relative text-[12px] font-bold leading-tight sm:text-[13px]">
+                {t.name}
+              </span>
+              {n > 0 && (
+                <span
+                  className={`relative rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
+                    on ? 'bg-white text-[#E8176D]' : 'bg-[#E8176D] text-white'
+                  }`}
+                >
+                  ×{n}
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="mt-4 flex items-center justify-between gap-4">
+        <p className="text-[12px] leading-snug text-[#7A3B5E]/85">
+          {topping.blurb}
+          {count > 0 && (
+            <span className="block font-semibold text-[#7A3B5E]">
+              On {count} of your cups.
+            </span>
+          )}
+        </p>
+        <div className="flex shrink-0 items-center gap-3">
+          <button
+            onClick={() => onSet(topping.id, count - 1)}
+            disabled={count === 0}
+            aria-label={`Remove one ${topping.name}`}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E8176D]/25 text-[#E8176D] transition hover:bg-[#E8176D] hover:text-white disabled:pointer-events-none disabled:opacity-30"
+          >
+            <Minus size={14} strokeWidth={2.5} />
+          </button>
+          <span className="w-6 text-center text-sm font-bold text-[#3B2116]">{count}</span>
+          <button
+            onClick={() => onSet(topping.id, count + 1)}
+            disabled={left === 0}
+            aria-label={`Add one ${topping.name}`}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E8176D]/25 text-[#E8176D] transition hover:bg-[#E8176D] hover:text-white disabled:pointer-events-none disabled:opacity-30"
+          >
+            <Plus size={14} strokeWidth={2.5} />
+          </button>
+        </div>
+      </div>
+
+      {chosen > 0 && (
+        <p className="mt-3 border-t border-dashed border-[#E8176D]/20 pt-3 text-right text-[12px] font-bold text-[#E8176D]">
+          +{rands(chosen * TOPPING_PRICE)} · {chosen} topped {chosen === 1 ? 'cup' : 'cups'}
+        </p>
+      )}
+    </div>
+  )
+}
+
 /* ─────────── Step 3a: the capped box — Little Moments or Signature ─────────── */
 
 function StepBox({
@@ -1036,9 +1231,12 @@ function StepBox({
   remaining,
   estimate,
   icedTeas,
+  toppings,
+  toppingCap,
   onBump,
   onSet,
   onIcedTeas,
+  onTopping,
   onTopUp,
   isMobile,
 }: {
@@ -1048,9 +1246,12 @@ function StepBox({
   remaining: number
   estimate: number
   icedTeas: number
+  toppings: Record<string, number>
+  toppingCap: number
   onBump: (id: string, delta: number) => void
   onSet: (id: string, value: number) => void
   onIcedTeas: (n: number) => void
+  onTopping: (id: string, n: number) => void
   onTopUp: () => void
   isMobile: boolean
 }) {
@@ -1061,7 +1262,7 @@ function StepBox({
     <div>
       <StepHeading
         title={`Build your|box of ${target}.`}
-        sub={`Spin the ring, tap a cup to drop it in — or type a number to skip the tapping. Dubai & Cream add ${rands(UPGRADE)} each.`}
+        sub="Spin the ring, tap a cup to drop it in — or type a number to skip the tapping. Dubai & Cream toppings are add-ons further down."
       />
 
       <EstimateNote className="mx-auto mb-6 max-w-2xl text-center" />
@@ -1138,6 +1339,8 @@ function StepBox({
         )}
       </div>
 
+      <ToppingStrip toppings={toppings} cap={toppingCap} onSet={onTopping} />
+
       {/* Iced teas ride along outside the capped box */}
       <div className="mx-auto mt-4 flex max-w-2xl items-center justify-between gap-4 rounded-3xl bg-[#FFF9ED] px-6 py-5 shadow-[0_16px_36px_rgba(180,40,95,0.1)]">
         <div className="flex items-center gap-3">
@@ -1182,6 +1385,9 @@ function StepStation({
   onSet,
   icedTeas,
   onIcedTeas,
+  toppings,
+  toppingCap,
+  onTopping,
 }: {
   guests: number
   mix: Record<string, number>
@@ -1191,6 +1397,9 @@ function StepStation({
   onSet: (id: string, value: number) => void
   icedTeas: number
   onIcedTeas: (n: number) => void
+  toppings: Record<string, number>
+  toppingCap: number
+  onTopping: (id: string, n: number) => void
 }) {
   const chosen = Object.values(mix).reduce((a, b) => a + b, 0)
 
@@ -1261,7 +1470,7 @@ function StepStation({
         addLabel="Add to spread"
       />
 
-      <div className="mx-auto mb-12 max-w-2xl rounded-3xl bg-[#FFF9ED] p-6 shadow-[0_16px_36px_rgba(180,40,95,0.12)]">
+      <div className="mx-auto max-w-2xl rounded-3xl bg-[#FFF9ED] p-6 shadow-[0_16px_36px_rgba(180,40,95,0.12)]">
         {chosen === 0 ? (
           <p className="text-center text-[13px] text-[#7A3B5E]/75">
             Nothing picked yet — leave it blank and we’ll suggest a mix for {guests} guests.
@@ -1301,9 +1510,11 @@ function StepStation({
         )}
       </div>
 
+      <ToppingStrip toppings={toppings} cap={toppingCap} onSet={onTopping} />
+
       {/* Iced teas — the same simple quantity add-on as the capped boxes,
           rather than another toggle card to tap. */}
-      <div className="mx-auto max-w-2xl flex items-center justify-between gap-4 rounded-3xl bg-[#FFF9ED] px-6 py-5 shadow-[0_16px_36px_rgba(180,40,95,0.1)]">
+      <div className="mx-auto mt-4 max-w-2xl flex items-center justify-between gap-4 rounded-3xl bg-[#FFF9ED] px-6 py-5 shadow-[0_16px_36px_rgba(180,40,95,0.1)]">
         <div className="flex items-center gap-3">
           <img src="/menu-cups/ice-tea-flat.webp" alt="" className="h-12 w-auto object-contain" draggable={false} />
           <div>
@@ -1597,9 +1808,7 @@ function StepReview({
                 {FLAVOURS.filter((f) => (quote.mix[f.id] ?? 0) > 0).map((f) => (
                   <div key={f.id} className={row}>
                     <span>{quote.mix[f.id]} × {f.name}</span>
-                    <span className="font-semibold">
-                      {f.upcharge > 0 ? `+${rands(f.upcharge * (quote.mix[f.id] ?? 0))}` : 'Included'}
-                    </span>
+                    <span className="font-semibold">Included</span>
                   </div>
                 ))}
               </>
@@ -1615,6 +1824,16 @@ function StepReview({
                 ))}
               </>
             )}
+            {TOPPINGS.filter((t) => (quote.toppings[t.id] ?? 0) > 0).map((t) => (
+              <div key={t.id} className={row}>
+                <span>{quote.toppings[t.id]} × {t.name}</span>
+                <span className="font-semibold">
+                  {capped
+                    ? `+${rands((quote.toppings[t.id] ?? 0) * TOPPING_PRICE)}`
+                    : 'Add-on'}
+                </span>
+              </div>
+            ))}
             {quote.icedTeas > 0 && (
               <div className={row}>
                 <span>{quote.icedTeas} × Iced Tea</span>
