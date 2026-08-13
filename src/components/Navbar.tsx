@@ -27,7 +27,7 @@ const mobileLinks = [
   { label: 'Contact', href: '#contact' },
 ]
 
-export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarProps) {
+export default function Navbar({ isNaughtyMode }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -199,7 +199,12 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className={`fixed inset-y-0 right-0 z-40 w-72 border-l flex flex-col pt-20 px-8 pb-10 ${
+            /* z-[46]: the flying cup (.nb-flyer in ScrollCup) is fixed at z-40
+               and renders after <Navbar> in App, so at an equal z-index it won
+               on DOM order and floated over this panel. The drawer has to clear
+               it, while still passing under the bar's own z-50 so the close (X)
+               stays reachable — hence a value between the two, not above both. */
+            className={`fixed inset-y-0 right-0 z-[46] w-72 border-l flex flex-col pt-20 px-8 pb-10 ${
               isNaughtyMode
                 ? 'bg-[#220A2C] border-[#8D2E7A]/70'
                 : 'bg-[#FFDCEA] border-[#FFC2DA]'
@@ -231,7 +236,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
             </ul>
 
             <div className="mt-auto flex flex-col gap-4">
-              <button
+              {/* <button
                 onClick={onToggleNaughtyMode}
                 className={`w-full py-3 rounded-full font-semibold text-sm tracking-widest uppercase border ${
                   isNaughtyMode
@@ -240,7 +245,7 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
                 }`}
               >
                 {isNaughtyMode ? 'Light Mode' : 'Get Naughty'}
-              </button>
+              </button> */}
               <a
                 href="/naughty-berry-menu.pdf"
                 download="Naughty-Berry-Menu.pdf"
@@ -276,7 +281,10 @@ export default function Navbar({ isNaughtyMode, onToggleNaughtyMode }: NavbarPro
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-30 bg-black/60 md:hidden"
+            /* Also lifted above the cup's z-40: at z-30 the cup floated over the
+               dim, so the menu opened with a strawberry hanging in the middle of
+               the darkened page. Sits just under the drawer it backs. */
+            className="fixed inset-0 z-[45] bg-black/60 md:hidden"
             onClick={() => setMobileOpen(false)}
             aria-hidden="true"
           />
