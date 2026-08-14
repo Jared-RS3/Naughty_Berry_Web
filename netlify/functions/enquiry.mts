@@ -330,8 +330,8 @@ function validate(input: Json): Validated | { error: string } {
   const TOPPING_PRICE = 15
   const ICED_TEA_PRICE = 45
   const toppingsPrice = totalToppings * TOPPING_PRICE
-  const estimate =
-    basePriceFor(pkg) + toppingsPrice + icedTeas * ICED_TEA_PRICE
+  const icedTeasPrice = icedTeas * ICED_TEA_PRICE
+  const estimate = basePriceFor(pkg) + toppingsPrice + icedTeasPrice
   const rands = (n: number) => `R${n.toLocaleString('en-ZA')}`
 
   // The Dubai and Cream columns count topped cups rather than cups of that
@@ -391,13 +391,14 @@ function validate(input: Json): Validated | { error: string } {
     'Dubai topping cups': counts.dubai,
     'Cream topping cups': counts.cream,
     'Iced teas': icedTeas,
-    // The toppings on their own, in rands. Written on every package — unlike
-    // "Estimated total" below, which only the capped boxes get, because an
-    // Indulgent spread has no base price to add it to. Toppings are the one part
-    // of an Indulgent order that is already priced, so this is the figure staff
-    // can use before the custom quote is written. On the capped boxes it is a
-    // component of "Estimated total", not an extra on top of it.
+    // The two add-ons priced on their own, in rands. Both are written on every
+    // package — unlike "Estimated total" below, which only the capped boxes get,
+    // because an Indulgent spread has no base price to add them to. They are the
+    // parts of an Indulgent order that already carry a price, so they are the
+    // figures staff have before the custom quote is written. On the capped boxes
+    // both are components of "Estimated total", not extras on top of it.
     'Toppings price': toppingsPrice,
+    'Iced teas price': icedTeasPrice,
     // The exact answer, alongside the four-way "Event type" this collapses into.
     'Occasion': OCCASIONS.has(rawOccasion) ? rawOccasion : 'Something Else',
     'Special Requests': field(specialRequests, 4000, { multiline: true }),
@@ -420,7 +421,15 @@ function validate(input: Json): Validated | { error: string } {
   // Only the capped boxes have a figure worth storing — an Indulgent spread is
   // priced around the event, so writing a base price there would read as a quote
   // nobody gave.
-  if (capped) fields['Estimated total'] = estimate
+  //
+  // The column name is the base's, punctuation and all. Renaming a column in
+  // Airtable silently breaks this file: the write goes out by name with no
+  // typecast, so Airtable answers 422 UNKNOWN_FIELD_NAME and the visitor is told
+  // their enquiry could not be saved. That is exactly what happened to this one
+  // when it was renamed from "Estimated total" — every Little Moments and
+  // Signature enquiry failed until this line caught up, while Indulgent kept
+  // working because it never writes here. Rename a column, change it here too.
+  if (capped) fields['Estimated total(Cup + Top + Ice)'] = estimate
   // Phone, date and venue are mandatory above, so they are always present by the
   // time we get here — no `if` needed. Only the optional start time is guarded.
   fields['Phone'] = phone
