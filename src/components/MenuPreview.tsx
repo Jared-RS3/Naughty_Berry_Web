@@ -306,7 +306,7 @@ function CupCarousel({
           the cup itself any smaller — `cupSlot` above is untouched. */}
       <div
         className="relative"
-        style={{ minHeight: isMobile ? 'clamp(268px, 78cqw, 340px)' : 'clamp(300px, 34cqw, 520px)' }}
+        style={{ minHeight: isMobile ? 'clamp(268px, 78cqw, 340px)' : 'clamp(280px, 28cqw, 440px)' }}
       >
         {/* Giant category word behind the cups — top half stays visible above the rims */}
         <span
@@ -503,14 +503,18 @@ export default function MenuPreview() {
     return () => io.disconnect()
   }, [warm])
 
-  // `scroll-mt-2` on mobile, not `scroll-mt-20`: jumping to #menu used to park
-  // the section top 80px down the viewport, which pushed the price a long way
-  // below the fold on a short phone — the cup, the name and the price are the
-  // point of landing here, so the anchor gives up its breathing room to fit
-  // them in. Desktop has the height to spare and keeps its original offset.
-  // The tighter mobile `py` is part of the same budget.
+  // Negative scroll margins, so jumping to #menu deliberately scrolls PAST the
+  // section's top edge and lands on the part that matters: the cup, the name
+  // and the price. `scroll-mt-20` used to park the section top 80px down the
+  // viewport, which left the price 135px below the fold on a short phone.
+  //
+  // Mobile can be pushed harder than desktop because the navbar is `absolute`
+  // there (see Navbar.tsx) and has scrolled away by this point, so nothing
+  // overlaps the top of the viewport. On desktop the same bar is `fixed` and
+  // ~81px tall, so the offset stops where the category tabs would slide under
+  // it — the tabs are how you switch to Iced Tea and must stay clickable.
   return (
-    <section ref={sectionRef} id="menu" className="scroll-mt-2 md:scroll-mt-16 py-10 md:py-20 lg:py-24 relative overflow-hidden bg-[#FFDCEA]">
+    <section ref={sectionRef} id="menu" className="-scroll-mt-10 md:-scroll-mt-8 py-10 md:py-16 lg:py-20 relative overflow-hidden bg-[#FFDCEA]">
       {/* Flavour backdrop — the reference card's colours and corner artwork.
           On switch, the new world wipes out from behind the cup in an
           expanding circle while the decor pops in staggered; the old layer
