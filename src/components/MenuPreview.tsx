@@ -131,7 +131,7 @@ export const MENU_CATEGORIES = [
       },
       {
         name: 'Naughty Brownie Cup',
-        desc: 'Fresh strawberries with brownie bites, drenched in creamy milk chocolate for the perfect mix of fudgy and fresh.',
+        desc: 'Fresh strawberries and fudgey brownie bites drenched in creamy milk chocolate.',
         price: 'R75',
         tag: null,
         cutout: '/menu-cups/brownie.webp',
@@ -142,7 +142,7 @@ export const MENU_CATEGORIES = [
       // because the cutouts are visibly different cups.
       {
         name: 'Dubai Chocolate Cup',
-        desc: 'Fresh strawberries drenched in creamy milk chocolate, topped with our decadent kunafeh mixture of creamy pistachio cream and toasted kataifi pastry.',
+        desc: 'Fresh strawberries in creamy milk chocolate, crowned with kunafeh — pistachio cream and toasted kataifi.',
         price: 'R95',
         tag: null,
         cutout: '/menu-cups/dubai-choc.webp',
@@ -150,7 +150,7 @@ export const MENU_CATEGORIES = [
       },
       {
         name: 'Dubai Chocolate Brownie Cup',
-        desc: 'Decadent kunafeh of pistachio cream and toasted kataifi pastry, over fresh strawberries and fudgey brownie bites drenched in creamy milk chocolate.',
+        desc: 'Strawberries and fudgey brownie bites in milk chocolate, crowned with pistachio-cream kunafeh.',
         price: 'R95',
         tag: 'Best Seller',
         cutout: '/menu-cups/dubai.webp',
@@ -158,7 +158,7 @@ export const MENU_CATEGORIES = [
       },
       {
         name: 'Naughty Cream Cup',
-        desc: 'Fresh strawberries layered in a velvety sweetened cream, crowned with crunchy Lotus Biscoff crumbs.',
+        desc: 'Fresh strawberries layered in velvety sweetened cream, crowned with crunchy Lotus Biscoff crumbs.',
         price: 'R95',
         tag: 'New',
         cutout: '/menu-cups/cream-plain.webp',
@@ -166,7 +166,7 @@ export const MENU_CATEGORIES = [
       },
       {
         name: 'Naughty Cream Brownie Cup',
-        desc: 'Fresh strawberries and fudgey brownie bites layered in a velvety sweetened cream, crowned with crunchy Lotus Biscoff crumbs.',
+        desc: 'Strawberries and fudgey brownie bites layered in velvety cream, crowned with Lotus Biscoff crumbs.',
         price: 'R95',
         tag: 'New',
         cutout: '/menu-cups/cream.webp',
@@ -183,7 +183,7 @@ export const MENU_CATEGORIES = [
     items: [
       {
         name: 'Strawberry Peach Iced Tea',
-        desc: 'A smooth mix of sun-kissed strawberry and peach, served over ice. Simple, refreshing, and full of flavour.',
+        desc: 'A smooth mix of sun-kissed strawberry and peach, served over ice. Simple and refreshing.',
         price: 'R45',
         tag: 'New',
         cutout: '/menu-cups/ice-tea-flat.webp',
@@ -253,7 +253,7 @@ const SLOT_POSE = {
  * desktop 3-across, just with the wings hidden.
  */
 const SLOT_POSE_MOBILE = {
-  center: { x: '-50%', y: '0%', scale: 1, rotate: 0, opacity: 1, zIndex: 30 },
+  center: { x: '-50%', y: '10%', scale: 1, rotate: 0, opacity: 1, zIndex: 30 },
   left: { x: '-150%', y: '10%', scale: 0.7, rotate: -12, opacity: 0, zIndex: 20 },
   right: { x: '50%', y: '10%', scale: 0.7, rotate: 12, opacity: 0, zIndex: 20 },
   hidden: { x: '-50%', y: '4%', scale: 0.55, rotate: 0, opacity: 0, zIndex: 10 },
@@ -405,8 +405,20 @@ function CupCarousel({
         )}
       </div>
 
-      {/* ── Current item info ── */}
-      <div className="relative z-10 text-center mt-5 md:mt-4 min-h-[150px] md:min-h-[136px]" aria-live="polite">
+      {/* ── Current item info ──
+          The mobile centre pose hangs the cup ~10% of its own height below the
+          stage box (SLOT_POSE_MOBILE), so a margin that looks generous in the
+          source is mostly eaten before it becomes visible gap — mt-11 leaves
+          about the same air under the rim that mt-5 did before the cup was
+          dropped. Desktop's cup sits inside its stage and keeps mt-4.
+
+          min-h is sized to the tallest card in the set (two-line name + a
+          three-line description) rather than to something in the middle. It is
+          what stops the pager, the PDF button and the whole page below from
+          jumping ~60px every time a thumb hits an arrow; the price and copy
+          stay pinned under the cup, and the slack a short flavour doesn't use
+          falls into the gap above the pager where nothing is moving. */}
+      <div className="relative z-10 text-center mt-11 md:mt-4 min-h-[212px] md:min-h-[136px]" aria-live="polite">
         <AnimatePresence mode="wait">
           <motion.div
             key={current.name}
@@ -423,21 +435,17 @@ function CupCarousel({
             <h3 className="font-display uppercase tracking-[0.16em] text-[#E8176D] text-lg md:text-xl">
               {current.name}
             </h3>
-            {/* The long flavour copy ("Decadent kunafeh of pistachio cream and
-                toasted kataifi pastry…") ran the full 19rem on a phone, which
-                put it right on top of the corner artwork and read as text
-                spilling off the sides. Over ~110 characters it steps down a
-                size and pulls its column in, so the lines end well clear of the
-                decor — and, because the smaller type buys back the height the
-                narrower column costs, it does that without pushing the price
-                any further down. Desktop is wide enough to be left alone. */}
-            <p
-              className={`mt-3 md:mt-2 mx-auto text-[#7A3B5E]/75 md:max-w-sm md:text-[15px] leading-[1.7] md:leading-relaxed ${
-                current.desc.length > 110
-                  ? 'max-w-[17rem] text-[11.5px]'
-                  : 'max-w-[19rem] text-[12.5px]'
-              }`}
-            >
+            {/* One size for every flavour. The copy above used to run to ~150
+                characters on the Dubai cups, which on a phone meant a block of
+                text sitting on top of the corner artwork — so the long ones
+                shrank themselves to 11.5px to fit, and the menu read as if two
+                different cards had been mixed together. The descriptions are
+                written short instead, which is the fix that also makes them
+                easier to read: 12.5px throughout, in a column narrow enough
+                that the lines end clear of the decor. Keep new flavour copy
+                under ~105 characters and this stays true. Desktop is wide
+                enough to be left alone. */}
+            <p className="mt-3 md:mt-2 mx-auto max-w-[17.5rem] text-[12.5px] leading-[1.7] text-[#7A3B5E]/75 md:max-w-sm md:text-[15px] md:leading-relaxed">
               {current.desc}
             </p>
             <p className="mt-4 md:mt-3 font-display text-[#E8176D] text-xl md:text-2xl">{current.price}</p>

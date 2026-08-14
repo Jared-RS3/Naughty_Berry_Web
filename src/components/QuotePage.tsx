@@ -2172,7 +2172,7 @@ function StepReview({
             </div>
           ) : (
             <p className="text-center text-[13px] leading-relaxed text-[#7A3B5E]">
-              We’ll price this around your event and email you a custom quote within 24 hours.
+              We’ll price this around your event and email you a custom quote within 24 hours. Please check spam
             </p>
           )}
 
@@ -2264,7 +2264,7 @@ function ConfirmDialog({
             <p className="mt-3 text-[14px] leading-relaxed text-[#7A3B5E]">
               We’ll send your {packageName(quote.pkg)} request
               {quote.pkg === 'little' || quote.pkg === 'signature' ? ` (${rands(estimate)} estimated)` : ''} to
-              the team, and email you a formal quote with the final price within 24 hours.
+              the team, and email you a formal quote with the final price within 24 hours. Please check your spam folder
             </p>
             <p className="mt-3 text-[11.5px] leading-relaxed text-[#7A3B5E]/70">
               {ESTIMATE_NOTE_SHORT}
@@ -2335,7 +2335,7 @@ function SentScreen({ name }: { name: string }) {
       </h1>
       <p className="mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-white/85">
         Thanks {name.split(' ')[0] || 'friend'} — your request is with the team. We’ll email you a
-        formal quote with the final price within 24 hours.
+        formal quote with the final price within 24 hours. Please check your spam folder. 
       </p>
       <p className="mx-auto mt-4 max-w-sm text-[12px] leading-relaxed text-white/65">
         Anything you saw here was an estimate — the emailed quote is the one that counts, and it
