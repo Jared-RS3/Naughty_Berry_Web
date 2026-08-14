@@ -30,6 +30,7 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import {
   CUP_TARGET,
   SIGNATURE_CUP_TARGET,
+  INDULGENT_MIN_GUESTS,
   FLAVOURS,
   TOPPINGS,
   cupSrc,
@@ -352,7 +353,11 @@ export default function QuotePage() {
   const canProceed =
     stepKey === 'occasion' ? occasion !== null
     : stepKey === 'package' ? pkg !== null
-    : stepKey === 'build' ? (capped ? cups === target : true)
+    // A capped box must be exactly full. An Indulgent spread has no ceiling, but
+    // it does have a floor: it has to cover the guest list, which the slider
+    // already holds at INDULGENT_MIN_GUESTS or more. This used to be a bare
+    // `true`, which let a 1-cup spread for 50 guests through to the server.
+    : stepKey === 'build' ? (capped ? cups === target : cups >= guests)
     : stepKey === 'details' ? Object.keys(fieldErrors).length === 0
     : true
 
@@ -1498,6 +1503,9 @@ function StepStation({
   onTopping: (id: string, n: number) => void
 }) {
   const chosen = Object.values(mix).reduce((a, b) => a + b, 0)
+  // The spread has to cover the guest list before this step will let go. Kept as
+  // a plain shortfall so the copy below can say how many more, not just "no".
+  const short = Math.max(0, guests - chosen)
 
   return (
     <div>
@@ -1524,9 +1532,14 @@ function StepStation({
         <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#7A3B5E]">guests</p>
         <input
           type="range"
-          min={50}
+          min={INDULGENT_MIN_GUESTS}
           max={400}
-          step={10}
+          // Step 1, not 10. Off a floor of 51 a step of 10 offers 51, 61, 71 —
+          // which reads as a bug rather than a choice. It also matters more than
+          // it used to: the guest count now sets how many cups the spread must
+          // contain, so someone with 55 guests should be able to say 55 instead
+          // of being pushed to 61 cups.
+          step={1}
           value={guests}
           onChange={(e) => onGuests(Number(e.target.value))}
           aria-label="Number of guests"
@@ -1534,7 +1547,7 @@ function StepStation({
           style={{ accentColor: BERRY }}
         />
         <div className="mt-1 flex justify-between text-[11px] font-semibold text-[#7A3B5E]/60">
-          <span>50</span>
+          <span>{INDULGENT_MIN_GUESTS}</span>
           <span>300+</span>
         </div>
       </div>
@@ -1552,10 +1565,30 @@ function StepStation({
           <span className="font-semibold text-[#E8176D]" aria-live="polite">
             {chosen} chosen
           </span>
-          {chosen > 0 && chosen < guests && (
-            <span className="text-[#7A3B5E]/60"> · {guests - chosen} short of your guest count</span>
+        </p>
+        {/* The one thing standing between here and the next step, said plainly
+            and with the number in it. `aria-live` because the shortfall changes
+            as cups go in and as the guest slider moves, and someone on a screen
+            reader would otherwise never learn why Next is dead. */}
+        <p className="mt-2 text-[13px] font-semibold" aria-live="polite">
+          {short > 0 ? (
+            <span className="text-[#E8176D]">
+              Pick {short} more {short === 1 ? 'cup' : 'cups'} to cover your {guests} guests.
+            </span>
+          ) : (
+            <span className="text-[#7A3B5E]/70">
+              Your spread covers all {guests} guests.
+            </span>
           )}
         </p>
+        {short > 0 && (
+          <button
+            onClick={() => onBump('classic', short)}
+            className="mt-3 rounded-full bg-[#E8176D]/10 px-5 py-2 text-[12px] font-bold uppercase tracking-[0.14em] text-[#E8176D] transition hover:bg-[#E8176D]/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8176D]"
+          >
+            Fill with {short} Classic
+          </button>
+        )}
       </div>
 
       <CupCarousel

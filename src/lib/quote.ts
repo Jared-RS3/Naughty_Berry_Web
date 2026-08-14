@@ -95,6 +95,23 @@ export const TOPPING_PRICE = 15
 export const ICED_TEA_PRICE = 45
 export const ICED_TEA_CAP = 40
 
+/**
+ * The smallest Indulgent event. It is not a cup cap — Indulgent has none — it is
+ * the floor under the guest count, and because the spread has to cover the guest
+ * list it is therefore also the floor under the number of cups.
+ *
+ * 51, not 50: Indulgent is sold as "50+ guests", and Signature is the package
+ * that covers exactly 50. Starting Indulgent at 50 would put the two packages on
+ * the same guest count with different prices, so the floor sits one guest above
+ * the box Signature fills.
+ *
+ * The constant exists because the floor was missing entirely: the builder let an
+ * Indulgent enquiry through with a single cup picked against 50 guests, and the
+ * server took it, because "uncapped" had been read as "unvalidated". Uncapped
+ * means the spread has no ceiling, not that it has no floor.
+ */
+export const INDULGENT_MIN_GUESTS = 51
+
 /** Little Moments and Signature are both fixed-size boxes; Indulgent is sized
  *  to the guest list instead, so it has no cap. */
 export function cupCapFor(pkg: PackageId): number | null {

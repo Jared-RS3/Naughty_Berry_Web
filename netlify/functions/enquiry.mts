@@ -149,6 +149,12 @@ const MAX_CUPS_PER_FLAVOUR = 500
 const MAX_TOTAL_CUPS = 2000
 const MAX_ICED_TEAS = 40
 const MAX_GUESTS = 5000
+/** The smallest Indulgent event — 51, because Indulgent is sold as "50+ guests"
+ *  and Signature is the package that covers exactly 50. Mirrors
+ *  INDULGENT_MIN_GUESTS in src/lib/quote.ts, which is only the slider's floor —
+ *  this is the one that holds, because a crafted body never touches the
+ *  slider. */
+const INDULGENT_MIN_GUESTS = 51
 
 /** Little Moments and Signature are both fixed-size boxes; Indulgent is sized
  *  to the guest list instead, so it has no cap. Mirrors cupCapFor in
@@ -240,7 +246,19 @@ function validate(input: Json): Validated | { error: string } {
   // Iced tea rides along as a simple quantity add-on on every package, not
   // just the capped boxes.
   const icedTeas = intIn(input.icedTeas, 0, MAX_ICED_TEAS, 0)
-  const guests = capped ? cap : intIn(input.guests, 1, MAX_GUESTS, 80)
+  const guests = capped ? cap : intIn(input.guests, INDULGENT_MIN_GUESTS, MAX_GUESTS, 80)
+
+  // An Indulgent spread has no ceiling, but it does have a floor: it is sized to
+  // the guest list, so it has to cover it. Without this the package was
+  // effectively unvalidated — a 1-cup spread for 50 guests was accepted and
+  // written to Airtable as a real enquiry, because the cup check above only ever
+  // ran on the capped boxes. Rejected rather than clamped: silently inflating
+  // someone's order to 50 cups would be inventing an order they did not place.
+  if (!capped && totalCups < guests) {
+    return {
+      error: `An Indulgent spread has to cover your guest count — please pick at least ${guests} cups.`,
+    }
+  }
 
   // Toppings dress cups that `mix` already counted, so they add no cups of their
   // own — which is exactly why they need their own ceiling. It is the number of
@@ -251,7 +269,11 @@ function validate(input: Json): Validated | { error: string } {
   const toppingsIn = (input.toppings && typeof input.toppings === 'object' && !Array.isArray(input.toppings))
     ? (input.toppings as Json)
     : {}
-  const toppingCap = capped ? cap : guests
+  // Mirrors the builder, which offers `max(cups, guests)`. It used to be a bare
+  // `guests` here, which silently trimmed the toppings on any spread picked
+  // larger than the guest list — and now that a trim also shrinks the Toppings
+  // price column, a mismatch would show up as money.
+  const toppingCap = capped ? cap : Math.max(totalCups, guests)
   const toppings: Record<string, number> = {}
   let totalToppings = 0
   let toppingRoom = toppingCap
@@ -353,11 +375,10 @@ function validate(input: Json): Validated | { error: string } {
 
   const specialRequests = [
     `Occasion: ${rawOccasion}`,
-    mixLine
-      ? `${capped ? 'Cup mix' : 'Requested spread'}: ${mixLine}`
-      : capped
-        ? null
-        : 'Spread: not specified — suggest a mix',
+    // Always present now. The old "Spread: not specified — suggest a mix"
+    // fallback went with the empty Indulgent spread: every package has to name
+    // its cups before it reaches this line.
+    mixLine ? `${capped ? 'Cup mix' : 'Requested spread'}: ${mixLine}` : null,
     toppingLine ? `Toppings (${rands(TOPPING_PRICE)} per cup): ${toppingLine}` : null,
     icedTeas > 0 ? `Iced teas: ${icedTeas}` : null,
     capped
