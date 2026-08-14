@@ -514,7 +514,7 @@ export default function MenuPreview() {
   // ~81px tall, so the offset stops where the category tabs would slide under
   // it — the tabs are how you switch to Iced Tea and must stay clickable.
   return (
-    <section ref={sectionRef} id="menu" className="-scroll-mt-10 md:-scroll-mt-8 py-10 md:py-16 lg:py-20 relative overflow-hidden bg-[#FFDCEA]">
+    <section ref={sectionRef} id="menu" className="-scroll-mt-6 md:-scroll-mt-4 py-10 md:py-16 lg:py-20 relative overflow-hidden bg-[#FFDCEA]">
       {/* Flavour backdrop — the reference card's colours and corner artwork.
           On switch, the new world wipes out from behind the cup in an
           expanding circle while the decor pops in staggered; the old layer
