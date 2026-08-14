@@ -82,11 +82,13 @@ export function mapsHref(slot: ScheduleSlot): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
 }
 
-/** The "Day of Week" dropdown carries the seven weekdays plus two choices that
+/** The "Day of Week" dropdown carries the seven weekdays plus three choices that
  *  are not days at all: "Location" is how the sheet says "name the place instead
- *  of the day", and "Off" is how it says the trailer isn't going out. */
+ *  of the day", "Off" is how it says the trailer isn't going out, and "TBA" is
+ *  how it says a stop is coming but neither the day nor the place is settled. */
 const LOCATION_OPTION = 'location'
 const OFF_OPTION = 'off'
+const TBA_OPTION = 'tba'
 
 /** "Off" means there is no stop to point at — the callers hide their live
  *  location badge entirely rather than dressing the row up as an appearance. */
@@ -132,18 +134,27 @@ export function isScheduleOff(schedule: ScheduleSlot[]): boolean {
  * is usually a working title. "Location" means the opposite: name the place, and
  * "Oranjezight Market" is what someone recognises, repeats and navigates to.
  *
+ * "TBA" is a third answer: a stop is coming, but neither the day nor the place
+ * is fixed yet. It is a status rather than a day, so it does not take the
+ * "drops <day>" sentence — "Next stop drops TBA" is not a sentence — and it
+ * deliberately outranks the Event Name, because a working title presented as
+ * the answer would read as more settled than the sheet actually is.
+ *
  * Either way the row's Venue / Location stays off the pill — it's a full street
  * address that would swamp it, and it's already the destination behind the tap.
  * Returns null when the row has neither a day nor a name (and whenever it's Off)
  * so the caller can render its own placeholder rather than an empty tag.
  */
 export function stopHeadline(slot: ScheduleSlot): string | null {
-  const day = slot.day.trim()
+  const day = slot.day.trim().toLowerCase()
   if (isDayOff(slot)) return null
 
-  if (day && day.toLowerCase() !== LOCATION_OPTION) return `Next stop drops ${day}`
+  if (day === TBA_OPTION) return 'Next stop TBA'
+
+  if (day && day !== LOCATION_OPTION) return `Next stop drops ${slot.day.trim()}`
 
   const place = slot.eventName.trim()
   if (place) return `Next stop ${place}`
   return null
 }
+
