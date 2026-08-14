@@ -31,6 +31,8 @@ import {
   CUP_TARGET,
   SIGNATURE_CUP_TARGET,
   INDULGENT_MIN_GUESTS,
+  INDULGENT_MAX_GUESTS,
+  clampGuests,
   FLAVOURS,
   TOPPINGS,
   cupSrc,
@@ -52,12 +54,26 @@ import {
   type Quote,
 } from '../lib/quote'
 
-/** Little Moments and Signature are both fixed-size boxes; Indulgent is sized
- *  to the guest list instead. */
-function cupCapFor(pkg: PackageId | null): number | null {
+/**
+ * How many cups the chosen package holds. Little Moments and Signature are
+ * fixed; Indulgent is sized by the guest slider, one cup per guest, so its cap
+ * moves as the slider moves. `null` only ever means "no package chosen yet".
+ */
+function cupCapFor(pkg: PackageId | null, guests: number): number | null {
   if (pkg === 'little') return CUP_TARGET
   if (pkg === 'signature') return SIGNATURE_CUP_TARGET
+  if (pkg === 'indulgent') return clampGuests(guests)
   return null
+}
+
+/**
+ * The ceiling every count-changing path must respect. Never null: before a
+ * package is chosen there is nothing to count, and falling back to the largest
+ * cap keeps the clamp arithmetic total. This exists because `cupCapFor`
+ * returning null used to be read as "no limit" rather than "no box".
+ */
+function countCapFor(pkg: PackageId | null, guests: number): number {
+  return cupCapFor(pkg, guests) ?? INDULGENT_MAX_GUESTS
 }
 
 /**
@@ -242,8 +258,10 @@ export default function QuotePage() {
   }, [])
 
   const cups = useMemo(() => sumCups(mix), [mix])
+  // "Is this a fixed box?" — a question about which UI to show, not about
+  // limits. Indulgent is capped too now; its cap is just one the customer sets.
   const capped = pkg === 'little' || pkg === 'signature'
-  const target = cupCapFor(pkg)
+  const target = cupCapFor(pkg, guests)
   const remaining = (target ?? 0) - cups
 
   // A topping dresses a cup that already exists, so the ceiling is however many
@@ -252,9 +270,10 @@ export default function QuotePage() {
   // get "50 topped cups" billed onto an order containing thirteen. The cap grows
   // as the box fills, so a finished 50-cup box can top all fifty.
   //
-  // Indulgent has no box and its spread is optional — "leave it blank and we'll
-  // suggest a mix for N guests" — so the guest count stands in while nothing is
-  // picked, and the pick takes over once it runs past the guest list.
+  // Every package now, Indulgent included. It used to be `max(cups, guests)`
+  // there, on the theory that the spread might be left blank — which meant 60
+  // cups could carry 70 toppings, billing a topping onto a cup that was never
+  // ordered.
   //
   // The toppings SHARE that budget rather than each getting one: a 25-cup box
   // cannot carry 25 Dubai and 25 Cream, because that would be 50 cups.
@@ -262,7 +281,7 @@ export default function QuotePage() {
   // Applied on read rather than written back into state, so trimming the box and
   // refilling it restores the original pick instead of losing it. Earlier
   // toppings get first call on the budget, keeping the trim deterministic.
-  const toppingCap = capped ? cups : Math.max(cups, guests)
+  const toppingCap = cups
 
   const toppings = useMemo(() => {
     const out: Record<string, number> = {}
@@ -304,16 +323,18 @@ export default function QuotePage() {
     [toppingCap]
   )
 
-  // Little Moments and Signature are both capped boxes — an Indulgent spread
-  // is sized to the guest list instead, so its counts run free.
+  // Every package is capped; Indulgent's cap is the guest count, which is why
+  // `guests` is in the dependency list — leave it out and the callback closes
+  // over the guest count as it was when the package was picked, so dragging the
+  // slider would stop moving the cup limit.
   const bump = useCallback(
     (id: string, delta: number) => {
       setMix((m) => {
         // Recount inside the updater — the render-scope total goes stale when
         // two taps land in the same React batch, which is when the cap bites.
         const total = Object.values(m).reduce((a, b) => a + b, 0)
-        const cap = cupCapFor(pkg)
-        if (delta > 0 && cap !== null && total >= cap) return m
+        const cap = countCapFor(pkg, guests)
+        if (delta > 0 && total >= cap) return m
         const next = Math.max(0, (m[id] ?? 0) + delta)
         if (next === 0) {
           const rest = { ...m }
@@ -323,7 +344,7 @@ export default function QuotePage() {
         return { ...m, [id]: next }
       })
     },
-    [pkg]
+    [pkg, guests]
   )
 
   // Typing a number directly is the fast path for anyone who doesn't want to
@@ -331,11 +352,13 @@ export default function QuotePage() {
   const setCount = useCallback(
     (id: string, value: number) => {
       setMix((m) => {
-        const cap = cupCapFor(pkg)
+        // Always a number now. This used to skip the clamp entirely when the
+        // package had no box, which is how a typed 333290333 reached state.
+        const cap = countCapFor(pkg, guests)
         const current = m[id] ?? 0
         const others = Object.values(m).reduce((a, b) => a + b, 0) - current
         let next = Math.max(0, Math.trunc(Number.isFinite(value) ? value : 0))
-        if (cap !== null) next = Math.min(next, Math.max(0, cap - others))
+        next = Math.min(next, Math.max(0, cap - others))
         if (next === 0) {
           const rest = { ...m }
           delete rest[id]
@@ -344,7 +367,7 @@ export default function QuotePage() {
         return { ...m, [id]: next }
       })
     },
-    [pkg]
+    [pkg, guests]
   )
 
   const stepKey = steps[step].key
@@ -353,11 +376,11 @@ export default function QuotePage() {
   const canProceed =
     stepKey === 'occasion' ? occasion !== null
     : stepKey === 'package' ? pkg !== null
-    // A capped box must be exactly full. An Indulgent spread has no ceiling, but
-    // it does have a floor: it has to cover the guest list, which the slider
-    // already holds at INDULGENT_MIN_GUESTS or more. This used to be a bare
-    // `true`, which let a 1-cup spread for 50 guests through to the server.
-    : stepKey === 'build' ? (capped ? cups === target : cups >= guests)
+    // One rule for all three packages now: the box has to be exactly full. The
+    // only difference is where the number comes from — fixed for the boxes, the
+    // guest slider for Indulgent. This was a bare `true` for Indulgent, which
+    // let a 1-cup spread for 50 guests through to the server.
+    : stepKey === 'build' ? cups === target
     : stepKey === 'details' ? Object.keys(fieldErrors).length === 0
     : true
 
@@ -922,6 +945,7 @@ function CupCarousel({
   full = false,
   fullLabel = 'Box is full',
   addLabel = 'Add to box',
+  max,
 }: {
   mix: Record<string, number>
   onBump: (id: string, delta: number) => void
@@ -930,6 +954,9 @@ function CupCarousel({
   full?: boolean
   fullLabel?: string
   addLabel?: string
+  /** Ceiling for the typed input. `onSet` clamps to it as well — this is the
+   *  browser-level hint, not the enforcement. */
+  max: number
 }) {
   const [active, setActive] = useState(0)
   const prefersReducedMotion = useReducedMotion()
@@ -1116,6 +1143,7 @@ function CupCarousel({
               type="number"
               inputMode="numeric"
               min={0}
+              max={max}
               value={mix[flavour.id] ?? 0}
               onChange={(e) => onSet(flavour.id, Number(e.target.value))}
               onFocus={(e) => e.target.select()}
@@ -1369,7 +1397,7 @@ function StepBox({
         <span className="shrink-0 text-[12px] font-bold text-[#E8176D]">{rands(estimate)}</span>
       </div>
 
-      <CupCarousel mix={mix} onBump={onBump} onSet={onSet} isMobile={isMobile} full={full} />
+      <CupCarousel mix={mix} onBump={onBump} onSet={onSet} isMobile={isMobile} full={full} max={target} />
 
       {/* ── Your box ── */}
       <div className="mx-auto max-w-2xl rounded-3xl bg-[#FFF9ED] p-6 shadow-[0_16px_36px_rgba(180,40,95,0.12)]">
@@ -1503,9 +1531,30 @@ function StepStation({
   onTopping: (id: string, n: number) => void
 }) {
   const chosen = Object.values(mix).reduce((a, b) => a + b, 0)
-  // The spread has to cover the guest list before this step will let go. Kept as
-  // a plain shortfall so the copy below can say how many more, not just "no".
-  const short = Math.max(0, guests - chosen)
+  // The spread is a box of exactly `guests` cups. Adding is already clamped to
+  // it, so `over` can only appear by dragging the slider down under a spread
+  // that is already picked — which is why there is a way back from it below,
+  // rather than a dead Next button and no explanation.
+  const target = clampGuests(guests)
+  const short = Math.max(0, target - chosen)
+  const over = Math.max(0, chosen - target)
+
+  /** Drops `n` cups, taking from the largest pile first so a lopsided spread
+   *  evens out instead of one flavour being wiped. */
+  const trim = (n: number) => {
+    let left = n
+    const byLargest = FLAVOURS
+      .map((f) => ({ id: f.id, count: mix[f.id] ?? 0 }))
+      .sort((a, b) => b.count - a.count)
+    for (const { id, count } of byLargest) {
+      if (left <= 0) break
+      const take = Math.min(count, left)
+      if (take > 0) {
+        onBump(id, -take)
+        left -= take
+      }
+    }
+  }
 
   return (
     <div>
@@ -1527,13 +1576,12 @@ function StepStation({
           aria-live="polite"
         >
           {guests}
-          {guests >= 400 ? '+' : ''}
         </motion.p>
         <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#7A3B5E]">guests</p>
         <input
           type="range"
           min={INDULGENT_MIN_GUESTS}
-          max={400}
+          max={INDULGENT_MAX_GUESTS}
           // Step 1, not 10. Off a floor of 51 a step of 10 offers 51, 61, 71 —
           // which reads as a bug rather than a choice. It also matters more than
           // it used to: the guest count now sets how many cups the spread must
@@ -1548,14 +1596,20 @@ function StepStation({
         />
         <div className="mt-1 flex justify-between text-[11px] font-semibold text-[#7A3B5E]/60">
           <span>{INDULGENT_MIN_GUESTS}</span>
-          <span>300+</span>
+          <span>{INDULGENT_MAX_GUESTS}</span>
         </div>
+        {/* The guest count is no longer just a guide — it is the size of the
+            box — so it says so, rather than leaving someone to work out why the
+            ring stopped letting them add. */}
+        <p className="mt-3 text-[12px] text-[#7A3B5E]/70">
+          One cup per guest — your spread is {clampGuests(guests)} cups.
+        </p>
       </div>
 
-      {/* ── The spread: same 3D ring as the Little Moments box, just uncapped.
-             An Indulgent order is sized to the guest list rather than to a
-             fixed box, so the guest count is a guide, not a limit. The chips
-             below keep every flavour's count visible while you spin. ── */}
+      {/* ── The spread: the same 3D ring as the Little Moments box, and now the
+             same rule too. The guest slider sets the size of the box; this fills
+             it. The chips below keep every flavour's count visible while you
+             spin. ── */}
       <div className="mb-5 text-center">
         <h2 className="uppercase text-[#3B2116] text-[clamp(1.05rem,2.2vw,1.4rem)]" style={{ fontFamily: 'var(--font-display)' }}>
           Choose your spread
@@ -1563,21 +1617,25 @@ function StepStation({
         <p className="mt-2 text-[13.5px] text-[#7A3B5E]/80">
           Spin the ring and pick how many of each.{' '}
           <span className="font-semibold text-[#E8176D]" aria-live="polite">
-            {chosen} chosen
+            {chosen} of {target} cups
           </span>
         </p>
         {/* The one thing standing between here and the next step, said plainly
-            and with the number in it. `aria-live` because the shortfall changes
-            as cups go in and as the guest slider moves, and someone on a screen
-            reader would otherwise never learn why Next is dead. */}
+            and with the number in it. `aria-live` because this changes as cups
+            go in and as the guest slider moves, and someone on a screen reader
+            would otherwise never learn why Next is dead. */}
         <p className="mt-2 text-[13px] font-semibold" aria-live="polite">
           {short > 0 ? (
             <span className="text-[#E8176D]">
-              Pick {short} more {short === 1 ? 'cup' : 'cups'} to cover your {guests} guests.
+              Pick {short} more {short === 1 ? 'cup' : 'cups'} to cover your {target} guests.
+            </span>
+          ) : over > 0 ? (
+            <span className="text-[#E8176D]">
+              That's {over} {over === 1 ? 'cup' : 'cups'} more than {target} guests — drop {over} or raise the guest count.
             </span>
           ) : (
             <span className="text-[#7A3B5E]/70">
-              Your spread covers all {guests} guests.
+              Your spread covers all {target} guests.
             </span>
           )}
         </p>
@@ -1589,6 +1647,14 @@ function StepStation({
             Fill with {short} Classic
           </button>
         )}
+        {over > 0 && (
+          <button
+            onClick={() => trim(over)}
+            className="mt-3 rounded-full bg-[#E8176D]/10 px-5 py-2 text-[12px] font-bold uppercase tracking-[0.14em] text-[#E8176D] transition hover:bg-[#E8176D]/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8176D]"
+          >
+            Trim {over} {over === 1 ? 'cup' : 'cups'}
+          </button>
+        )}
       </div>
 
       <CupCarousel
@@ -1597,6 +1663,12 @@ function StepStation({
         onSet={onSet}
         isMobile={isMobile}
         addLabel="Add to spread"
+        // One cup per guest: the guest slider is the box size, so it is also the
+        // ceiling on every count. Pass it, or the typed input goes back to
+        // accepting any number a keyboard can produce.
+        max={target}
+        full={chosen >= target}
+        fullLabel="That's every guest covered"
       />
 
       <div className="mx-auto max-w-2xl rounded-3xl bg-[#FFF9ED] p-6 shadow-[0_16px_36px_rgba(180,40,95,0.12)]">
@@ -2130,7 +2202,7 @@ function StepReview({
             {!capped && (
               <div className={row}>
                 <span className="text-[#7A3B5E]">Guests</span>
-                <span className="font-bold">{quote.guests}{quote.guests >= 400 ? '+' : ''}</span>
+                <span className="font-bold">{quote.guests}</span>
               </div>
             )}
             {quote.time && (

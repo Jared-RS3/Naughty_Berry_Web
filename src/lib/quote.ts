@@ -112,12 +112,35 @@ export const ICED_TEA_CAP = 40
  */
 export const INDULGENT_MIN_GUESTS = 51
 
-/** Little Moments and Signature are both fixed-size boxes; Indulgent is sized
- *  to the guest list instead, so it has no cap. */
-export function cupCapFor(pkg: PackageId): number | null {
+
+/** The largest Indulgent event the builder will quote. With one cup per guest
+ *  this is also the largest spread, which is what bounds every count in the
+ *  builder — see cupCapFor. */
+export const INDULGENT_MAX_GUESTS = 400
+
+/** Holds the guest count inside the slider's range. Applied wherever the number
+ *  is used rather than only where it is set, so a value that arrives from
+ *  anywhere else still lands in range. */
+export function clampGuests(guests: number): number {
+  const n = Math.trunc(Number.isFinite(guests) ? guests : INDULGENT_MIN_GUESTS)
+  return Math.min(INDULGENT_MAX_GUESTS, Math.max(INDULGENT_MIN_GUESTS, n))
+}
+
+/**
+ * How many cups the chosen package holds. All three are boxes — Indulgent is
+ * simply one the customer sizes themselves, at one cup per guest, which is why
+ * this needs the guest count to answer.
+ *
+ * It used to return `null` for Indulgent, meaning "no fixed box", and every
+ * counting path in the builder read that as "no limit". That is how a typed
+ * 333 290 333 reached state, and how a 1-cup spread for 50 guests reached
+ * Airtable. There is no such thing as an unbounded order here: a spread is
+ * sized to the guest list, so the guest list is the cap.
+ */
+export function cupCapFor(pkg: PackageId, guests: number): number {
   if (pkg === 'little') return CUP_TARGET
   if (pkg === 'signature') return SIGNATURE_CUP_TARGET
-  return null
+  return clampGuests(guests)
 }
 
 export function basePriceFor(pkg: PackageId): number {

@@ -146,24 +146,35 @@ const TOPPING_LABEL: Record<string, string> = {
 const CUP_TARGET = 25
 const SIGNATURE_CUP_TARGET = 50
 const MAX_CUPS_PER_FLAVOUR = 500
-const MAX_TOTAL_CUPS = 2000
 const MAX_ICED_TEAS = 40
-const MAX_GUESTS = 5000
-/** The smallest Indulgent event — 51, because Indulgent is sold as "50+ guests"
- *  and Signature is the package that covers exactly 50. Mirrors
- *  INDULGENT_MIN_GUESTS in src/lib/quote.ts, which is only the slider's floor —
- *  this is the one that holds, because a crafted body never touches the
- *  slider. */
+/**
+ * The Indulgent guest range, mirroring INDULGENT_MIN_GUESTS /
+ * INDULGENT_MAX_GUESTS in src/lib/quote.ts. There they bound a slider; here they
+ * bound the order, which is the copy that holds — a crafted body never touches
+ * a slider.
+ *
+ * 51 because Indulgent is sold as "50+ guests" and Signature is the package that
+ * covers exactly 50.
+ */
 const INDULGENT_MIN_GUESTS = 51
+const INDULGENT_MAX_GUESTS = 400
+/** No package can hold more cups than the largest Indulgent event. Was 2000,
+ *  then 1000 — both numbers no honest order could reach, which is another way of
+ *  saying neither bounded anything. */
+const MAX_TOTAL_CUPS = INDULGENT_MAX_GUESTS
 
-/** Little Moments and Signature are both fixed-size boxes; Indulgent is sized
- *  to the guest list instead, so it has no cap. Mirrors cupCapFor in
- *  src/lib/quote.ts — kept independent because this file is the one that
- *  actually enforces it. */
-function cupCapFor(pkg: string): number | null {
+/**
+ * How many cups the package holds. All three are boxes; Indulgent's is sized by
+ * the customer at one cup per guest. Mirrors cupCapFor in src/lib/quote.ts —
+ * kept independent because this file is the one that actually enforces it.
+ *
+ * It used to return null for Indulgent, meaning "no cap", and the caller read
+ * that as "skip the cup checks entirely".
+ */
+function cupCapFor(pkg: string, guests: number): number {
   if (pkg === 'little') return CUP_TARGET
   if (pkg === 'signature') return SIGNATURE_CUP_TARGET
-  return null
+  return guests
 }
 
 function basePriceFor(pkg: string): number {
@@ -212,11 +223,24 @@ function validate(input: Json): Validated | { error: string } {
 
   const pkg = typeof input.pkg === 'string' && PACKAGES.has(input.pkg) ? input.pkg : null
   if (!pkg) return { error: 'Please choose a package.' }
-  const cap = cupCapFor(pkg)
-  const capped = cap !== null
+  // "Is this a package whose size we fixed?" — used only to phrase errors and
+  // to decide whether a price can be worked out. Every package has a cap now.
+  const capped = pkg === 'little' || pkg === 'signature'
   // Kept for the branches below that only ever meant "the little box" —
   // Signature now shares that shape, just at a different size.
   const little = pkg === 'little'
+
+  // The guest count sizes an Indulgent spread, so it is read before the cup cap
+  // it determines. Clamped, not rejected: the number itself is a slider position
+  // rather than part of the order, and the cup check below is what a body
+  // fiddling with it actually has to get past.
+  const cap = cupCapFor(
+    pkg,
+    intIn(input.guests, INDULGENT_MIN_GUESTS, INDULGENT_MAX_GUESTS, 80)
+  )
+  // Cups and guests are the same number on every package: a capped box seats
+  // exactly what it holds, and an Indulgent spread is one cup per guest.
+  const guests = cap
 
   // Unknown occasions are recorded verbatim in the notes rather than rejected —
   // the picker may gain options before this function is redeployed.
@@ -224,7 +248,16 @@ function validate(input: Json): Validated | { error: string } {
   if (!rawOccasion) return { error: 'Please tell us what the occasion is.' }
   if (!OCCASIONS.has(rawOccasion)) problems.push('occasion not in the known list')
 
-  // Cup mix: only known flavour ids survive, each clamped.
+  // Cup mix: only known flavour ids survive, and an over-large count is refused
+  // rather than trimmed.
+  //
+  // It used to clamp each flavour to MAX_CUPS_PER_FLAVOUR, which is the one
+  // thing this must never do with an order: a posted 333290333 became 500, the
+  // request returned 200, and Airtable got a 520-cup enquiry that nobody had
+  // agreed to. Clamping is fine for a value nobody sees (see the toppings
+  // below, which the builder bounds and whose trim cannot invent cups); it is
+  // not fine for the order itself. If a count is past the ceiling the client is
+  // stale or the body is crafted, and either way the honest answer is no.
   const mixIn = (input.mix && typeof input.mix === 'object' && !Array.isArray(input.mix))
     ? (input.mix as Json)
     : {}
@@ -232,33 +265,38 @@ function validate(input: Json): Validated | { error: string } {
   let totalCups = 0
   for (const [id, raw] of Object.entries(mixIn)) {
     if (!FLAVOUR_IDS.has(id)) continue
-    const n = intIn(raw, 0, MAX_CUPS_PER_FLAVOUR, 0)
+    // Read the number as posted — a ceiling passed to intIn here would clamp,
+    // which is exactly what went wrong — then judge it.
+    const n = intIn(raw, 0, Number.MAX_SAFE_INTEGER, 0)
+    if (n > MAX_CUPS_PER_FLAVOUR) {
+      return { error: 'That is more cups than we can quote online.' }
+    }
     if (n > 0) {
       mix[id] = n
       totalCups += n
     }
   }
   if (totalCups > MAX_TOTAL_CUPS) return { error: 'That is more cups than we can quote online.' }
-  if (capped && totalCups !== cap) {
-    return { error: `A ${little ? 'Little Moments' : 'Signature'} box is exactly ${cap} cups.` }
+
+  // One rule for all three packages: the box has to be exactly full. Indulgent
+  // used to be exempt from this entirely — the check read `capped && …`, so its
+  // spread was never counted against anything and a 1-cup order for 50 guests
+  // was written to Airtable as real.
+  //
+  // Rejected rather than clamped, in both directions: padding a short spread out
+  // to the guest count would invent cups nobody ordered, and trimming a long one
+  // would drop cups they did.
+  if (totalCups !== cap) {
+    return {
+      error: capped
+        ? `A ${little ? 'Little Moments' : 'Signature'} box is exactly ${cap} cups.`
+        : `An Indulgent spread is one cup per guest — please pick exactly ${cap} cups.`,
+    }
   }
 
   // Iced tea rides along as a simple quantity add-on on every package, not
   // just the capped boxes.
   const icedTeas = intIn(input.icedTeas, 0, MAX_ICED_TEAS, 0)
-  const guests = capped ? cap : intIn(input.guests, INDULGENT_MIN_GUESTS, MAX_GUESTS, 80)
-
-  // An Indulgent spread has no ceiling, but it does have a floor: it is sized to
-  // the guest list, so it has to cover it. Without this the package was
-  // effectively unvalidated — a 1-cup spread for 50 guests was accepted and
-  // written to Airtable as a real enquiry, because the cup check above only ever
-  // ran on the capped boxes. Rejected rather than clamped: silently inflating
-  // someone's order to 50 cups would be inventing an order they did not place.
-  if (!capped && totalCups < guests) {
-    return {
-      error: `An Indulgent spread has to cover your guest count — please pick at least ${guests} cups.`,
-    }
-  }
 
   // Toppings dress cups that `mix` already counted, so they add no cups of their
   // own — which is exactly why they need their own ceiling. It is the number of
@@ -269,11 +307,12 @@ function validate(input: Json): Validated | { error: string } {
   const toppingsIn = (input.toppings && typeof input.toppings === 'object' && !Array.isArray(input.toppings))
     ? (input.toppings as Json)
     : {}
-  // Mirrors the builder, which offers `max(cups, guests)`. It used to be a bare
-  // `guests` here, which silently trimmed the toppings on any spread picked
-  // larger than the guest list — and now that a trim also shrinks the Toppings
-  // price column, a mismatch would show up as money.
-  const toppingCap = capped ? cap : Math.max(totalCups, guests)
+  // The cups in the order, on every package — a topping goes on a cup, so there
+  // can never be more toppings than cups. It used to be `max(totalCups, guests)`
+  // for Indulgent, which let 60 cups carry 70 toppings: ten toppings billed onto
+  // cups that were never ordered, and now that toppings have their own money
+  // column that overcharge would be sitting in the base in rands.
+  const toppingCap = totalCups
   const toppings: Record<string, number> = {}
   let totalToppings = 0
   let toppingRoom = toppingCap
