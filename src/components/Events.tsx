@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import SectionHeading from './SectionHeading'
-import { Users, Star, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 
@@ -9,7 +9,7 @@ const BERRY = '#E8176D'
 const PACKAGES = [
   {
     id: 'small',
-    icon: Users,
+    // icon: Users,
     name: 'Little Moments',
     // subtitle: 'Up to 30 guests',
     price: 'Starting From R1675',
@@ -24,7 +24,7 @@ const PACKAGES = [
   },
   {
     id: 'signature',
-    icon: Star,
+    // icon: Star,
     name: 'Signature',
     subtitle: '50 guests',
     price: 'Starting From R7750',
@@ -46,7 +46,7 @@ const PACKAGES = [
   
   {
     id: 'large',
-    icon: Star,
+    //  icon: Star,
     name: 'Indulgent',
     subtitle: '50+ guests',
     // price: 'From R4 500',
@@ -140,7 +140,7 @@ export default function Events() {
             which is what put the huge empty gutters either side of this block. */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 items-start max-w-6xl mx-auto">
           {PACKAGES.map((pkg, i) => {
-            const Icon = pkg.icon
+            // const Icon = pkg.icon
             const featured = !!pkg.featured
             return (
               <motion.div
@@ -193,12 +193,12 @@ export default function Events() {
                   </span>
                 )}
 
-                <Icon
+                {/* <Icon
                   size={22}
                   strokeWidth={2}
                   style={{ color: featured ? '#fff' : BERRY }}
                   aria-hidden="true"
-                />
+                /> */}
 
                 <h3
                   className="mt-6 uppercase text-2xl leading-none"
