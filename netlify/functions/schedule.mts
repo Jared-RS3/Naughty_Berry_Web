@@ -38,9 +38,31 @@ import type { Config } from '@netlify/functions'
  *                   as a fallback name for the same kind of token)
  */
 
-const BASE_ID = process.env.AIRTABLE_BASE_ID ?? 'appIfLyWzGV0npV6U'
-const TABLE_ID = process.env.AIRTABLE_EVENTS_TABLE ?? 'tbl8iQOpkuoaTa9Aj'
-const VIEW_ID = process.env.AIRTABLE_EVENTS_VIEW ?? 'viwaL94vAoYlnNbc8'
+/**
+ * Reads an environment variable, treating blank as absent.
+ *
+ * `process.env.X ?? fallback` is wrong here, and quietly so. Values arriving
+ * from the Netlify UI are strings or undefined — never null — so `??` catches
+ * only the variable that was never created. A variable that EXISTS and is empty
+ * is a string, passes `??` untouched, and wins over the fallback. That is the
+ * normal state of a variable somebody added to the dashboard and did not paste
+ * a value into, or cleared while rotating a token, and it turned the token
+ * lookup below into "the correctly-set fallback name is ignored, every request
+ * 503s" — with the dashboard showing the variable present the whole time.
+ *
+ * The trim is the other half of the same class of bug: a token copied out of
+ * Airtable carries a trailing newline often enough to matter, and `Bearer sk\n`
+ * comes back from Airtable as a 401, which this file deliberately reports as an
+ * opaque 502. Silent, and indistinguishable from Airtable being down.
+ */
+const env = (name: string): string | undefined => {
+  const value = process.env[name]?.trim()
+  return value ? value : undefined
+}
+
+const BASE_ID = env('AIRTABLE_BASE_ID') ?? 'appIfLyWzGV0npV6U'
+const TABLE_ID = env('AIRTABLE_EVENTS_TABLE') ?? 'tbl8iQOpkuoaTa9Aj'
+const VIEW_ID = env('AIRTABLE_EVENTS_VIEW') ?? 'viwaL94vAoYlnNbc8'
 
 /**
  * How long the CDN may serve a cached copy, and how long it may keep serving a
@@ -129,7 +151,7 @@ export default async (req: Request): Promise<Response> => {
   // write-scoped token: Airtable rejects a write token on a read call with the
   // same 403 it gives a wrong token, which turned a one-line "not configured"
   // fix into an opaque 502 the one time this actually happened.
-  const token = process.env.NAUGHTY_READ ?? process.env.AIRTABLE_READ_TOKEN
+  const token = env('NAUGHTY_READ') ?? env('AIRTABLE_READ_TOKEN')
 
   if (!token) {
     console.error('No Airtable read token — set NAUGHTY_READ')

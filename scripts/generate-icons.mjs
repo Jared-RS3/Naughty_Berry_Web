@@ -98,53 +98,40 @@ function ico(images) {
 
 /**
  * The 1200×630 card that WhatsApp, Facebook, LinkedIn, Slack, iMessage and X
- * show when the URL is pasted. Without it those unfurls fall back to a bare
- * link, which is what the site was doing — index.html pointed at an
- * /og-image.jpg that had never existed.
+ * show when the URL is pasted, and the thumbnail Google draws beside the search
+ * result. Without it those unfurls fall back to a bare link.
+ *
+ * It is a crop of the brownie-cup photograph rather than a composed graphic:
+ * the shot already carries the wordmark on the cup, and a real photo of the
+ * product outperforms a laid-out card in both places this file is shown.
+ *
+ * SHARE_PHOTO is portrait, so it cannot be handed to og:image as-is — 1.91:1 is
+ * what every unfurler crops to, and doing that to a 1078×1300 frame would take
+ * the lid and the base off the cup. The band below is cut deliberately instead,
+ * so the crop is decided here rather than by five different consumers.
  */
+const SHARE_PHOTO = src('public/brownie.jpg')
+
 async function shareCard() {
   const W = 1200
   const H = 630
 
-  const background = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
-      <defs>
-        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#FFE9F2"/>
-          <stop offset="55%" stop-color="#FFDCEA"/>
-          <stop offset="100%" stop-color="#FFB8D5"/>
-        </linearGradient>
-        <radialGradient id="glow" cx="0.72" cy="0.5" r="0.55">
-          <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.85"/>
-          <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
-        </radialGradient>
-      </defs>
-      <rect width="${W}" height="${H}" fill="url(#g)"/>
-      <rect width="${W}" height="${H}" fill="url(#glow)"/>
-      <rect x="0" y="${H - 14}" width="${W}" height="14" fill="#E72A7C"/>
-    </svg>`)
+  const photo = await sharp(SHARE_PHOTO).metadata()
 
-  const caption = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="700" height="120">
-      <style>
-        .t { font-family: "Liberation Sans", "DejaVu Sans", sans-serif; font-weight: bold;
-             fill: #C2185B; letter-spacing: 1.5px; }
-      </style>
-      <text class="t" x="0" y="34" font-size="30">STRAWBERRIES &amp; CHOCOLATE ON TAP</text>
-      <text class="t" x="0" y="84" font-size="24" fill="#7A2447" letter-spacing="5">CAPE TOWN · POP-UPS &amp; EVENTS</text>
-    </svg>`)
+  // Full width, a 1.91:1 band of it. CUP_CENTRE is the vertical middle of the
+  // cup in the source frame; the band is centred on that and then clamped, so
+  // the subject sits on the centre line instead of at whatever height a plain
+  // centre crop would land on.
+  const CUP_CENTRE = 0.56
+  const bandHeight = Math.round(photo.width * (H / W))
+  const top = Math.min(
+    Math.max(Math.round(photo.height * CUP_CENTRE - bandHeight / 2), 0),
+    photo.height - bandHeight,
+  )
 
-  const wordmark = await sharp(WORDMARK).resize({ width: 480 }).png().toBuffer()
-  const cup = await sharp(src('public/naughty-hero-cup.webp'))
-    .resize({ height: 540, fit: 'inside' })
-    .png()
-    .toBuffer()
-  const cupMeta = await sharp(cup).metadata()
-
-  const card = await sharp(background)
-    .composite([
-      { input: cup, top: H - cupMeta.height - 30, left: W - cupMeta.width - 60 },
-      { input: wordmark, top: 118, left: 66 },
-      { input: caption, top: 452, left: 74 },
-    ])
+  const card = await sharp(SHARE_PHOTO)
+    .extract({ left: 0, top, width: photo.width, height: bandHeight })
+    .resize(W, H)
     .jpeg({ quality: 88, chromaSubsampling: '4:4:4' })
     .toBuffer()
 

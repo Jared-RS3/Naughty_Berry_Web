@@ -299,10 +299,14 @@ function CupCarousel({
 
   return (
     <div style={{ containerType: 'inline-size' }}>
-      {/* ── Stage ── */}
+      {/* ── Stage ──
+          The mobile stage was ~50px taller than the cup standing in it, and
+          that slack was all above the rim where it read as empty background.
+          Trimming it lifts the name and price toward the fold without making
+          the cup itself any smaller — `cupSlot` above is untouched. */}
       <div
         className="relative"
-        style={{ minHeight: isMobile ? 'clamp(300px, 88cqw, 380px)' : 'clamp(300px, 34cqw, 520px)' }}
+        style={{ minHeight: isMobile ? 'clamp(268px, 78cqw, 340px)' : 'clamp(300px, 34cqw, 520px)' }}
       >
         {/* Giant category word behind the cups — top half stays visible above the rims */}
         <span
@@ -402,7 +406,7 @@ function CupCarousel({
       </div>
 
       {/* ── Current item info ── */}
-      <div className="relative z-10 text-center mt-7 md:mt-4 min-h-[160px] md:min-h-[136px]" aria-live="polite">
+      <div className="relative z-10 text-center mt-5 md:mt-4 min-h-[150px] md:min-h-[136px]" aria-live="polite">
         <AnimatePresence mode="wait">
           <motion.div
             key={current.name}
@@ -419,7 +423,21 @@ function CupCarousel({
             <h3 className="font-display uppercase tracking-[0.16em] text-[#E8176D] text-lg md:text-xl">
               {current.name}
             </h3>
-            <p className="mt-3 md:mt-2 max-w-[19rem] md:max-w-sm mx-auto text-[#7A3B5E]/75 text-[12.5px] md:text-[15px] leading-[1.7] md:leading-relaxed">
+            {/* The long flavour copy ("Decadent kunafeh of pistachio cream and
+                toasted kataifi pastry…") ran the full 19rem on a phone, which
+                put it right on top of the corner artwork and read as text
+                spilling off the sides. Over ~110 characters it steps down a
+                size and pulls its column in, so the lines end well clear of the
+                decor — and, because the smaller type buys back the height the
+                narrower column costs, it does that without pushing the price
+                any further down. Desktop is wide enough to be left alone. */}
+            <p
+              className={`mt-3 md:mt-2 mx-auto text-[#7A3B5E]/75 md:max-w-sm md:text-[15px] leading-[1.7] md:leading-relaxed ${
+                current.desc.length > 110
+                  ? 'max-w-[17rem] text-[11.5px]'
+                  : 'max-w-[19rem] text-[12.5px]'
+              }`}
+            >
               {current.desc}
             </p>
             <p className="mt-4 md:mt-3 font-display text-[#E8176D] text-xl md:text-2xl">{current.price}</p>
@@ -485,8 +503,14 @@ export default function MenuPreview() {
     return () => io.disconnect()
   }, [warm])
 
+  // `scroll-mt-2` on mobile, not `scroll-mt-20`: jumping to #menu used to park
+  // the section top 80px down the viewport, which pushed the price a long way
+  // below the fold on a short phone — the cup, the name and the price are the
+  // point of landing here, so the anchor gives up its breathing room to fit
+  // them in. Desktop has the height to spare and keeps its original offset.
+  // The tighter mobile `py` is part of the same budget.
   return (
-    <section ref={sectionRef} id="menu" className="scroll-mt-20 md:scroll-mt-16 py-16 md:py-20 lg:py-24 relative overflow-hidden bg-[#FFDCEA]">
+    <section ref={sectionRef} id="menu" className="scroll-mt-2 md:scroll-mt-16 py-10 md:py-20 lg:py-24 relative overflow-hidden bg-[#FFDCEA]">
       {/* Flavour backdrop — the reference card's colours and corner artwork.
           On switch, the new world wipes out from behind the cup in an
           expanding circle while the decor pops in staggered; the old layer

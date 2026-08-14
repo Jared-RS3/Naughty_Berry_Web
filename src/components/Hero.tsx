@@ -378,8 +378,9 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
               // Mobile: full 176px on normal/tall phones, easing down on short
               // screens (via svh) so the whole composition and the CTA stay on
               // screen without the cup ever overflowing the stage. Desktop keeps
-              // its container-query sizing.
-              width: isMobile ? 'clamp(128px, 26svh, 176px)' : 'clamp(176px, 25cqw, 390px)',
+              // its container-query sizing, but on very wide monitors it is nudged
+              // a little smaller so the button has room to breathe beneath it.
+              width: isMobile ? 'clamp(128px, 26svh, 176px)' : 'clamp(176px, 23cqw, 360px)',
             }}
           >
             {/* Ground shadow — seats the cup on the floor plane */}
@@ -500,7 +501,14 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
         initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 14 }}
         animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
         transition={{ duration: 0.7, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute inset-x-0 bottom-24 z-30 hidden justify-center sm:flex"
+        className="absolute inset-x-0 z-30 hidden justify-center sm:flex"
+        style={{
+          // Keep the CTA clear of the cup in reduced-height browser chrome and on
+          // large desktop monitors where the three-line headline composition sits
+          // very close beneath the glass. The fixed offset used before was too
+          // tight for those conditions.
+          bottom: 'clamp(3.5rem, 9svh, 7.5rem)',
+        }}
       >
         {menuCta}
       </motion.div>
