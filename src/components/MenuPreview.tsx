@@ -142,7 +142,7 @@ export const MENU_CATEGORIES = [
       // because the cutouts are visibly different cups.
       {
         name: 'Dubai Chocolate Cup',
-        desc: 'Fresh strawberries in creamy milk chocolate, crowned with kunafeh — pistachio cream and toasted kataifi.',
+        desc: 'Fresh strawberries in creamy milk chocolate, crowned with kunafeh pistachio cream and toasted kataifi.',
         price: 'R95',
         tag: null,
         cutout: '/menu-cups/dubai-choc.webp',
@@ -150,7 +150,7 @@ export const MENU_CATEGORIES = [
       },
       {
         name: 'Dubai Chocolate Brownie Cup',
-        desc: 'Strawberries and fudgey brownie bites in milk chocolate, crowned with pistachio-cream kunafeh.',
+        desc: 'Strawberries and fudgey brownie bites in milk chocolate, crowned with pistachio cream kunafeh.',
         price: 'R95',
         tag: 'Best Seller',
         cutout: '/menu-cups/dubai.webp',
