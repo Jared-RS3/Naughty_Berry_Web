@@ -329,8 +329,9 @@ function validate(input: Json): Validated | { error: string } {
   // nothing anywhere to say which was right. Change one, change the other.
   const TOPPING_PRICE = 15
   const ICED_TEA_PRICE = 45
+  const toppingsPrice = totalToppings * TOPPING_PRICE
   const estimate =
-    basePriceFor(pkg) + totalToppings * TOPPING_PRICE + icedTeas * ICED_TEA_PRICE
+    basePriceFor(pkg) + toppingsPrice + icedTeas * ICED_TEA_PRICE
   const rands = (n: number) => `R${n.toLocaleString('en-ZA')}`
 
   // The Dubai and Cream columns count topped cups rather than cups of that
@@ -390,6 +391,13 @@ function validate(input: Json): Validated | { error: string } {
     'Dubai topping cups': counts.dubai,
     'Cream topping cups': counts.cream,
     'Iced teas': icedTeas,
+    // The toppings on their own, in rands. Written on every package — unlike
+    // "Estimated total" below, which only the capped boxes get, because an
+    // Indulgent spread has no base price to add it to. Toppings are the one part
+    // of an Indulgent order that is already priced, so this is the figure staff
+    // can use before the custom quote is written. On the capped boxes it is a
+    // component of "Estimated total", not an extra on top of it.
+    'Toppings price': toppingsPrice,
     // The exact answer, alongside the four-way "Event type" this collapses into.
     'Occasion': OCCASIONS.has(rawOccasion) ? rawOccasion : 'Something Else',
     'Special Requests': field(specialRequests, 4000, { multiline: true }),
