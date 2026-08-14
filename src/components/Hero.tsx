@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { MapPin, ArrowRight, ChevronRight } from 'lucide-react'
-import { usePopupSchedule } from '../hooks/usePopupSchedule'
+import { usePopupSchedule, type ScheduleSlot } from '../hooks/usePopupSchedule'
 import { currentSlot, isScheduleOff, mapsHref, stopHeadline } from '../lib/nextStop'
 import { useIsMobile } from '../hooks/useIsMobile'
 
@@ -21,6 +21,54 @@ type HeroProps = {
  * Desktop's pill is absolutely positioned and is not governed by this.
  */
 const SHOW_MOBILE_LOCATION_PILL = true
+
+/**
+ * Desktop location pill on/off switch.
+ *
+ * The opposite of the mobile flag: this one really does unmount the pill.
+ * Desktop's pill is absolutely positioned across the hero, so taking it out
+ * moves nothing — and that is exactly the problem it leaves behind, a hole in
+ * the band above the headline. The composition answers by rising HERO_LIFT
+ * whenever the pill isn't on screen, so there is no empty slot to reserve.
+ */
+const SHOW_DESKTOP_LOCATION_PILL = true
+
+/**
+ * How far the desktop composition rises when there's no pill.
+ *
+ * The hero is vertically centred, so the pill's band above the headline is
+ * dead space the moment the pill goes — whether it was switched off above or
+ * the sheet says the trailer isn't out. Nothing reflows into it (the pill was
+ * never in the flow), which is what makes it read as a gap rather than as
+ * breathing room. Lifting the headline, cup and CTA together by roughly half
+ * the pill's band splits that air evenly above and below instead of parking
+ * all of it under the nav. svh-aware, so a short laptop gives up less of it.
+ *
+ * Two spellings of one distance: Tailwind only generates classes it can read
+ * spelled out in the source, so the class can't be built from the value — keep
+ * the pair in step if you retune it.
+ */
+const HERO_LIFT_CLASS = 'sm:-translate-y-[clamp(16px,4.5svh,44px)]'
+const HERO_LIFT = 'clamp(16px, 4.5svh, 44px)'
+
+/**
+ * Whether the pill has a stop to point at.
+ *
+ * "Off" in the Day of Week dropdown is the sheet saying the trailer isn't out.
+ * There is no stop to name, and the generic "See where we are next" would still
+ * read as a live sighting — so the pill leaves the hero entirely rather than
+ * sitting there with nothing to say. Asked of the whole schedule, not of the
+ * next slot: an Off row whose date has passed is no longer the "next stop", but
+ * it is still the sheet's current answer. While the fetch is in flight the pill
+ * stays (as a shimmer), so the answer can't flicker in from underneath.
+ *
+ * One rule, read twice — by the pill, to decide whether to bail out, and by the
+ * hero around it, to decide whether to close the gap a missing pill leaves.
+ * They must never disagree about whether there's a pill on screen.
+ */
+function hasLiveLocation(schedule: ScheduleSlot[], loading: boolean) {
+  return loading || !isScheduleOff(schedule)
+}
 
 /**
  * Live location strip along the bottom of the hero. The full NextStop panel is
@@ -59,14 +107,9 @@ function HeroLocationStrip({
   const slot = error ? null : currentSlot(schedule)
   const headline = slot ? stopHeadline(slot) : null
 
-  // "Off" in the Day of Week dropdown is the sheet saying the trailer isn't out.
-  // There is no stop to point at, and the generic "See where we are next" would
-  // still read as a live sighting — so the pill leaves the hero entirely rather
-  // than sitting there with nothing to say. Asked of the whole schedule, not of
-  // `next`: an Off row whose date has passed is no longer the "next stop", but
-  // it is still the sheet's current answer. It only disappears once the schedule
-  // has actually loaded, so the placeholder still holds the space while fetching.
-  if (!loading && isScheduleOff(schedule)) return null
+  // Nothing to point at — see hasLiveLocation. The hero reads the same rule to
+  // lift its composition into the space this leaves on desktop.
+  if (!hasLiveLocation(schedule, loading)) return null
 
   // Tapping the pill hands the venue address straight to the phone's maps app —
   // the Google Maps universal link deep-links into the native app on both iOS
@@ -213,6 +256,13 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
   const prefersReducedMotion = useReducedMotion()
   const isMobile = useIsMobile()
 
+  // Free: usePopupSchedule shares one in-flight request per page load, so this
+  // is the same fetch the pill below is already waiting on, not a second one.
+  // The hero only wants the yes/no — is there a pill above the headline? — so
+  // that it can take back the band when there isn't.
+  const { schedule, loading: scheduleLoading } = usePopupSchedule()
+  const hasDesktopPill = SHOW_DESKTOP_LOCATION_PILL && hasLiveLocation(schedule, scheduleLoading)
+
   const c = isNaughtyMode
     ? {
         bg: 'radial-gradient(ellipse at 50% 46%, #34103A 0%, #1B0823 60%, #120019 100%)',
@@ -258,21 +308,37 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
   return (
     <section
       id="top"
-      /* Mobile: top-anchored column (items-start) so the nav → pill → product →
-         copy → CTA rhythm is fixed on every height. pt = the 64px nav + a gap
-         that eases from 60px (tall) down to 28px (short), so short screens spend
-         that space on the product and CTA instead of an air gap. pb clears the
-         iPhone toolbar via the safe-area inset. min-h-svh fills the small
-         viewport so nothing hides behind the browser chrome. Every vertical
-         value below is svh-aware for the same reason, which keeps the whole
-         composition — including the CTA — on screen down to ~480px tall.
-         Desktop resets to the centred layout. */
-      className="relative min-h-svh w-full overflow-hidden flex items-start justify-center pt-[calc(64px_+_clamp(28px,8svh,60px))] pb-[calc(16px_+_env(safe-area-inset-bottom))] sm:items-center sm:pt-0 sm:pb-0"
+      /* Mobile: the column stretches to the full screen (items-stretch) so the
+         hero can place its two halves independently — the location pill stays
+         pinned a fixed distance under the nav, and the product → copy → CTA
+         group below it centres in whatever room is left (see the auto margins
+         further down). Top-anchoring the whole lot instead left the composition
+         crowded under the nav with a dead strip along the bottom of the phone.
+         pt = the 64px nav + a gap that eases from 60px (tall) down to 28px
+         (short), so short screens spend that space on the product and CTA
+         instead of an air gap. pb clears the iPhone toolbar via the safe-area
+         inset. min-h-svh fills the small viewport so nothing hides behind the
+         browser chrome. Every vertical value below is svh-aware for the same
+         reason, which keeps the whole composition — including the CTA — on
+         screen down to ~480px tall. Desktop resets to the centred layout. */
+      className="relative min-h-svh w-full overflow-hidden flex items-stretch justify-center pt-[calc(64px_+_clamp(28px,8svh,60px))] pb-[calc(16px_+_env(safe-area-inset-bottom))] sm:items-center sm:pt-0 sm:pb-0"
       style={{ background: c.bg }}
       aria-label="Hero — Naughty Berry"
     >
+      {/* Mobile is a full-height flex column so the free space can be handed to
+          the auto margins on the stage and the CTA below; desktop stays a plain
+          block and is untouched by any of it.
+
+          The lift is desktop-only (`sm:`) — mobile's pill is in the flow, so
+          when it goes the column re-flows and the auto margins re-centre what's
+          left; there is no reserved hole to take back. (The fixed nav clearance
+          in the section's padding does still sit above that, so a pill-less
+          phone reads a little bottom-heavy. Deliberately untouched: only the
+          large-screen gap was in scope.) */}
       <div
-        className="relative w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-10"
+        className={`relative flex w-full max-w-[1560px] mx-auto flex-col px-4 sm:block sm:px-6 lg:px-10${
+          hasDesktopPill ? '' : ` ${HERO_LIFT_CLASS}`
+        }`}
         style={{ containerType: 'inline-size' }}
       >
         {/* Mobile announcement pill — first in the hero column so it sits a
@@ -292,9 +358,19 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
 
         {/* Stage — desktop height tracks the reference 1100×618 ratio via cqw;
             mobile is height-aware (svh) and bounded so it hugs the cup instead
-            of reserving a fixed 430px that left a dead gap beneath it. */}
+            of reserving a fixed 430px that left a dead gap beneath it.
+
+            `mt-auto` (with the matching `mb-auto` on the mobile CTA) splits the
+            column's leftover height evenly above the stage and below the CTA, so
+            the product → copy → CTA group sits centred in the space under the
+            pill rather than stacking straight beneath it. The pill's own bottom
+            margin is spent before the split, which lands the group a touch below
+            true centre — where the eye expects it. Auto margins only absorb
+            *positive* free space, so on a short phone where the group fills the
+            column they collapse to 0 and the old top-anchored stacking is
+            exactly what's left. */}
         <div
-          className="relative flex items-center justify-center"
+          className="relative mt-auto flex items-center justify-center sm:mt-0"
           style={{
             minHeight: isMobile
               ? 'clamp(176px, 38svh, 272px)'
@@ -473,7 +549,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
           initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 14 }}
           animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
           transition={{ duration: 0.7, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-[clamp(14px,3svh,28px)] flex justify-center sm:hidden"
+          className="mb-auto mt-[clamp(16px,4.4svh,36px)] flex justify-center sm:hidden"
         >
           <motion.a
             href="#menu"
@@ -507,15 +583,29 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
           // large desktop monitors where the three-line headline composition sits
           // very close beneath the glass. The fixed offset used before was too
           // tight for those conditions.
-          bottom: 'clamp(3.5rem, 9svh, 7.5rem)',
+          //
+          // The CTA is pinned to the section, not to the composition, so it has
+          // to be lifted by hand to travel with it — otherwise a pill-less hero
+          // would rise away from its own button and open a second gap where the
+          // first one was closed.
+          bottom: hasDesktopPill
+            ? 'clamp(3.5rem, 9svh, 7.5rem)'
+            : `calc(clamp(3.5rem, 9svh, 7.5rem) + ${HERO_LIFT})`,
         }}
       >
         {menuCta}
       </motion.div>
 
       {/* Desktop keeps the live-location pill pinned along the hero. The mobile
-          pill now lives in the column above (in flow). */}
-      <HeroLocationStrip isNaughtyMode={isNaughtyMode} loaded={loaded} placement="bottom" />
+          pill now lives in the column above (in flow).
+
+          Unmounting is safe here — unlike mobile, nothing is stacked beneath
+          this pill to slide up. Switching SHOW_DESKTOP_LOCATION_PILL off also
+          engages the lift above, so the composition closes the band rather than
+          leaving it empty. */}
+      {SHOW_DESKTOP_LOCATION_PILL && (
+        <HeroLocationStrip isNaughtyMode={isNaughtyMode} loaded={loaded} placement="bottom" />
+      )}
     </section>
   )
 }
