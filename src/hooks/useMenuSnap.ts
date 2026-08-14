@@ -40,16 +40,36 @@ export function useMenuSnap() {
      * further down and tucks the menu tighter under the navbar; a larger one
      * stops earlier and leaves the menu sitting lower on screen.
      *
-     * This is the dial to turn if the lock parks too high or too low. Negative
-     * pulls the section's top edge above the viewport, which is fine — #menu
-     * carries py-16/20/24, so the first 64–96px of it is padding and the heading
-     * has room to spare. Roughly -32 (lg) / -16 (md) is where that padding runs
-     * out and the heading starts going behind the 64px navbar; that is the floor.
+     * Desktop parks at +26 — measured off the reference frame. It has to be
+     * positive: the desktop navbar is `fixed` and 81px tall, so anything that
+     * pulls #menu's top edge above the viewport eats the section's 80px of top
+     * padding and then swallows the "THE MENU" eyebrow behind the bar. At +26
+     * the eyebrow clears it by ~25px and the whole section — tabs, cup, price,
+     * pager, PDF button — sits in frame.
      */
-    const REST_GAP_DESKTOP = -20
+    const REST_GAP_DESKTOP = 26
     const REST_GAP_MOBILE = -6
-    const navOffset = () =>
-      window.matchMedia('(min-width: 768px)').matches ? REST_GAP_DESKTOP : REST_GAP_MOBILE
+    /** Air left under the PDF button when the section is taller than the
+     *  viewport and the ideal gap has to give. */
+    const MIN_AIR_BELOW = 20
+
+    /**
+     * The section runs ~925px tall on a wide screen, so on a roomy display the
+     * ideal gap fits with slack to spare — but on a short laptop viewport
+     * (1440x828 and friends) parking at +26 would push the pager and the PDF
+     * button off the bottom. So the gap is the ideal *or* whatever still keeps
+     * the last row of content on screen, whichever is smaller, floored at the
+     * old -20 so a very short window is no worse off than before.
+     */
+    const navOffset = (el: HTMLElement) => {
+      if (!window.matchMedia('(min-width: 768px)').matches) return REST_GAP_MOBILE
+      // #menu's own bottom padding — py-20 at lg, py-16 below it. Everything
+      // above that is content that has to stay visible.
+      const padBottom = window.matchMedia('(min-width: 1024px)').matches ? 80 : 64
+      const contentBottom = el.offsetHeight - padBottom
+      const fits = window.innerHeight - contentBottom - MIN_AIR_BELOW
+      return Math.max(-20, Math.min(REST_GAP_DESKTOP, fits))
+    }
     // Only an outright fling skips the lock; normal and brisk scrolling engage.
     const FAST = 5.5 // px/ms
     // How much deliberate intent breaks the hold, per input.
@@ -107,7 +127,7 @@ export function useMenuSnap() {
 
     // Frame the menu under the navbar, then hold.
     function frameThenLock(el: HTMLElement) {
-      const off = navOffset()
+      const off = navOffset(el)
       const lenis = getLenis()
       if (lenis) {
         lenis.scrollTo(el, { offset: -off, duration: 0.7, lock: true, onComplete: beginLock })
@@ -147,7 +167,7 @@ export function useMenuSnap() {
       } // outright fling passes
 
       // Engage as the menu top crosses into the upper ~half of the screen.
-      if (rect.top <= vh * 0.15 && rect.top > navOffset() + 10) {
+      if (rect.top <= vh * 0.15 && rect.top > navOffset(el) + 10) {
         armed = false
         phase = 'snapping'
         frameThenLock(el)
