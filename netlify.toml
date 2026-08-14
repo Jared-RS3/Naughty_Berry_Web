@@ -73,3 +73,15 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Netlify has no built-in mapping for the .webmanifest extension, so it was
+# serving the manifest as application/octet-stream. The spec requires
+# application/manifest+json, and a browser is entitled to ignore a manifest that
+# arrives as a binary blob — which costs the install prompt and the maskable
+# home-screen icon. Unrelated to the Google search favicon, which comes from the
+# <link rel="icon"> tags, not from here.
+[[headers]]
+  for = "/site.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json; charset=utf-8"
+    Cache-Control = "public, max-age=3600"
