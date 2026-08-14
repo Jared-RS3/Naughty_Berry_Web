@@ -196,9 +196,11 @@ function validate(input: Json): Validated | { error: string } {
   const phone = field(input.phone, LIMITS.phone)
 
   if (name.length < 2) return { error: 'Please give us a name we can use.' }
-  if (!email && !phone) return { error: 'We need an email address or a phone number.' }
-  if (email && !EMAIL_RE.test(email)) return { error: 'That email address does not look right.' }
-  if (phone && !PHONE_RE.test(normalisePhone(phone))) {
+  // Both contact routes are required, not either-or as before.
+  if (!email) return { error: 'We need an email address.' }
+  if (!EMAIL_RE.test(email)) return { error: 'That email address does not look right.' }
+  if (!phone) return { error: 'We need a contact number.' }
+  if (!PHONE_RE.test(normalisePhone(phone))) {
     return { error: 'Enter a valid 10-digit number, like 082 123 4567.' }
   }
 
@@ -284,31 +286,30 @@ function validate(input: Json): Validated | { error: string } {
   const venue = field(input.venue, LIMITS.venue)
   const notes = field(input.notes, LIMITS.notes, { multiline: true })
 
-  // Date must be a real calendar date, not in the past, not absurdly far out.
-  let date = ''
-  const rawDate = clean(input.date, 10)
-  if (rawDate) {
-    if (!DATE_RE.test(rawDate)) {
-      problems.push('unparseable date discarded')
-    } else {
-      const d = new Date(`${rawDate}T00:00:00Z`)
-      const today = new Date()
-      today.setUTCHours(0, 0, 0, 0)
-      const maxAhead = new Date(today)
-      maxAhead.setUTCFullYear(maxAhead.getUTCFullYear() + 3)
-      if (Number.isNaN(d.getTime()) || d < today || d > maxAhead) {
-        problems.push('date out of range, discarded')
-      } else {
-        date = rawDate
-      }
-    }
-  }
+  if (!venue) return { error: 'Please tell us where the event is.' }
 
-  // Start time, independent of the date — an enquiry may name a time before the
-  // day is settled. A malformed value is dropped with a note rather than
-  // rejecting the whole enquiry: the time is the least important thing here and
-  // losing a real lead over it would be the worse trade. `HH:MM:SS` is trimmed
-  // to `HH:MM` first, because a couple of browsers volunteer seconds.
+  // Date is required, and must be a real calendar date that is not in the past
+  // and not absurdly far out. A bad date is refused rather than quietly dropped
+  // into `problems`, which is what it used to be: once the field is mandatory,
+  // silently storing a record without it would defeat the point of asking.
+  const rawDate = clean(input.date, 10)
+  if (!rawDate) return { error: 'Please pick the date of your event.' }
+  if (!DATE_RE.test(rawDate)) return { error: 'That date isn’t valid.' }
+  const d = new Date(`${rawDate}T00:00:00Z`)
+  const today = new Date()
+  today.setUTCHours(0, 0, 0, 0)
+  const maxAhead = new Date(today)
+  maxAhead.setUTCFullYear(maxAhead.getUTCFullYear() + 3)
+  if (Number.isNaN(d.getTime())) return { error: 'That date isn’t valid.' }
+  if (d < today) return { error: 'Please pick a date in the future.' }
+  if (d > maxAhead) return { error: 'We can only book up to three years ahead.' }
+  const date = rawDate
+
+  // The one field here that is still optional alongside the notes. A malformed
+  // value is dropped with a note rather than rejecting the whole enquiry: the
+  // time is the least important thing on the form and losing a real lead over
+  // it would be the worse trade. `HH:MM:SS` is trimmed to `HH:MM` first,
+  // because a couple of browsers volunteer seconds.
   let time = ''
   const rawTime = clean(input.time, 8).slice(0, 5)
   if (rawTime) {
@@ -412,10 +413,12 @@ function validate(input: Json): Validated | { error: string } {
   // priced around the event, so writing a base price there would read as a quote
   // nobody gave.
   if (capped) fields['Estimated total'] = estimate
-  if (phone) fields['Phone'] = phone
-  if (date) fields['Event Date'] = date
+  // Phone, date and venue are mandatory above, so they are always present by the
+  // time we get here — no `if` needed. Only the optional start time is guarded.
+  fields['Phone'] = phone
+  fields['Event Date'] = date
+  fields['Venue / Location'] = venue
   if (time) fields['Time'] = time
-  if (venue) fields['Venue / Location'] = venue
 
   return { fields, problems }
 }

@@ -609,7 +609,7 @@ export default function QuotePage() {
           {stepKey === 'details' &&
             (Object.keys(fieldErrors).length === 1 && fieldErrors.consent
               ? 'Please tick the box above to continue'
-              : 'We need your name and one way to reach you')}
+              : 'Please fill in everything except the start time and notes')}
         </p>
       )}
 
@@ -1705,8 +1705,13 @@ function StepDetails({
     `${inputCls} ${shown(k) ? 'border-[#C01057] ring-2 ring-[#C01057]/20' : ''}`
 
 
-  const a11y = (k: keyof FieldErrors) => ({
+  /** `aria-required` rather than the native `required` attribute: the browser's
+   *  own validation bubble would fire on submit and compete with the inline
+   *  messages below each field, which are the ones that match this form's
+   *  wording and timing. Screen readers still announce the field as required. */
+  const a11y = (k: keyof FieldErrors, { optional = false } = {}) => ({
     onBlur: blur(k),
+    'aria-required': optional ? undefined : true,
     'aria-invalid': shown(k) ? true : undefined,
     'aria-describedby': shown(k) ? `q-${k}-error` : undefined,
   })
@@ -1825,7 +1830,7 @@ function StepDetails({
                 value={form.time}
                 onChange={set('time')}
                 className={cls('time')}
-                {...a11y('time')}
+                {...a11y('time', { optional: true })}
               />
               <FieldError id="time" msg={shown('time')} />
             </div>
@@ -1857,7 +1862,7 @@ function StepDetails({
               placeholder="Theme, colours, allergies, timing…"
               maxLength={LIMITS.notes}
               className={`${cls('notes')} resize-none`}
-              {...a11y('notes')}
+              {...a11y('notes', { optional: true })}
             />
             <div className="mt-1 flex items-start justify-between gap-4">
               <FieldError id="notes" msg={shown('notes')} />

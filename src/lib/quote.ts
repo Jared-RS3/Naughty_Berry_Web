@@ -267,23 +267,22 @@ export function validateDetails(f: {
   if (name.length < 2) errors.name = 'Please enter your name — at least 2 characters.'
   else if (name.length > LIMITS.name) errors.name = `Keep it under ${LIMITS.name} characters.`
 
-  // One contact route is required, not both. Each is still validated on its own
-  // so a visitor who fills only the phone still gets told when it is malformed.
-  if (!email && !phone) {
-    errors.email = 'Enter an email address or a phone number so we can reply.'
-    errors.phone = 'Enter an email address or a phone number so we can reply.'
+  // Both contact routes are required. This used to accept either one, and the
+  // "missing" message is deliberately separate from the "malformed" one so
+  // someone who left a field blank is not told their empty box is invalid.
+  if (!email) errors.email = 'Please enter your email address.'
+  else if (email.length > LIMITS.email) errors.email = 'That email address is too long.'
+  else if (!EMAIL_RE.test(email)) {
+    errors.email = 'Enter a valid email address, like you@example.com.'
   }
-  if (email) {
-    if (email.length > LIMITS.email) errors.email = 'That email address is too long.'
-    else if (!EMAIL_RE.test(email)) {
-      errors.email = 'Enter a valid email address, like you@example.com.'
-    }
-  }
-  if (phone && !PHONE_RE.test(normalisePhone(phone))) {
+
+  if (!phone) errors.phone = 'Please enter a contact number.'
+  else if (!PHONE_RE.test(normalisePhone(phone))) {
     errors.phone = 'Enter a valid 10-digit number, like 082 123 4567.'
   }
 
-  if (f.date) {
+  if (!f.date) errors.date = 'Please pick the date of your event.'
+  else {
     const d = new Date(`${f.date}T00:00:00`)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -294,12 +293,15 @@ export function validateDetails(f: {
     else if (d > maxAhead) errors.date = 'We can only book up to three years ahead.'
   }
 
-  // Time is optional and independent of the date: someone who knows it starts at
-  // 18:00 but hasn't fixed the day yet should not be blocked, so this only ever
-  // complains about a malformed value, never a missing one.
+  // Time is the one field here that stays optional alongside the notes: someone
+  // who knows the date but has not settled the running order yet should not be
+  // blocked, so this only ever complains about a malformed value.
   if (f.time && !TIME_RE.test(f.time)) errors.time = 'Enter a time like 18:30.'
 
-  if (f.venue.length > LIMITS.venue) errors.venue = `Keep it under ${LIMITS.venue} characters.`
+  const venue = f.venue.trim()
+  if (!venue) errors.venue = 'Please tell us where the event is.'
+  else if (venue.length > LIMITS.venue) errors.venue = `Keep it under ${LIMITS.venue} characters.`
+
   if (f.notes.length > LIMITS.notes) errors.notes = `Keep it under ${LIMITS.notes} characters.`
 
   // Consent is not a nicety we can infer from someone pressing Send — POPIA
