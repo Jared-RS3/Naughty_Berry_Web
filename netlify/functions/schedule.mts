@@ -47,14 +47,17 @@ const VIEW_ID = process.env.AIRTABLE_EVENTS_VIEW ?? 'viwaL94vAoYlnNbc8'
  * stale one while it refreshes in the background.
  *
  * This is the line between "we got featured by a big account" and "Airtable
- * rate-limited us and the site says our schedule is unavailable". Ten thousand
- * visitors in an hour become a handful of Airtable reads instead of ten
- * thousand, because the edge answers the rest. `stale-while-revalidate` means
- * nobody ever waits for the refresh, and `stale-if-error` means an Airtable
- * outage shows yesterday's schedule rather than an error — for a pop-up
- * schedule that changes weekly, slightly stale beats absent.
+ * rate-limited us and the site says our schedule is unavailable" — but this
+ * table gets hand-edited from the road right before or during a pop-up, so
+ * the window has to stay short enough that a refresh actually shows the edit.
+ * `max-age=0` means the browser always asks again; `s-maxage`+
+ * `stale-while-revalidate` still collapse a burst of visitors into one
+ * Airtable read every ~20s per edge node, worst case ~65s stale, instead of
+ * the old ~20 minutes. `stale-if-error` is unrelated to freshness — it only
+ * covers an actual Airtable outage — so it stays long: yesterday's schedule
+ * beats no schedule.
  */
-const CACHE = 'public, max-age=60, s-maxage=300, stale-while-revalidate=900, stale-if-error=86400'
+const CACHE = 'public, max-age=0, s-maxage=20, stale-while-revalidate=45, stale-if-error=86400'
 
 /** Airtable is not allowed to hang this function. */
 const UPSTREAM_TIMEOUT_MS = 8_000
