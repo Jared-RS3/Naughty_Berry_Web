@@ -60,6 +60,12 @@ function toSlot(row: Record<string, unknown>): ScheduleSlot {
 function loadSchedule(): Promise<ScheduleSlot[]> {
   return fetch(ENDPOINT, {
     headers: { Accept: 'application/json' },
+    // The schedule is hand-edited minutes before a pop-up and the whole point
+    // of the pill is to be current, so a page load must always ask rather than
+    // re-use whatever this browser happened to store earlier. The endpoint is
+    // still CDN-cached for a few seconds, which is what protects Airtable — so
+    // this costs a conditional request, not an Airtable read.
+    cache: 'no-store',
     signal: AbortSignal.timeout(TIMEOUT_MS),
   })
     .then(async (r) => {

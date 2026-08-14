@@ -49,15 +49,21 @@ const VIEW_ID = process.env.AIRTABLE_EVENTS_VIEW ?? 'viwaL94vAoYlnNbc8'
  * This is the line between "we got featured by a big account" and "Airtable
  * rate-limited us and the site says our schedule is unavailable" — but this
  * table gets hand-edited from the road right before or during a pop-up, so
- * the window has to stay short enough that a refresh actually shows the edit.
- * `max-age=0` means the browser always asks again; `s-maxage`+
- * `stale-while-revalidate` still collapse a burst of visitors into one
- * Airtable read every ~20s per edge node, worst case ~65s stale, instead of
- * the old ~20 minutes. `stale-if-error` is unrelated to freshness — it only
- * covers an actual Airtable outage — so it stays long: yesterday's schedule
- * beats no schedule.
+ * editing a row and refreshing the page has to actually show the edit.
+ *
+ * Deliberately no `stale-while-revalidate`: it lets the edge keep answering
+ * with the OLD value while it refreshes behind the scenes, so the person who
+ * just made the edit refreshes and still sees the previous one. That is the
+ * single thing that makes the pill feel frozen, and it is not worth the
+ * saved millisecond here. Without it the worst case is `s-maxage` — 10s —
+ * after which the edge revalidates before answering.
+ *
+ * 10s still collapses a traffic spike into at most ~6 Airtable reads per
+ * minute per edge node, which is nowhere near Airtable's 5-requests-per-second
+ * limit. `stale-if-error` is about outages, not freshness, so it stays long:
+ * during an actual Airtable failure, yesterday's schedule beats no schedule.
  */
-const CACHE = 'public, max-age=0, s-maxage=20, stale-while-revalidate=45, stale-if-error=86400'
+const CACHE = 'public, max-age=0, s-maxage=10, stale-if-error=86400'
 
 /** Airtable is not allowed to hang this function. */
 const UPSTREAM_TIMEOUT_MS = 8_000

@@ -10,6 +10,15 @@
 # netlify dev's own proxy to :5173, the port the Codespaces forwarded URL is
 # hard-wired to, and pushes the underlying Vite server to :5174 instead of
 # letting netlify dev auto-pick a port, which would silently break that URL.
+#
+# Scope: use this to exercise /api/* (the schedule and enquiry functions) with
+# real Airtable credentials from .env. It is NOT a replacement for `npm run
+# dev` for UI work — netlify dev applies public/_redirects, whose deliberate
+# `/* -> /index.html 404` catch-all also swallows Vite's dev-only module
+# requests (/@vite/client, /src/main.tsx), so the shell loads but React never
+# boots. Fixing that would mean punching passthrough holes in a redirect file
+# that exists for SEO reasons, which is not worth it — use `npm run dev` for
+# the UI and this for the API.
 [dev]
   command = "npm run dev -- --port 5174"
   targetPort = 5174
