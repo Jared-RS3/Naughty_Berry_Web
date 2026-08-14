@@ -4,14 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Icons. Every file here is generated from assets-src/berry-mark.svg by
-         `npm run icons` — the strawberry off the logo, redrawn as vector so it
-         survives being 16px wide. The SVG is what current browsers use;
-         favicon.ico is for the ones that still fetch /favicon.ico blind, and the
-         two PNGs are the iOS home screen and Android install icons. -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <!-- Icons. All generated from /naughty-berry-logo.png by `npm run icons` —
+         the logo itself, trimmed and letterboxed into a square, never redrawn or
+         re-proportioned. The larger sizes are listed so that tab strips, the
+         bookmark bar and Android's "add to home screen" each pick the sharpest
+         file rather than upscaling the 16px one. -->
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#E8176D" />

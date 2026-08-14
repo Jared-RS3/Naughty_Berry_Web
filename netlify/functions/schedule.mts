@@ -34,8 +34,8 @@ import type { Config } from '@netlify/functions'
  * changes nothing here until someone deliberately adds it.
  *
  * Required Netlify environment variables:
- *   NAUGHTY_READ  — PAT with data.records:read (AIRTABLE_READ_TOKEN, or the
- *                   write token, accepted as fallbacks)
+ *   NAUGHTY_READ  — PAT with data.records:read (AIRTABLE_READ_TOKEN accepted
+ *                   as a fallback name for the same kind of token)
  */
 
 const BASE_ID = process.env.AIRTABLE_BASE_ID ?? 'appIfLyWzGV0npV6U'
@@ -115,15 +115,12 @@ export default async (req: Request): Promise<Response> => {
     return json(405, { error: 'Method not allowed.' }, 'no-store')
   }
 
-  // NAUGHTY_READ is the intended name. The write token is accepted last so a
-  // deploy that only ever configured one token still serves a schedule —
-  // reading with a write-capable token is not ideal, but a silently blank
-  // schedule on the home page is worse, and the token never leaves this side.
-  const token =
-    process.env.NAUGHTY_READ ??
-    process.env.AIRTABLE_READ_TOKEN ??
-    process.env.NAUGHTY_WRITE ??
-    process.env.AIRTABLE_WRITE_TOKEN
+  // NAUGHTY_READ is the intended name; AIRTABLE_READ_TOKEN is accepted as an
+  // alternate name for the same kind of token. Deliberately no fallback to a
+  // write-scoped token: Airtable rejects a write token on a read call with the
+  // same 403 it gives a wrong token, which turned a one-line "not configured"
+  // fix into an opaque 502 the one time this actually happened.
+  const token = process.env.NAUGHTY_READ ?? process.env.AIRTABLE_READ_TOKEN
 
   if (!token) {
     console.error('No Airtable read token — set NAUGHTY_READ')

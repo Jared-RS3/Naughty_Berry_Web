@@ -3,15 +3,21 @@
  *
  *   npm run icons
  *
- * Two sources, both committed:
- *   assets-src/berry-mark.svg   – the strawberry from the logo, redrawn clean
- *   public/naughty-berry-logo.png – the full wordmark, used on the share card
+ * One source, committed:
+ *   public/naughty-berry-logo.png – the full logo, wordmark and all
  *
- * Everything written below is a build product. Edit the sources and re-run;
+ * Every icon is that logo, scaled. It is a wide lockup (900×548) going into
+ * square frames, so it is trimmed of its transparent margin and letterboxed —
+ * the proportions are never altered, the logo is simply centred with space
+ * above and below. At 16px this is a pink smudge rather than a legible mark;
+ * that is the accepted cost of using the lockup itself rather than a symbol
+ * lifted out of it.
+ *
+ * Everything written below is a build product. Edit the source and re-run;
  * never hand-edit the generated files, they will be overwritten.
  */
 import { Buffer } from 'node:buffer'
-import { mkdir, writeFile, copyFile } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
@@ -20,18 +26,26 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const src = (p) => resolve(root, p)
 const out = (p) => resolve(root, 'public', p)
 
-const MARK = src('assets-src/berry-mark.svg')
 const WORDMARK = src('public/naughty-berry-logo.png')
 
 /** Page background. iOS and Android composite icons onto their own surfaces and
  *  discard transparency, so the tile colour has to be a deliberate choice. */
 const PINK = '#FFDCEA'
 
-/** Renders the mark at `size`, optionally on an opaque tile with `pad` of the
- *  canvas left as breathing room on every side. */
+/** The logo with its transparent margin cropped away, so the frame is spent on
+ *  the artwork rather than on the empty border baked into the PNG. */
+let trimmed
+async function logo() {
+  trimmed ??= await sharp(WORDMARK).trim({ threshold: 1 }).png().toBuffer()
+  return trimmed
+}
+
+/** Renders the logo at `size`, optionally on an opaque tile with `pad` of the
+ *  canvas left as breathing room on every side. `fit: 'contain'` is what keeps
+ *  the lockup's 900×548 proportions intact inside a square frame. */
 async function mark(size, { background = null, pad = 0 } = {}) {
   const inner = Math.round(size * (1 - pad * 2))
-  const glyph = await sharp(MARK, { density: 600 })
+  const glyph = await sharp(await logo())
     .resize(inner, inner, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png()
     .toBuffer()
@@ -141,13 +155,16 @@ async function shareCard() {
 async function main() {
   await mkdir(out('.'), { recursive: true })
 
-  // Browser tabs. The SVG is what modern browsers actually use; the PNGs and the
-  // ICO cover everything that does not read SVG icons.
-  await copyFile(MARK, out('favicon.svg'))
+  // Browser tabs. There is no favicon.svg any more: the logo is a raster PNG,
+  // and the only way to serve it as an SVG icon would be a 40 KB base64 payload
+  // fetched on every page load to draw a 16px square. PNG + ICO covers every
+  // browser without that.
   const png16 = await mark(16)
   const png32 = await mark(32)
   const png48 = await mark(48)
+  await writeFile(out('favicon-32x32.png'), png32)
   await writeFile(out('favicon-96x96.png'), await mark(96))
+  await writeFile(out('favicon-192x192.png'), await mark(192))
   await writeFile(
     out('favicon.ico'),
     ico([
@@ -161,16 +178,17 @@ async function main() {
   // the art is inset rather than bled to the edge.
   await writeFile(out('apple-touch-icon.png'), await mark(180, { background: PINK, pad: 0.1 }))
 
-  // Android / PWA install. The maskable copy keeps the mark inside the safe
-  // circle so a round launcher mask never clips the leaf.
+  // Android / PWA install. The maskable copy is inset hard, because a round
+  // launcher mask on a wide lockup would otherwise clip the first and last
+  // letters clean off.
   await writeFile(out('web-app-manifest-192x192.png'), await mark(192, { background: PINK, pad: 0.08 }))
   await writeFile(out('web-app-manifest-512x512.png'), await mark(512, { background: PINK, pad: 0.08 }))
-  await writeFile(out('web-app-manifest-maskable-512x512.png'), await mark(512, { background: PINK, pad: 0.22 }))
+  await writeFile(out('web-app-manifest-maskable-512x512.png'), await mark(512, { background: PINK, pad: 0.28 }))
 
   const card = await shareCard()
 
   console.log('icons written to public/')
-  console.log(`  favicon.svg, favicon.ico (16/32/48), favicon-96x96.png`)
+  console.log(`  favicon.ico (16/32/48), favicon-{32,96,192}.png`)
   console.log(`  apple-touch-icon.png, web-app-manifest-{192,512,maskable}`)
   console.log(`  og-image.jpg (${card.width}x${card.height}, ${Math.round(card.bytes / 1024)} KB)`)
 }

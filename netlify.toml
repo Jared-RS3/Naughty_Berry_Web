@@ -6,6 +6,16 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
+# `npm run dev:netlify` only — plain `npm run dev` never reads this. Pins
+# netlify dev's own proxy to :5173, the port the Codespaces forwarded URL is
+# hard-wired to, and pushes the underlying Vite server to :5174 instead of
+# letting netlify dev auto-pick a port, which would silently break that URL.
+[dev]
+  command = "npm run dev -- --port 5174"
+  targetPort = 5174
+  port = 5173
+  autoLaunch = false
+
 # ── Security headers ────────────────────────────────────────────────────────
 # Applied to every response. The CSP is written against exactly what the site
 # loads today: Google Fonts, the Airtable form embed, and Google Analytics 4.
