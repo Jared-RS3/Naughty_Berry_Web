@@ -27,6 +27,11 @@ export interface Quote {
   email: string
   phone: string
   date: string
+  /** Event start time as 24-hour `HH:MM`, or '' when not given. Kept separate
+   *  from `date` rather than combined into one timestamp: the pair goes into two
+   *  separate Airtable columns, and pairing them here would mean inventing a
+   *  timezone for a value the customer typed as a wall-clock time. */
+  time: string
   venue: string
   notes: string
   /** The single agreement tick: POPIA consent, the Terms of Use, and the
@@ -234,8 +239,13 @@ export const PHONE_RE = /^(?:\+?27|0)\d{9}$/
 /** Drops spaces, dashes, dots and brackets so the pattern above sees digits. */
 export const normalisePhone = (s: string) => s.replace(/[\s()\-.]/g, '')
 
+/** `<input type="time">` hands back 24-hour `HH:MM` (and `HH:MM:SS` in a few
+ *  browsers when seconds are enabled, which we never ask for). Anything else
+ *  was typed by something other than the picker. */
+export const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/
+
 export type FieldErrors = Partial<
-  Record<'name' | 'email' | 'phone' | 'date' | 'venue' | 'notes' | 'consent', string>
+  Record<'name' | 'email' | 'phone' | 'date' | 'time' | 'venue' | 'notes' | 'consent', string>
 >
 
 /** Validates the contact step. Same rules as the server, phrased for a human. */
@@ -244,6 +254,7 @@ export function validateDetails(f: {
   email: string
   phone: string
   date: string
+  time: string
   venue: string
   notes: string
   consent: boolean
@@ -283,6 +294,11 @@ export function validateDetails(f: {
     else if (d > maxAhead) errors.date = 'We can only book up to three years ahead.'
   }
 
+  // Time is optional and independent of the date: someone who knows it starts at
+  // 18:00 but hasn't fixed the day yet should not be blocked, so this only ever
+  // complains about a malformed value, never a missing one.
+  if (f.time && !TIME_RE.test(f.time)) errors.time = 'Enter a time like 18:30.'
+
   if (f.venue.length > LIMITS.venue) errors.venue = `Keep it under ${LIMITS.venue} characters.`
   if (f.notes.length > LIMITS.notes) errors.notes = `Keep it under ${LIMITS.notes} characters.`
 
@@ -313,6 +329,7 @@ export function toEnquiryPayload(q: Quote, startedAt: number, honeypot: string) 
     email: q.email,
     phone: q.phone,
     date: q.date,
+    time: q.time,
     venue: q.venue,
     notes: q.notes,
     // The tick, and which wording it was given against. The server refuses the

@@ -208,6 +208,7 @@ export default function QuotePage() {
     email: '',
     phone: '',
     date: '',
+    time: '',
     venue: '',
     notes: '',
     // Starts false and is never pre-ticked: POPIA consent has to be an act the
@@ -401,6 +402,7 @@ export default function QuotePage() {
     email: form.email.trim(),
     phone: form.phone.trim(),
     date: form.date,
+    time: form.time,
     venue: form.venue.trim(),
     notes: form.notes.trim(),
     consent: form.consent,
@@ -1664,6 +1666,7 @@ type FormState = {
   email: string
   phone: string
   date: string
+  time: string
   venue: string
   notes: string
   consent: boolean
@@ -1747,8 +1750,15 @@ function StepDetails({
             <FieldError id="name" msg={shown('name')} />
           </div>
 
+          {/* `min-w-0` on every grid child, here and below: a grid item defaults
+              to `min-width:auto`, so a child whose intrinsic width exceeds its
+              track — a long placeholder, or a native date/time picker, which
+              iOS Safari sizes to its own control — widens the column instead of
+              shrinking, pushing the neighbouring field out of its cell. The
+              inputs are already `w-full`; this is what makes `w-full` mean the
+              column rather than the content. */}
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
+            <div className="min-w-0">
               <label htmlFor="q-email" className={labelCls}>Email</label>
               <input
                 id="q-email"
@@ -1764,7 +1774,7 @@ function StepDetails({
               />
               <FieldError id="email" msg={shown('email')} />
             </div>
-            <div>
+            <div className="min-w-0">
               <label htmlFor="q-phone" className={labelCls}>WhatsApp / phone</label>
               <input
                 id="q-phone"
@@ -1782,8 +1792,14 @@ function StepDetails({
             </div>
           </div>
 
+          {/* Date and time are one thought, so they share a row from `sm` up and
+              stack on phones. Venue then gets a full-width row of its own rather
+              than being squeezed into a third column: this card is `max-w-xl`,
+              so three tracks would leave each about 160px — narrower than the
+              native date picker renders on iOS, which is precisely how fields
+              end up overlapping. */}
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
+            <div className="min-w-0">
               <label htmlFor="q-date" className={labelCls}>Event date</label>
               <input
                 id="q-date"
@@ -1799,19 +1815,34 @@ function StepDetails({
               />
               <FieldError id="date" msg={shown('date')} />
             </div>
-            <div>
-              <label htmlFor="q-venue" className={labelCls}>Venue / area</label>
+            <div className="min-w-0">
+              <label htmlFor="q-time" className={labelCls}>
+                Start time <span className="normal-case opacity-60">(optional)</span>
+              </label>
               <input
-                id="q-venue"
-                value={form.venue}
-                onChange={set('venue')}
-                placeholder="Constantia, Cape Town"
-                maxLength={LIMITS.venue}
-                className={cls('venue')}
-                {...a11y('venue')}
+                id="q-time"
+                type="time"
+                value={form.time}
+                onChange={set('time')}
+                className={cls('time')}
+                {...a11y('time')}
               />
-              <FieldError id="venue" msg={shown('venue')} />
+              <FieldError id="time" msg={shown('time')} />
             </div>
+          </div>
+
+          <div>
+            <label htmlFor="q-venue" className={labelCls}>Venue / area</label>
+            <input
+              id="q-venue"
+              value={form.venue}
+              onChange={set('venue')}
+              placeholder="Constantia, Cape Town"
+              maxLength={LIMITS.venue}
+              className={cls('venue')}
+              {...a11y('venue')}
+            />
+            <FieldError id="venue" msg={shown('venue')} />
           </div>
 
           <div>
@@ -2064,10 +2095,19 @@ function StepReview({
                 <span className="font-bold">{quote.guests}{quote.guests >= 400 ? '+' : ''}</span>
               </div>
             )}
+            {quote.time && (
+              <div className={row}>
+                <span className="text-[#7A3B5E]">Start time</span>
+                <span className="font-bold">{quote.time}</span>
+              </div>
+            )}
             {quote.venue && (
               <div className={row}>
                 <span className="text-[#7A3B5E]">Venue</span>
-                <span className="font-bold">{quote.venue}</span>
+                {/* The venue is free text, so it is the one row here that can be
+                    long enough to collide with its label — let it wrap and keep
+                    it right-aligned rather than letting it push the label off. */}
+                <span className="min-w-0 break-words text-right font-bold">{quote.venue}</span>
               </div>
             )}
           </div>

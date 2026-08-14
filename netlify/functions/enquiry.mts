@@ -111,6 +111,10 @@ const EMAIL_RE = /^[^\s@,;:<>()[\]\\]{1,64}@[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9]
 const PHONE_RE = /^(?:\+?27|0)\d{9}$/
 const normalisePhone = (s: string) => s.replace(/[\s()\-.]/g, '')
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+/** Mirrors TIME_RE in src/lib/quote.ts. Anchored and range-checked rather than
+ *  `\d{2}:\d{2}`, so "99:99" cannot reach the base as a plausible-looking time.
+ *  Kept independent of the client copy for the same reason as PHONE_RE. */
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/
 
 const PACKAGES = new Set(['little', 'signature', 'indulgent'])
 const OCCASIONS = new Set([
@@ -300,6 +304,18 @@ function validate(input: Json): Validated | { error: string } {
     }
   }
 
+  // Start time, independent of the date — an enquiry may name a time before the
+  // day is settled. A malformed value is dropped with a note rather than
+  // rejecting the whole enquiry: the time is the least important thing here and
+  // losing a real lead over it would be the worse trade. `HH:MM:SS` is trimmed
+  // to `HH:MM` first, because a couple of browsers volunteer seconds.
+  let time = ''
+  const rawTime = clean(input.time, 8).slice(0, 5)
+  if (rawTime) {
+    if (TIME_RE.test(rawTime)) time = rawTime
+    else problems.push('unparseable time discarded')
+  }
+
   // Money is computed here, never accepted from the client — a posted total is
   // just a number an attacker chose.
   //
@@ -398,6 +414,7 @@ function validate(input: Json): Validated | { error: string } {
   if (capped) fields['Estimated total'] = estimate
   if (phone) fields['Phone'] = phone
   if (date) fields['Event Date'] = date
+  if (time) fields['Time'] = time
   if (venue) fields['Venue / Location'] = venue
 
   return { fields, problems }

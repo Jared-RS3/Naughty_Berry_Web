@@ -374,3 +374,28 @@ html.lenis body { height: auto; }
   }
   html { scroll-behavior: auto; }
 }
+
+/* ─── Native date & time inputs ─────────────────
+   iOS Safari sizes `input[type=date]` and `input[type=time]` to its own native
+   control rather than to the CSS box, so a `w-full` input can still overflow a
+   narrow grid column and collide with the field beside it. `-webkit-appearance:
+   none` hands sizing back to the stylesheet; the explicit `min-width:0` stops
+   the intrinsic control width from re-widening the column. The date and time
+   pickers also centre their text vertically by default while every other input
+   here sits on the text baseline, which is what made the row look misaligned —
+   `min-height` matched to the shared input padding lines them up. */
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  min-height: 3.25rem;
+}
+/* The calendar/clock glyph is a shadow-DOM button; without this it keeps the
+   UA's default margin and drifts against the input's right padding. */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  margin: 0;
+  cursor: pointer;
+  opacity: 0.55;
+}
