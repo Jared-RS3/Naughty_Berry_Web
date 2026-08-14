@@ -407,6 +407,15 @@ export default function QuotePage() {
   }
 
   const submit = async () => {
+    // Re-entrancy guard. The confirm button is disabled while sending, which
+    // covers the ordinary double-click, but a disabled attribute is a UI state
+    // and not a lock: a keyboard repeat, an assistive tool, or a re-render
+    // between the click and the state flip can all call this twice, and each
+    // call is a separate lead in Airtable that staff then has to de-duplicate.
+    // `submitState` is checked rather than a ref because React batches the
+    // update before the await, so the second call always sees 'sending'.
+    if (submitState === 'sending' || submitState === 'done') return
+
     // Never trust the button alone — re-check before firing, in case state was
     // reached by a route the UI didn't anticipate.
     if (Object.keys(fieldErrors).length > 0) {
@@ -1558,7 +1567,7 @@ function StepStation({
       <div className="mx-auto max-w-2xl rounded-3xl bg-[#FFF9ED] p-6 shadow-[0_16px_36px_rgba(180,40,95,0.12)]">
         {chosen === 0 ? (
           <p className="text-center text-[13px] text-[#7A3B5E]/75">
-            Nothing picked yet — leave it blank and we’ll suggest a mix for {guests} guests.
+            Nothing picked yet
           </p>
         ) : (
           <>

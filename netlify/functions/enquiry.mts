@@ -302,7 +302,15 @@ function validate(input: Json): Validated | { error: string } {
 
   // Money is computed here, never accepted from the client — a posted total is
   // just a number an attacker chose.
-  const TOPPING_PRICE = 20
+  //
+  // These MUST match TOPPING_PRICE / ICED_TEA_PRICE in src/lib/quote.ts. They
+  // are duplicated rather than imported because this file is the authority and
+  // must not depend on client code — but that independence is exactly what lets
+  // them drift silently, and they did: the builder was moved to R15 a topping
+  // while this stayed at R20, so for a while the customer was shown one figure
+  // on screen and staff saw a different "Estimated total" in Airtable, with
+  // nothing anywhere to say which was right. Change one, change the other.
+  const TOPPING_PRICE = 15
   const ICED_TEA_PRICE = 45
   const estimate =
     basePriceFor(pkg) + totalToppings * TOPPING_PRICE + icedTeas * ICED_TEA_PRICE

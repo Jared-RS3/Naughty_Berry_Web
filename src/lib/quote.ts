@@ -85,8 +85,8 @@ export const BASE_PRICE = 1675
 export const SIGNATURE_CUP_TARGET = 50
 export const SIGNATURE_BASE_PRICE = 7750
 /** Dubai and Cream are not menu cups — they are toppings, charged per cup you
- *  put one on. Same R20 gap the old R95 cups carried, just billed as an add-on. */
-export const TOPPING_PRICE = 20
+ *  put one on, billed as an add-on rather than baked into the cup price. */
+export const TOPPING_PRICE = 15
 export const ICED_TEA_PRICE = 45
 export const ICED_TEA_CAP = 40
 

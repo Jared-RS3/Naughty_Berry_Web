@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Every real route the app serves. Kept by hand because there are six of them
+  and they change about as often as the business does; a generator would be more
+  machinery than the problem deserves.
+
+  If you add a route to ROUTES in src/App.tsx, add it here and to
+  public/_redirects in the same commit — a route missing from _redirects now
+  returns a 404 status rather than silently rendering, which is the point of
+  that file, and one missing from here simply never gets crawled.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://naughtyberry.co.za/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://naughtyberry.co.za/quote</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://naughtyberry.co.za/story</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://naughtyberry.co.za/terms</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://naughtyberry.co.za/privacy-policy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://naughtyberry.co.za/cookie-policy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>

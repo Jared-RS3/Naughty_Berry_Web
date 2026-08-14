@@ -1,0 +1,53 @@
+{
+  "name": "Naughty Berry — Strawberries & Chocolate On Tap",
+  "short_name": "Naughty Berry",
+  "description": "Cape Town's first strawberries & chocolate on tap. Chocolate-covered strawberry cups at pop-ups and private events.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFDCEA",
+  "theme_color": "#E8176D",
+  "lang": "en-ZA",
+  "dir": "ltr",
+  "categories": ["food", "shopping", "lifestyle"],
+  "icons": [
+    {
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/web-app-manifest-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Get a quote",
+      "short_name": "Quote",
+      "url": "/quote",
+      "description": "Build a quote for your event"
+    },
+    {
+      "name": "Our story",
+      "short_name": "Story",
+      "url": "/story"
+    }
+  ]
+}

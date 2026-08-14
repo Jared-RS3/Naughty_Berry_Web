@@ -1,0 +1,12 @@
+# Naughty Berry — https://naughtyberry.co.za
+#
+# Everything public is crawlable. The only disallowed path is the API, which
+# holds no pages: /api/enquiry accepts POST only, and /api/schedule is JSON that
+# would otherwise show up as a thin, duplicate result. netlify.toml already
+# sends X-Robots-Tag: noindex on /api/*; this is the belt to that pair of braces.
+
+User-agent: *
+Disallow: /api/
+Allow: /
+
+Sitemap: https://naughtyberry.co.za/sitemap.xml

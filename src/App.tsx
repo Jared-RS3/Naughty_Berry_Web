@@ -7,6 +7,7 @@ import Hero from './components/Hero'
 import ScrollCup from './components/ScrollCup'
 import { useLenis } from './hooks/useLenis'
 import { useMenuSnap } from './hooks/useMenuSnap'
+import { setCanonical } from './lib/canonical'
 
 // All below-fold sections split into separate chunks — only downloaded when needed
 // const NextStop    = lazy(() => import('./components/NextStop'))
@@ -22,6 +23,7 @@ const QuotePage   = lazy(() => import('./components/QuotePage'))
 const PrivacyPolicyPage = lazy(() => import('./components/PrivacyPolicyPage'))
 const CookiePolicyPage  = lazy(() => import('./components/CookiePolicyPage'))
 const TermsPage         = lazy(() => import('./components/TermsPage'))
+const NotFoundPage      = lazy(() => import('./components/NotFoundPage'))
 
 /** Standalone routes. Plain <a> navigation, resolved by the SPA fallback in
  *  public/_redirects — no router dependency for the handful of pages here. */
@@ -40,11 +42,22 @@ function App() {
   const path = window.location.pathname.replace(/\/+$/, '') || '/'
   const Route = ROUTES[path]
 
-  if (Route) {
+  // Point <link rel="canonical"> at this route rather than at index.html's one
+  // hard-coded URL, which would tell crawlers every page is the home page.
+  useEffect(() => setCanonical(path), [path])
+
+  // Anything that is neither the home page nor a known route is a 404, and is
+  // rendered as one. public/_redirects serves this same shell with a real 404
+  // status, so the page a person sees and the code a crawler reads agree.
+  // Previously every unknown URL quietly rendered the home page with a 200.
+  const Fallback = path === '/' ? null : NotFoundPage
+  const Page = Route ?? Fallback
+
+  if (Page) {
     return (
       <>
         <Suspense fallback={null}>
-          <Route />
+          <Page />
         </Suspense>
         {/* Every route needs the consent gate, not just the home page — a
             visitor landing on /quote from a search result is being asked for

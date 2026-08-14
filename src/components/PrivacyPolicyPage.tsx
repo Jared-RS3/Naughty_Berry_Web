@@ -25,9 +25,11 @@ import LegalLayout, {
  *   • The Events section embeds an Airtable-hosted form in an iframe. That one
  *     submits straight to Airtable and never touches our function, so Airtable
  *     is the first party for anything typed into it.
- *   • usePopupSchedule fetches the pop-up schedule from api.airtable.com in the
- *     visitor's own browser. That is a disclosure of the visitor's IP address
- *     to Airtable on every page load, and it has to be declared.
+ *   • usePopupSchedule now reads the pop-up schedule from our own /api/schedule
+ *     function, NOT from api.airtable.com in the visitor's browser. That used to
+ *     disclose the visitor's IP to Airtable on every page load; it no longer
+ *     does. If anyone ever points that hook back at Airtable directly, this
+ *     page and the Cookie Policy both become wrong in the same commit.
  *   • Google Fonts is loaded from index.html — another IP disclosure, to Google.
  *   • The footer newsletter form is not wired to anything. Saying so is the only
  *     honest option; see the note in Footer.tsx.
@@ -392,7 +394,7 @@ export default function PrivacyPolicyPage() {
           rows={[
             [
               'Airtable (Airtable Inc.)',
-              'Every enquiry is stored in our Airtable base. The enquiry form embedded in our Events section also submits directly to Airtable. Separately, your browser fetches our pop-up schedule from Airtable on page load, which means Airtable sees your IP address and browser even if you never fill in a form.',
+              'Every enquiry is stored in our Airtable base. The enquiry form embedded in our Events section is hosted by Airtable and submits directly to them. Our pop-up schedule also lives in Airtable, but your browser no longer fetches it directly — our own server does, so Airtable does not see your IP address unless you use that embedded form.',
               'United States',
             ],
             [

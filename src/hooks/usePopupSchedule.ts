@@ -14,47 +14,69 @@ export interface ScheduleSlot {
   isThisWeek: boolean
 }
 
-const BASE_ID = 'appIfLyWzGV0npV6U'
-const TABLE_ID = 'tbl8iQOpkuoaTa9Aj'
-const VIEW_ID  = 'viwaL94vAoYlnNbc8'
+/**
+ * The schedule comes from our own endpoint, never from Airtable directly.
+ *
+ * This used to call api.airtable.com with VITE_AIRTABLE_TOKEN. Vite inlines
+ * anything prefixed VITE_ into the shipped bundle as clear text, and an
+ * Airtable token is scoped to a BASE rather than a table — so that token could
+ * read the Enquiries table too, meaning every customer name, email and phone
+ * number was one devtools tab away. netlify/functions/schedule.mts now holds
+ * the token and returns a fixed, allowlisted shape.
+ *
+ * The endpoint is CDN-cached, so this is also what stops a traffic spike from
+ * becoming an Airtable rate-limit outage.
+ */
+const ENDPOINT = '/api/schedule'
+
+/** Airtable is not this component's problem, but a hung request is: without a
+ *  ceiling the sections that show the schedule spin forever. */
+const TIMEOUT_MS = 10_000
 
 /** One in-flight request per page load, shared by every consumer. NextStop (top
  *  of the page) and FindUs (bottom) both want the same rows, and they must show
  *  the same thing — two fetches would also mean two chances to disagree. */
 let pending: Promise<ScheduleSlot[]> | null = null
 
-function loadSchedule(): Promise<ScheduleSlot[]> {
-  const token = import.meta.env.VITE_AIRTABLE_TOKEN
-  if (!token) return Promise.reject(new Error('VITE_AIRTABLE_TOKEN is not set'))
+/** The server already validated and bounded every field; this only re-asserts
+ *  the shape, because a response is still input. */
+function toSlot(row: Record<string, unknown>): ScheduleSlot {
+  const s = (v: unknown) => (typeof v === 'string' ? v : '')
+  return {
+    eventName: s(row.eventName),
+    date: s(row.date),
+    day: s(row.day),
+    location: s(row.location),
+    area: s(row.area),
+    startTime: s(row.startTime),
+    endTime: s(row.endTime),
+    instagramStatus: s(row.instagramStatus),
+    instagramAccount: s(row.instagramAccount),
+    notes: s(row.notes),
+    isThisWeek: row.isThisWeek === true,
+  }
+}
 
-  return fetch(
-    `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}?view=${VIEW_ID}`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  )
+function loadSchedule(): Promise<ScheduleSlot[]> {
+  return fetch(ENDPOINT, {
+    headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+  })
     .then(async (r) => {
       if (!r.ok) {
-        const body = await r.json().catch(() => ({}))
-        const msg = body?.error?.message ?? r.statusText
-        throw new Error(`Airtable API error ${r.status}: ${msg}`)
+        // The endpoint returns a safe, human-readable message; it never
+        // contains upstream detail, so it is fine to surface.
+        const body = (await r.json().catch(() => ({}))) as { error?: string }
+        throw new Error(body.error ?? `Schedule unavailable (${r.status})`)
       }
-      return r.json()
+      return r.json() as Promise<unknown>
     })
     .then((data) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mapped: ScheduleSlot[] = (data.records ?? []).map((r: any) => ({
-        eventName:        r.fields['Event Name']                 ?? '',
-        date:             r.fields['Date']                       ?? '',
-        day:              r.fields['Day of Week']                ?? '',
-        location:         r.fields['Venue / Location']           ?? '',
-        area:             r.fields['Area']                       ?? '',
-        startTime:        r.fields['Start Time']                 ?? '',
-        endTime:          r.fields['End Time']                   ?? '',
-        instagramStatus:  r.fields['Instagram Update Status']    ?? '',
-        instagramAccount: r.fields['Instagram Account to Follow'] ?? '',
-        notes:            r.fields['Notes']                      ?? '',
-        isThisWeek:       r.fields["Is This Week's Event?"]      ?? false,
-      }))
-      if (mapped.length === 0) throw new Error('No records returned from Airtable')
+      if (!Array.isArray(data)) throw new Error('Schedule unavailable')
+      const mapped = data
+        .filter((r): r is Record<string, unknown> => !!r && typeof r === 'object')
+        .map(toSlot)
+      if (mapped.length === 0) throw new Error('No pop-ups scheduled right now')
       return mapped
     })
 }

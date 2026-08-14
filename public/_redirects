@@ -1,4 +1,23 @@
-# SPA fallback — /story and /quote are rendered by the app, not files on disk.
 # The functions path is listed first so it is never swallowed by the catch-all.
 /api/*        /.netlify/functions/:splat   200
-/*            /index.html                  200
+
+# SPA routes. Each real route is listed explicitly and served with a 200,
+# because these pages exist — they are just rendered by the app rather than
+# sitting on disk as files.
+/                 /index.html   200
+/story            /index.html   200
+/quote            /index.html   200
+/privacy-policy   /index.html   200
+/cookie-policy    /index.html   200
+/terms            /index.html   200
+
+# Everything else is genuinely not found, and must say so with a 404 status.
+#
+# This used to be `/*  /index.html  200`, which served the home page for every
+# mistyped or dead URL and called it a success. That is a "soft 404": Google
+# treats it as a duplicate of the home page rather than a missing one, which
+# wastes crawl budget and can suppress the real pages in search results — and a
+# link checker, an uptime monitor or a browser can never tell a typo from a
+# working page. The app still renders (same shell), it just renders the
+# not-found route with an honest status code behind it.
+/*                /index.html   404

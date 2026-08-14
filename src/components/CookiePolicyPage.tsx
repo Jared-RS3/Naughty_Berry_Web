@@ -208,7 +208,7 @@ export default function CookiePolicyPage() {
         <SubHeading>Things that are not cookies, but are worth telling you about</SubHeading>
 
         <p>
-          Two parts of the site make a request to another company’s servers while a page loads, no
+          One part of the site makes a request to another company’s servers while a page loads, no
           matter what you choose here. That discloses your IP address to them — a normal consequence
           of loading anything from the web, and not something a cookie banner would address, but you
           should know about it:
@@ -220,16 +220,17 @@ export default function CookiePolicyPage() {
             font servers. Google receives your IP address and browser details. No cookie is set and
             nothing about your visit to us is sent.
           </Bullet>
-          <Bullet>
-            <strong>Airtable.</strong> Our pop-up schedule is read live from Airtable by your
-            browser, so the dates and locations on the page are never stale. Airtable receives your
-            IP address and browser details as part of that request.
-          </Bullet>
         </Bullets>
 
         <p>
-          Both are covered in more detail in our{' '}
-          <A href="/privacy-policy#sharing">Privacy Policy</A>.
+          Our pop-up schedule lives in Airtable and used to be fetched by your browser, which
+          disclosed your IP address to Airtable on every visit. It is now fetched by our own server
+          instead and passed on to you, so Airtable no longer sees you at all unless you use the
+          embedded form in <A href="#third-party">section 4</A>.
+        </p>
+
+        <p>
+          More detail in our <A href="/privacy-policy#sharing">Privacy Policy</A>.
         </p>
 
         <SubHeading>Google Search Console</SubHeading>

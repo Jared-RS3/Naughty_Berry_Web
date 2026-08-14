@@ -2,26 +2,68 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Naughty Berry – Strawberries & Chocolate On Tap | Cape Town</title>
-    <meta name="description" content="Cape Town's first strawberries & chocolate on tap. Premium dessert cups, chocolate strawberries & Dubai Chocolate Strawberries. Available at pop-ups and private events." />
-    <meta name="keywords" content="Naughty Berry, strawberries chocolate Cape Town, dessert cups, Dubai chocolate strawberries, chocolate fondue, Cape Town events catering" />
+
+    <!-- Icons. Every file here is generated from assets-src/berry-mark.svg by
+         `npm run icons` — the strawberry off the logo, redrawn as vector so it
+         survives being 16px wide. The SVG is what current browsers use;
+         favicon.ico is for the ones that still fetch /favicon.ico blind, and the
+         two PNGs are the iOS home screen and Android install icons. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#E8176D" />
+    <meta name="apple-mobile-web-app-title" content="Naughty Berry" />
+
+    <!-- Brand name first: the query this has to win outright is "naughty berry".
+         The description leads with what a stranger searching "chocolate
+         strawberry cups cape town" is looking for, because that is the phrase
+         Google will bold in the result. -->
+    <title>Naughty Berry | Chocolate Strawberry Cups – Cape Town</title>
+    <meta name="description" content="Cape Town's first strawberries &amp; chocolate on tap. Fresh chocolate-covered strawberry cups, Dubai chocolate cups, brownie cups and strawberry iced tea — at our weekend pop-ups, or booked for weddings, birthdays and private events." />
     <meta name="author" content="Naughty Berry" />
 
-    <!-- OpenGraph -->
-    <meta property="og:title" content="Naughty Berry – Strawberries & Chocolate On Tap" />
-    <meta property="og:description" content="Cape Town's first strawberries & chocolate on tap. Book us for your next event." />
+    <!-- Crawl everything, and let Google build a full-size image preview and an
+         untruncated snippet instead of its conservative defaults. -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+    <!-- Local intent. "chocolate strawberries near me" is a place query long
+         before it is a brand one, so the city cannot only exist in prose. -->
+    <meta name="geo.region" content="ZA-WC" />
+    <meta name="geo.placename" content="Cape Town" />
+    <meta name="geo.position" content="-33.9249;18.4241" />
+    <meta name="ICBM" content="-33.9249, 18.4241" />
+    <!-- Default canonical, correct for the home page. src/lib/canonical.ts
+         rewrites it per route on mount — every route is served from this same
+         file, so leaving it hard-coded would tell crawlers that /quote and the
+         policy pages are all duplicates of the home page. -->
+    <link rel="canonical" href="https://naughtyberry.co.za/" />
+
+    <!-- OpenGraph. The image is absolute on purpose: WhatsApp, LinkedIn and a
+         number of smaller unfurlers do not resolve relative og:image paths, and
+         a share card that fails on WhatsApp fails where most of this site's
+         traffic is actually shared. og:url is kept in step with the canonical
+         by src/lib/canonical.ts. -->
+    <meta property="og:site_name" content="Naughty Berry" />
+    <meta property="og:title" content="Naughty Berry | Chocolate Strawberry Cups – Cape Town" />
+    <meta property="og:description" content="Cape Town's first strawberries &amp; chocolate on tap. Chocolate-covered strawberry cups, Dubai chocolate cups and brownie cups — at pop-ups and private events." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://naughtyberry.co.za" />
-    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:url" content="https://naughtyberry.co.za/" />
+    <meta property="og:image" content="https://naughtyberry.co.za/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:alt" content="A Naughty Berry cup of fresh strawberries drenched in milk chocolate" />
     <meta property="og:locale" content="en_ZA" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Naughty Berry – Strawberries & Chocolate On Tap" />
-    <meta name="twitter:description" content="Cape Town's first strawberries & chocolate on tap." />
-    <meta name="twitter:image" content="/og-image.jpg" />
+    <meta name="twitter:title" content="Naughty Berry | Chocolate Strawberry Cups – Cape Town" />
+    <meta name="twitter:description" content="Cape Town's first strawberries &amp; chocolate on tap. Chocolate-covered strawberry cups at pop-ups and private events." />
+    <meta name="twitter:image" content="https://naughtyberry.co.za/og-image.jpg" />
+    <meta name="twitter:image:alt" content="A Naughty Berry cup of fresh strawberries drenched in milk chocolate" />
 
     <!-- The intro needs these before the JS bundle could ask for them. The
          poster is the first thing on screen, so it goes first. -->
@@ -84,21 +126,163 @@
          requested but never referenced, and 500/900 are never applied. -->
     <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
-    <!-- JSON-LD LocalBusiness -->
+    <!--
+      Structured data.
+
+      One @graph rather than three separate blocks, so the business, the site and
+      the menu are linked by @id instead of being three unrelated claims about
+      the same shop. This is what a search engine reads to decide that "Naughty
+      Berry" is a *thing* — a business in Cape Town with a logo, an Instagram and
+      a menu — rather than two words that happen to appear on a page. It is also
+      what feeds the brand panel and the sitelinks.
+
+      Everything below is asserted from the site itself: the menu mirrors
+      MENU_CATEGORIES in src/components/MenuPreview.tsx and must be kept in step
+      with it. Nothing here is invented — no ratings, no opening hours, no street
+      address — because structured data that contradicts the page is worse than
+      none, and the trading location genuinely changes week to week.
+    -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "FoodEstablishment",
-      "name": "Naughty Berry",
-      "description": "Cape Town's first strawberries & chocolate on tap – premium dessert cups and chocolate strawberries for pop-ups and private events.",
-      "url": "https://naughtyberry.co.za",
-      "email": "naughtyberryinfo@gmail.com",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Cape Town",
-        "addressCountry": "ZA"
-      },
-      "sameAs": ["https://www.instagram.com/naughtyberrycpt"]
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://naughtyberry.co.za/#organization",
+          "name": "Naughty Berry",
+          "alternateName": ["Naughty Berry CPT", "Naughty Berry Cape Town"],
+          "url": "https://naughtyberry.co.za/",
+          "email": "naughtyberryinfo@gmail.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://naughtyberry.co.za/naughty-berry-logo.png",
+            "width": 900,
+            "height": 548
+          },
+          "image": "https://naughtyberry.co.za/og-image.jpg",
+          "description": "Cape Town's first strawberries & chocolate on tap — fresh chocolate-covered strawberry cups served from a mobile trailer at pop-ups, markets and private events.",
+          "areaServed": {
+            "@type": "City",
+            "name": "Cape Town",
+            "containedInPlace": { "@type": "AdministrativeArea", "name": "Western Cape, South Africa" }
+          },
+          "sameAs": ["https://www.instagram.com/naughtyberrycpt"]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://naughtyberry.co.za/#website",
+          "url": "https://naughtyberry.co.za/",
+          "name": "Naughty Berry",
+          "description": "Cape Town's first strawberries & chocolate on tap.",
+          "publisher": { "@id": "https://naughtyberry.co.za/#organization" },
+          "inLanguage": "en-ZA"
+        },
+        {
+          "@type": ["FoodEstablishment", "LocalBusiness"],
+          "@id": "https://naughtyberry.co.za/#business",
+          "name": "Naughty Berry",
+          "description": "Cape Town's first strawberries & chocolate on tap — chocolate-covered strawberry cups, Dubai chocolate cups, brownie cups and strawberry iced tea, at weekend pop-ups and private events.",
+          "url": "https://naughtyberry.co.za/",
+          "email": "naughtyberryinfo@gmail.com",
+          "image": "https://naughtyberry.co.za/og-image.jpg",
+          "logo": "https://naughtyberry.co.za/naughty-berry-logo.png",
+          "parentOrganization": { "@id": "https://naughtyberry.co.za/#organization" },
+          "servesCuisine": ["Desserts", "Chocolate strawberries", "Iced tea"],
+          "priceRange": "R45–R95",
+          "currenciesAccepted": "ZAR",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Cape Town",
+            "addressRegion": "Western Cape",
+            "addressCountry": "ZA"
+          },
+          "areaServed": { "@type": "City", "name": "Cape Town" },
+          "hasMenu": { "@id": "https://naughtyberry.co.za/#menu" },
+          "makesOffer": [
+            {
+              "@type": "Offer",
+              "itemOffered": { "@type": "MenuItem", "name": "Dessert cups for private events" },
+              "url": "https://naughtyberry.co.za/quote"
+            }
+          ],
+          "potentialAction": {
+            "@type": "ReserveAction",
+            "name": "Book Naughty Berry for an event",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://naughtyberry.co.za/quote",
+              "actionPlatform": [
+                "http://schema.org/DesktopWebPlatform",
+                "http://schema.org/MobileWebPlatform"
+              ]
+            }
+          },
+          "sameAs": ["https://www.instagram.com/naughtyberrycpt"]
+        },
+        {
+          "@type": "Menu",
+          "@id": "https://naughtyberry.co.za/#menu",
+          "name": "Naughty Berry Menu",
+          "url": "https://naughtyberry.co.za/naughty-berry-menu.pdf",
+          "inLanguage": "en-ZA",
+          "hasMenuSection": [
+            {
+              "@type": "MenuSection",
+              "name": "Cups",
+              "hasMenuItem": [
+                {
+                  "@type": "MenuItem",
+                  "name": "Naughty Classic Cup",
+                  "description": "Fresh strawberries drenched in creamy milk chocolate.",
+                  "offers": { "@type": "Offer", "price": "75", "priceCurrency": "ZAR" }
+                },
+                {
+                  "@type": "MenuItem",
+                  "name": "Naughty Brownie Cup",
+                  "description": "Fresh strawberries with brownie bites, drenched in creamy milk chocolate.",
+                  "offers": { "@type": "Offer", "price": "75", "priceCurrency": "ZAR" }
+                },
+                {
+                  "@type": "MenuItem",
+                  "name": "Dubai Chocolate Cup",
+                  "description": "Fresh strawberries drenched in creamy milk chocolate, topped with a kunafeh mixture of pistachio cream and toasted kataifi pastry.",
+                  "offers": { "@type": "Offer", "price": "95", "priceCurrency": "ZAR" }
+                },
+                {
+                  "@type": "MenuItem",
+                  "name": "Dubai Chocolate Brownie Cup",
+                  "description": "Kunafeh of pistachio cream and toasted kataifi pastry over fresh strawberries and fudgey brownie bites in creamy milk chocolate.",
+                  "offers": { "@type": "Offer", "price": "95", "priceCurrency": "ZAR" }
+                },
+                {
+                  "@type": "MenuItem",
+                  "name": "Naughty Cream Cup",
+                  "description": "Fresh strawberries layered in velvety sweetened cream, crowned with Lotus Biscoff crumbs.",
+                  "offers": { "@type": "Offer", "price": "95", "priceCurrency": "ZAR" }
+                },
+                {
+                  "@type": "MenuItem",
+                  "name": "Naughty Cream Brownie Cup",
+                  "description": "Fresh strawberries and fudgey brownie bites layered in velvety sweetened cream, crowned with Lotus Biscoff crumbs.",
+                  "offers": { "@type": "Offer", "price": "95", "priceCurrency": "ZAR" }
+                }
+              ]
+            },
+            {
+              "@type": "MenuSection",
+              "name": "Iced Tea",
+              "hasMenuItem": [
+                {
+                  "@type": "MenuItem",
+                  "name": "Strawberry Peach Iced Tea",
+                  "description": "A smooth mix of sun-kissed strawberry and peach, served over ice.",
+                  "offers": { "@type": "Offer", "price": "45", "priceCurrency": "ZAR" }
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
     </script>
   </head>
