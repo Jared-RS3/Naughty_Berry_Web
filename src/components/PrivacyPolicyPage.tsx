@@ -1,3 +1,4 @@
+import { CookieSettingsLink } from './CookieBanner'
 import LegalLayout, {
   A,
   BUSINESS,
@@ -30,8 +31,15 @@ import LegalLayout, {
  *   • Google Fonts is loaded from index.html — another IP disclosure, to Google.
  *   • The footer newsletter form is not wired to anything. Saying so is the only
  *     honest option; see the note in Footer.tsx.
- *   • Nothing sets a cookie, and nothing writes to localStorage. Verified — if
- *     that ever changes, this page and /cookie-policy both need updating.
+ *   • Google Analytics 4 runs — but only after the visitor consents. See
+ *     src/lib/analytics.ts: gtag.js is not added to the document at all until
+ *     consent is granted, and withdrawing it disables the library and deletes
+ *     its cookies. Section 8 and /cookie-policy carry the detail; the two must
+ *     agree with each other and with the code.
+ *   • The only thing written to localStorage is the visitor's own consent
+ *     decision (src/lib/consent.ts). Beyond that and GA4's cookies, nothing is
+ *     stored on the device. Verified — if that changes, this page and
+ *     /cookie-policy both need updating in the same commit.
  *
  * ── Keeping it true ─────────────────────────────────────────────────────────
  * A privacy notice that has drifted from the code is worse than none, because
@@ -235,11 +243,31 @@ export default function PrivacyPolicyPage() {
             browser’s user-agent string and the referring page — the standard record any web server
             keeps in order to serve a page and stay secure.
           </Bullet>
+          <Bullet>
+            <strong>Analytics — but only if you agree to it.</strong> If you accept analytics
+            cookies, Google Analytics 4 records which pages you read, when, what device and browser
+            you used, where you arrived from, and an approximate location worked out from your IP
+            address. It also gives your browser a random identifier so a return visit is recognised
+            as a return visit, and counts a few interactions automatically — how far you scrolled,
+            clicks that lead off our site, and the fact that a form was started or sent, never what
+            was typed into it. If you decline, or never answer the banner, none of this happens —
+            the script is never even loaded. Full detail in <A href="#cookies">section 8</A>.
+          </Bullet>
+          <Bullet>
+            <strong>Your cookie choice.</strong> Whatever you answer is stored in your browser’s
+            local storage, along with the date and the version of the policy you answered against,
+            so that we can honour it without asking again on every page. It never leaves your
+            device.
+          </Bullet>
         </Bullets>
 
         <p>
-          We do not run analytics, advertising pixels, session recording, heatmaps, fingerprinting or
-          any other tracking on this site. See <A href="#cookies">section 8</A>.
+          We run no advertising pixels, no session recording, no heatmaps and no fingerprinting, and
+          Google Analytics is configured so that it cannot feed advertising or profiling either. We
+          also use <strong>Google Search Console</strong> to see how the site performs in Google’s
+          search results, which is a different thing again: it runs no code in your browser, sets no
+          cookie, and reports only totals Google already holds from its own search logs. See{' '}
+          <A href="#cookies">section 8</A>.
         </p>
       </Section>
 
@@ -272,6 +300,10 @@ export default function PrivacyPolicyPage() {
             [
               'Send you marketing about new flavours, pop-up dates and products',
               'Your consent, which you may withdraw at any time (s11(1)(a) and s69)',
+            ],
+            [
+              'Measure how the site is used, with Google Analytics — visits, popular pages, where people arrive from',
+              'Your consent, and nothing else. Analytics does not load until you give it and stops the moment you withdraw it (s11(1)(a)). Withdrawing costs you nothing and changes nothing about the site.',
             ],
             [
               'Deal with a dispute, a complaint or a legal claim',
@@ -374,6 +406,16 @@ export default function PrivacyPolicyPage() {
               'United States / global CDN',
             ],
             [
+              'Google Analytics (Google Ireland Limited / Google LLC)',
+              'Only if you accept analytics cookies. Google then receives the pages you view, your device and browser details, where you arrived from, your IP address (used to derive an approximate location, and not stored in the reports we see) and a random identifier from the _ga cookie. It never receives your name, email address, phone number or anything else you type into a form — Google’s terms forbid it and our code refuses to send it. Google Signals and ad personalisation are switched off, so your visit cannot be turned into an advertising audience.',
+              'United States / Ireland',
+            ],
+            [
+              'Google Search Console',
+              'Nothing about you is sent to it. It is a tool Google gives site owners to see their own site’s performance in Google Search, and the figures in it come from Google’s search logs, not from your visit here. We see counts and averages only — search terms that led to the site, how often a page appeared, how often it was clicked, and roughly where in the country. Never a name, a device or an individual visitor.',
+              'United States',
+            ],
+            [
               'Our email provider',
               'When we reply to you, your enquiry and our correspondence sit in our mailbox like any other email.',
               'United States',
@@ -420,6 +462,15 @@ export default function PrivacyPolicyPage() {
         </Bullets>
 
         <p>
+          Google Analytics is the one transfer that rests on a different ground. Google LLC is a
+          United States company, so accepting analytics cookies means your device sends information
+          about your visit outside South Africa.{' '}
+          <strong>Section 72(1)(c) permits that because you consented to it</strong> — and if you
+          decline, or withdraw later, nothing is transferred at all. What that consent covers is set
+          out in <A href="#cookies">section 8</A>.
+        </p>
+
+        <p>
           You may ask us for details of these safeguards at{' '}
           <A href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</A>.
         </p>
@@ -427,22 +478,90 @@ export default function PrivacyPolicyPage() {
 
       {/* ─────────────────────────────────────────────────────────────── */}
       <Section id="cookies" heading="8. Cookies and tracking">
+        <Callout>
+          <strong>One optional tracker, and it is off until you say otherwise.</strong> We use
+          Google Analytics 4 to count visits and see which pages get read. Its script is not loaded
+          when the page opens — it is added only after you accept, so declining the banner or
+          ignoring it means no analytics cookie is set and nothing about your visit reaches Google
+          Analytics.{' '}
+          <CookieSettingsLink
+            asProse
+            className="font-semibold text-[#E8176D] underline decoration-[#E8176D]/30 underline-offset-[3px] transition-colors hover:text-[#C01057]"
+          />{' '}
+          reopens the choice at any time, from any page.
+        </Callout>
+
+        <SubHeading>Google Analytics 4</SubHeading>
+
         <p>
-          <strong>This site sets no cookies of its own.</strong> It also writes nothing to your
-          browser’s local storage or session storage, and runs no analytics, advertising or
-          tracking scripts. There is no consent banner because there is nothing to consent to.
+          If you accept, Google Analytics places its{' '}
+          <code className="rounded bg-[#E8176D]/8 px-1 text-[13px]">_ga</code> and{' '}
+          <code className="rounded bg-[#E8176D]/8 px-1 text-[13px]">_ga_&lt;ID&gt;</code> cookies on
+          your device, lasting up to two years. They hold a randomly generated identifier for your
+          browser — not a name, not an email address, nothing that says who you are. Google then
+          receives which pages you viewed and when, your device, browser and language, the site or
+          search that sent you, and your IP address, which it uses to derive an approximate location
+          and does not store in the reports we see. Google Analytics also counts a few interactions
+          on its own — scroll depth, clicks that lead off our site, and whether a form was started
+          or submitted. That last one is a count of the event, never the contents of the form.
         </p>
 
         <p>
-          The one exception is the Airtable-hosted enquiry form embedded in our Events section.
-          That frame is Airtable’s own page running inside ours, and Airtable may set cookies there
-          that are necessary to make the form work. Those cookies are Airtable’s, governed by
-          Airtable’s privacy policy, and they are only set if the frame loads.
+          <strong>We never send Google your personal information.</strong> Google’s terms forbid it,
+          and our code enforces it: nothing typed into the quote builder — name, email address,
+          phone number, venue, notes — goes anywhere near analytics, and any value that looks like
+          an email address or a phone number is stripped before an event or page address is
+          recorded. We have also switched off Google Signals and ad personalisation, so your visit
+          cannot be added to an advertising audience, used to retarget you, or combined with the
+          browsing history Google holds about you elsewhere.
         </p>
 
         <p>
-          Our full <A href="/cookie-policy">Cookie Policy</A> sets this out in detail, including how
-          to block or clear cookies in your browser.
+          Google processes this as our operator, and how it handles the data is set out in{' '}
+          <A href="https://policies.google.com/privacy">Google’s Privacy Policy</A> and in{' '}
+          <A href="https://policies.google.com/technologies/partner-sites">
+            How Google uses information from sites or apps that use our services
+          </A>
+          . You can also opt out of Google Analytics across every site you visit with{' '}
+          <A href="https://tools.google.com/dlpage/gaoptout">Google’s browser add-on</A>.
+        </p>
+
+        <p>
+          Withdrawing is immediate and costs you nothing: we stop the script, tell it to store
+          nothing further, and delete the cookies it set. The site behaves exactly the same either
+          way — nothing is withheld or degraded because you said no.
+        </p>
+
+        <SubHeading>Everything else</SubHeading>
+
+        <p>
+          Beyond that, this site sets no cookies of its own. The only thing written to your
+          browser’s storage is the record of the cookie choice you made, which never leaves your
+          device.
+        </p>
+
+        <p>
+          The Airtable-hosted enquiry form embedded in our Events section is the one place a cookie
+          we do not control can appear. That frame is Airtable’s own page running inside ours, and
+          Airtable may set cookies there that are necessary to make the form work. Those cookies are
+          Airtable’s, governed by Airtable’s privacy policy, and they are only set if the frame
+          loads.
+        </p>
+
+        <p>
+          <strong>Google Search Console.</strong> We use it to understand how {BUSINESS.site} shows
+          up in Google Search, and it is worth being precise about what it is, because it is easily
+          confused with the analytics above. It is not Google Analytics. Nothing is added to this
+          site for it — no script, no pixel, no cookie, nothing that runs while you are here. It
+          reports on searches Google already handled on its own site, so what we see is which search
+          terms brought people to us and how many clicked, as totals. Because it places nothing on
+          your device and receives nothing about your visit, there is nothing here for you to
+          consent to or opt out of.
+        </p>
+
+        <p>
+          Our full <A href="/cookie-policy">Cookie Policy</A> sets all of this out in detail,
+          including how to block or clear cookies in your browser.
         </p>
       </Section>
 
@@ -471,6 +590,14 @@ export default function PrivacyPolicyPage() {
             [
               'Server and security logs',
               'Retained briefly by our hosting provider under its own standard retention, then rotated out. The in-memory rate-limit record lasts about one minute.',
+            ],
+            [
+              'Analytics data (only if you accepted it)',
+              'Google deletes event-level data after the retention period set in our Google Analytics account — Google offers 2 or 14 months — leaving only aggregated totals. The _ga cookies on your device last up to 2 years, or until you withdraw consent, at which point we delete them immediately.',
+            ],
+            [
+              'Your cookie choice',
+              'Stored in your browser until you change it, clear your browser storage, or we materially change what we use cookies for — at which point the old answer expires and we ask again.',
             ],
             [
               'Records involved in a dispute or legal claim',
@@ -560,7 +687,13 @@ export default function PrivacyPolicyPage() {
           </Bullet>
           <Bullet>
             <strong>Withdraw consent.</strong> Where we rely on your consent, withdraw it at any
-            time. That does not undo processing that already happened lawfully.
+            time. That does not undo processing that already happened lawfully. For analytics you do
+            not need to email anyone —{' '}
+            <CookieSettingsLink
+              asProse
+              className="font-semibold text-[#E8176D] underline decoration-[#E8176D]/30 underline-offset-[3px] transition-colors hover:text-[#C01057]"
+            />{' '}
+            in the footer of any page switches it off on the spot.
           </Bullet>
           <Bullet>
             <strong>Complain.</strong> To us, and to the Information Regulator — see{' '}

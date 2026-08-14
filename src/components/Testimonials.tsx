@@ -436,20 +436,26 @@ export default function Testimonials() {
               {/* Stage */}
               <div className="absolute inset-x-4 top-[13%] bottom-[8%]">
                 {/* Giant headline across the top — the cup sits under it and the
-                    cards seat well below, so nothing overlaps the word. */}
+                    cards seat well below, so nothing overlaps the word.
+                    18.5cqw keeps the word inside the stage on the narrowest
+                    phones, so it reads as centred with a real side gutter
+                    instead of running edge to edge. */}
                 <motion.div
                   style={{
                     opacity: mHeadOpacity,
                     scale: mHeadScale,
                     y: mHeadY,
                     fontFamily: 'var(--font-display)',
-                    fontSize: 'min(21cqw, 116px)',
+                    fontSize: 'min(18.5cqw, 108px)',
                     lineHeight: 1,
                     letterSpacing: '-0.02em',
+                    // Half the trailing letter-spacing gap, so the glyphs — not
+                    // the text box — sit on the stage's centre line.
+                    textIndent: '-0.01em',
                     color: '#E8176D',
                   }}
                   aria-hidden="true"
-                  className="absolute inset-x-0 top-[1%] z-0 text-center select-none pointer-events-none"
+                  className="absolute inset-x-0 top-[1%] z-0 px-2 text-center select-none pointer-events-none"
                 >
                   REVIEWS
                 </motion.div>

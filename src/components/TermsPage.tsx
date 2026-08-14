@@ -262,6 +262,34 @@ export default function TermsPage() {
           that accompanies your quote, together with your rights under section 17 of the Consumer
           Protection Act to cancel an advance booking (subject to a reasonable cancellation charge).
         </p>
+
+        <SubHeading>Checking what you send us</SubHeading>
+
+        <p>
+          Section 43(2) of the Electronic Communications and Transactions Act 25 of 2002 says we
+          must give you a chance to review the whole transaction and correct any mistake before you
+          commit to it. The quote builder is built around that: every step can be gone back to, the
+          review screen shows you everything you have chosen in one place, and nothing is sent until
+          you press confirm on it.
+        </p>
+
+        <Bullets>
+          <Bullet>
+            Before sending, you tick a box confirming you have read these terms and that the details
+            you entered are correct. We record that tick, the moment it was made, and which version
+            of the wording was on screen.
+          </Bullet>
+          <Bullet>
+            We work from what you send us. If a date, a headcount, a venue or a contact number is
+            wrong, the quote we build on it will be wrong too — so it is worth a second look at the
+            review screen.
+          </Bullet>
+          <Bullet>
+            Spotted a mistake after sending? Simply reply to our email or write to{' '}
+            <A href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</A>. Nothing is binding at the
+            enquiry stage, so there is nothing to undo — we will just correct it.
+          </Bullet>
+        </Bullets>
       </Section>
 
       {/* ─────────────────────────────────────────────────────────────── */}

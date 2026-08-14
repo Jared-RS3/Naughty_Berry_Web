@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import LoadingScreen from './components/LoadingScreen'
+import CookieBanner from './components/CookieBanner'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import ScrollCup from './components/ScrollCup'
@@ -41,9 +42,15 @@ function App() {
 
   if (Route) {
     return (
-      <Suspense fallback={null}>
-        <Route />
-      </Suspense>
+      <>
+        <Suspense fallback={null}>
+          <Route />
+        </Suspense>
+        {/* Every route needs the consent gate, not just the home page — a
+            visitor landing on /quote from a search result is being asked for
+            their details before they have been asked about cookies. */}
+        <CookieBanner />
+      </>
     )
   }
   return <HomePage />
@@ -151,6 +158,11 @@ function HomePage() {
 
       {/* <Suspense fallback={null}><FloatingCTA /></Suspense> */}
       </div>
+
+      {/* Held back until the intro overlay has gone. Asking someone to make a
+          decision they cannot see, over a full-screen film, is not "informed" —
+          and nothing is loading in the meantime, so the wait costs nothing. */}
+      <CookieBanner ready={introDone} />
     </>
   )
 }

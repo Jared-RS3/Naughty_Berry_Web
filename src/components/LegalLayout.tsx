@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, type ReactNode } from 'react'
 import { ArrowLeft, Instagram } from 'lucide-react'
+import { CookieSettingsLink } from './CookieBanner'
 
 /**
  * Shared chrome for the three legal routes — /privacy-policy, /cookie-policy
@@ -35,9 +36,9 @@ import { ArrowLeft, Instagram } from 'lucide-react'
 export const BUSINESS = {
   tradingName: 'Naughty Berry',
   /** e.g. 'Naughty Berry (Pty) Ltd' — omit if trading as a sole proprietor. */
-  registeredName: null as string | null,
+  registeredName: 'Naughty Berry (Pty) Ltd',
   /** CIPC registration number, e.g. '2024/123456/07'. */
-  registrationNumber: null as string | null,
+  registrationNumber: '2023/205936/07',
   /** Only if VAT-registered. Drives the VAT line in the Terms. */
   vatNumber: null as string | null,
   /**
@@ -65,7 +66,7 @@ export const BUSINESS = {
    * appointed it defaults to the head of the business — and they must be
    * registered with the Information Regulator before taking up the duties.
    */
-  informationOfficer: null as string | null,
+  informationOfficer: 'Yaaseen Van Der Fort',
   informationOfficerEmail: null as string | null,
   site: 'naughtyberry.co.za',
   siteUrl: 'https://naughtyberry.co.za',
@@ -76,7 +77,7 @@ export const BUSINESS = {
 /** The date the current wording took effect. Bump it whenever the substance of
  *  any of the three documents changes — a policy without a date is unusable as
  *  evidence of what a visitor agreed to. */
-export const EFFECTIVE_DATE = '13 August 2026'
+export const EFFECTIVE_DATE = '14 August 2026'
 
 /* ────────────────────────── Copy primitives ────────────────────────── */
 
@@ -298,6 +299,10 @@ function LegalFooter({ current }: { current: string }) {
               </a>
             ),
           )}
+
+          {/* Withdrawal has to be reachable from wherever the visitor is, and
+              a legal page is exactly where someone goes looking for it. */}
+          <CookieSettingsLink className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#7A3B5E] transition-colors hover:text-[#E8176D]" />
         </nav>
 
         <p className="text-[11px] text-[#7A3B5E]/55">

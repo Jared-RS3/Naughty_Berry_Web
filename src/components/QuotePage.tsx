@@ -36,6 +36,8 @@ import {
   ICED_TEA_CAP,
   ICED_TEA_PRICE,
   TOPPING_PRICE,
+  CONSENT_STATEMENT,
+  CONSENT_NOTE,
   LIMITS,
   estimateTotal,
   packageName,
@@ -201,7 +203,17 @@ export default function QuotePage() {
   const [pickedToppings, setPickedToppings] = useState<Record<string, number>>({})
   const [icedTeas, setIcedTeas] = useState(0)
   const [guests, setGuests] = useState(80)
-  const [form, setForm] = useState({ name: '', email: '', phone: '', date: '', venue: '', notes: '' })
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    date: '',
+    venue: '',
+    notes: '',
+    // Starts false and is never pre-ticked: POPIA consent has to be an act the
+    // visitor performs, not a default they failed to undo.
+    consent: false,
+  })
   const [confirming, setConfirming] = useState(false)
   const [submitState, setSubmitState] = useState<SubmitState>('idle')
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -391,6 +403,7 @@ export default function QuotePage() {
     date: form.date,
     venue: form.venue.trim(),
     notes: form.notes.trim(),
+    consent: form.consent,
   }
 
   const submit = async () => {
@@ -580,23 +593,12 @@ export default function QuotePage() {
           {stepKey === 'occasion' && 'Pick an occasion to continue'}
           {stepKey === 'package' && 'Choose a package to continue'}
           {stepKey === 'build' && remaining > 0 && `${remaining} more cup${remaining === 1 ? '' : 's'} to fill your box`}
-          {stepKey === 'details' && 'We need your name and one way to reach you'}
-        </p>
-      )}
-
-      {/* POPIA s18: the visitor has to be told what happens to their details at
-          the point they hand them over, not three clicks away in a footer. This
-          is the only step that collects any, so it is the only step that says so. */}
-      {stepKey === 'details' && (
-        <p className="mx-auto mt-4 max-w-3xl text-right text-[12px] leading-relaxed text-[#7A3B5E]/70">
-          We use your details only to quote and to plan your event. See our{' '}
-          <a
-            href="/privacy-policy"
-            className="font-semibold text-[#E8176D] underline decoration-[#E8176D]/30 underline-offset-2 hover:text-[#C01057]"
-          >
-            Privacy Policy
-          </a>
-          .
+          {/* When the tick is the only thing missing, say so — "we need your
+              name" next to a filled-in name field reads as a broken form. */}
+          {stepKey === 'details' &&
+            (Object.keys(fieldErrors).length === 1 && fieldErrors.consent
+              ? 'Please tick the box above to continue'
+              : 'We need your name and one way to reach you')}
         </p>
       )}
 
@@ -1648,7 +1650,15 @@ function StepStation({
 
 /* ─────────── Step 4: details ─────────── */
 
-type FormState = { name: string; email: string; phone: string; date: string; venue: string; notes: string }
+type FormState = {
+  name: string
+  email: string
+  phone: string
+  date: string
+  venue: string
+  notes: string
+  consent: boolean
+}
 
 function StepDetails({
   form,
@@ -1682,19 +1692,6 @@ function StepDetails({
   const cls = (k: keyof FieldErrors) =>
     `${inputCls} ${shown(k) ? 'border-[#C01057] ring-2 ring-[#C01057]/20' : ''}`
 
-  const Err = ({ k }: { k: keyof FieldErrors }) => {
-    const msg = shown(k)
-    return msg ? (
-      <p
-        id={`q-${k}-error`}
-        role="alert"
-        className="mt-1.5 flex items-start gap-1.5 text-[12px] font-semibold text-[#C01057]"
-      >
-        <AlertCircle size={13} strokeWidth={2.5} className="mt-[1px] shrink-0" />
-        <span>{msg}</span>
-      </p>
-    ) : null
-  }
 
   const a11y = (k: keyof FieldErrors) => ({
     onBlur: blur(k),
@@ -1738,7 +1735,7 @@ function StepDetails({
               className={cls('name')}
               {...a11y('name')}
             />
-            <Err k="name" />
+            <FieldError id="name" msg={shown('name')} />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -1756,7 +1753,7 @@ function StepDetails({
                 className={cls('email')}
                 {...a11y('email')}
               />
-              <Err k="email" />
+              <FieldError id="email" msg={shown('email')} />
             </div>
             <div>
               <label htmlFor="q-phone" className={labelCls}>WhatsApp / phone</label>
@@ -1772,7 +1769,7 @@ function StepDetails({
                 className={cls('phone')}
                 {...a11y('phone')}
               />
-              <Err k="phone" />
+              <FieldError id="phone" msg={shown('phone')} />
             </div>
           </div>
 
@@ -1791,7 +1788,7 @@ function StepDetails({
                 className={cls('date')}
                 {...a11y('date')}
               />
-              <Err k="date" />
+              <FieldError id="date" msg={shown('date')} />
             </div>
             <div>
               <label htmlFor="q-venue" className={labelCls}>Venue / area</label>
@@ -1804,7 +1801,7 @@ function StepDetails({
                 className={cls('venue')}
                 {...a11y('venue')}
               />
-              <Err k="venue" />
+              <FieldError id="venue" msg={shown('venue')} />
             </div>
           </div>
 
@@ -1823,18 +1820,165 @@ function StepDetails({
               {...a11y('notes')}
             />
             <div className="mt-1 flex items-start justify-between gap-4">
-              <Err k="notes" />
+              <FieldError id="notes" msg={shown('notes')} />
               <span className="ml-auto shrink-0 text-[11px] text-[#7A3B5E]/50">
                 {form.notes.length}/{LIMITS.notes}
               </span>
             </div>
           </div>
         </div>
+
+        {/* ── The agreement ──
+            One tick, carrying POPIA consent, the Terms of Use and the
+            confirmation that the details are correct. This was two boxes with a
+            bulleted summary under each, which is the stronger legal shape but
+            reads as a wall of small print at the exact moment someone is
+            deciding whether to bother — so it is one short sentence with the
+            detail one tap away instead. The reasoning is written up in full
+            over CONSENT_STATEMENT in lib/quote.ts; the note below still carries
+            the POPIA s18 essentials so the visitor is not agreeing blind. */}
+        <div className="mt-7">
+          <Agreement
+            checked={form.consent}
+            invalid={Boolean(shown('consent'))}
+            statement={CONSENT_STATEMENT}
+            note={CONSENT_NOTE}
+            onToggle={(v) => {
+              onChange({ ...form, consent: v })
+              setTouched((t) => ({ ...t, consent: true }))
+            }}
+            links={
+              <>
+                <LegalLink href="/privacy-policy">Privacy Policy</LegalLink>
+                <span aria-hidden="true"> · </span>
+                <LegalLink href="/terms">Terms of Use</LegalLink>
+              </>
+            }
+          >
+            <FieldError id="consent" msg={shown('consent')} />
+          </Agreement>
+        </div>
       </div>
       <p className="mt-4 text-center text-[12px] text-[#7A3B5E]/60">
         Date not locked in yet? Leave it open — we’ll work it out together.
       </p>
     </div>
+  )
+}
+
+/**
+ * The validation message under a field.
+ *
+ * Module scope, not declared inside StepDetails: a component defined during
+ * render is a brand-new component type on every keystroke, so React unmounts
+ * and remounts the message instead of updating it — which re-announces it to a
+ * screen reader each time and throws away the `role="alert"` semantics that
+ * make it useful in the first place.
+ */
+function FieldError({ id, msg }: { id: string; msg?: string }) {
+  if (!msg) return null
+  return (
+    <p
+      id={`q-${id}-error`}
+      role="alert"
+      className="mt-1.5 flex items-start gap-1.5 text-[12px] font-semibold text-[#C01057]"
+    >
+      <AlertCircle size={13} strokeWidth={2.5} className="mt-[1px] shrink-0" />
+      <span>{msg}</span>
+    </p>
+  )
+}
+
+/**
+ * The agreement tick: one short bold statement, one line of plain-language
+ * detail, the two documents it refers to, and a slot for the error message.
+ *
+ * The statement is deliberately one sentence. POPIA s18 wants the visitor told
+ * what happens to their details at the point of collection, which the `note`
+ * satisfies — but a wall of bullets at the end of a quote builder gets skipped
+ * wholesale, and text nobody reads informs nobody.
+ */
+function Agreement({
+  checked,
+  invalid,
+  statement,
+  note,
+  links,
+  onToggle,
+  children,
+}: {
+  checked: boolean
+  invalid: boolean
+  statement: string
+  note: string
+  /** The Privacy Policy / Terms links. Rendered outside the <label>. */
+  links: React.ReactNode
+  onToggle: (v: boolean) => void
+  /** The <FieldError> for this tick — owned by StepDetails, which holds state. */
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      className={`rounded-3xl border p-4 transition sm:p-5 ${
+        invalid
+          ? 'border-[#C01057] bg-[#C01057]/[0.06]'
+          : checked
+            ? 'border-[#E8176D]/35 bg-[#E8176D]/[0.05]'
+            : 'border-[#E8176D]/20 bg-white/70'
+      }`}
+    >
+      <label htmlFor="q-consent" className="flex cursor-pointer items-start gap-3.5">
+        {/* The native input stays in the DOM — it is what screen readers,
+            keyboards and form autofill actually talk to — with the visible
+            box drawn beside it and driven off :checked / :focus-visible. */}
+        <span className="relative mt-[1px] flex shrink-0 items-center justify-center">
+          <input
+            id="q-consent"
+            type="checkbox"
+            checked={checked}
+            onChange={(e) => onToggle(e.target.checked)}
+            required
+            aria-invalid={invalid ? true : undefined}
+            aria-describedby={`q-consent-note${invalid ? ' q-consent-error' : ''}`}
+            className="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border-2 border-[#E8176D]/45 bg-white outline-none transition checked:border-[#E8176D] checked:bg-[#E8176D] focus-visible:ring-2 focus-visible:ring-[#E8176D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFF9ED]"
+          />
+          <Check
+            size={15}
+            strokeWidth={3.5}
+            aria-hidden="true"
+            className="pointer-events-none absolute text-white opacity-0 transition peer-checked:opacity-100"
+          />
+        </span>
+
+        <span className="min-w-0 text-[13.5px] font-bold leading-snug text-[#3B2116]">
+          {statement}
+        </span>
+      </label>
+
+      {/* Outside the label on purpose: a link inside one is activated by the
+          label as well as followed, so tapping "Privacy Policy" would also
+          toggle the tick. Indented to line up under the wording above. */}
+      <p id="q-consent-note" className="mt-2 pl-[38px] text-[11.5px] leading-relaxed text-[#7A3B5E]/80">
+        {note} {links}
+      </p>
+
+      {children}
+    </div>
+  )
+}
+
+/** A link to a legal page from inside the form. Opens in its own tab — someone
+ *  who wants the detail should not lose a half-built quote to read it. */
+function LegalLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="font-bold text-[#E8176D] underline decoration-[#E8176D]/40 underline-offset-2 transition hover:text-[#C01057]"
+    >
+      {children}
+    </a>
   )
 }
 

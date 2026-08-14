@@ -8,9 +8,15 @@
 
 # ── Security headers ────────────────────────────────────────────────────────
 # Applied to every response. The CSP is written against exactly what the site
-# loads today: Google Fonts, the Airtable form embed, and the Airtable REST API
-# for the pop-up schedule. Adding a new third-party script, font, iframe or API
-# means adding it here too, or the browser will silently refuse to load it.
+# loads today: Google Fonts, the Airtable form embed, the Airtable REST API for
+# the pop-up schedule, and Google Analytics 4. Adding a new third-party script,
+# font, iframe or API means adding it here too, or the browser will silently
+# refuse to load it.
+#
+# The Google Analytics entries below only permit the request; they do not make
+# it. gtag.js is appended to the document by src/lib/analytics.ts and only after
+# the visitor has consented, so on a page where consent was declined nothing is
+# ever fetched from any of these hosts.
 [[headers]]
   for = "/*"
   [headers.values]
@@ -30,7 +36,7 @@
     # and index.html carries a critical inline <style>. Scripts do NOT get that
     # exemption — the one inline script was moved to /boot-fallback.js so this
     # can stay 'self'.
-    Content-Security-Policy = "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self'; connect-src 'self' https://api.airtable.com; frame-src https://airtable.com; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'self' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com; media-src 'self'; connect-src 'self' https://api.airtable.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com; frame-src https://airtable.com; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
 
 # The enquiry endpoint must never be cached by a CDN or a browser.
 [[headers]]

@@ -29,7 +29,54 @@ export interface Quote {
   date: string
   venue: string
   notes: string
+  /** The single agreement tick: POPIA consent, the Terms of Use, and the
+   *  confirmation that the details entered are correct. False can never reach
+   *  the server — the details step will not advance without it and the function
+   *  rejects it anyway. */
+  consent: boolean
 }
+
+/**
+ * The one thing the visitor ticks before the enquiry can be sent, and the
+ * version stamp recorded alongside it.
+ *
+ * ── What this single tick carries ───────────────────────────────────────────
+ *   1. POPIA s11(1)(a) consent to process what they entered.
+ *   2. Acceptance of the Terms of Use.
+ *   3. Confirmation that the details entered are correct — ECTA s43(2) wants
+ *      the customer given a chance to review and fix mistakes before
+ *      committing, and s43(3) lets them cancel if that chance was never given.
+ * It writes to two separate Airtable columns (POPI Consent and T&Cs Agreement)
+ * so the record still shows both were agreed to, even though the visitor made
+ * one gesture.
+ *
+ * ── The trade-off, recorded honestly ────────────────────────────────────────
+ * Splitting this into two boxes would be the stronger position: POPIA s11(1)(a)
+ * wants consent that is voluntary and *specific*, and a single box meaning
+ * "process my data AND I accept your contract" is arguably neither, since the
+ * visitor cannot agree to one without the other. It was built as two and merged
+ * to one deliberately, because two dense boxes at the end of a quote builder
+ * read as intimidating and cost real enquiries. The mitigation is that the
+ * wording below is short and plain, and both documents are one tap away.
+ *
+ * ── Versioning ──────────────────────────────────────────────────────────────
+ * Consent is only worth anything as evidence if we can say *what* was agreed to
+ * and *when*, so the wording lives in one exported constant rather than being
+ * typed into the JSX, and every submission stores the version. Bump
+ * CONSENT_VERSION — and EFFECTIVE_DATE in LegalLayout — whenever the substance
+ * of this statement, of the Privacy Policy or of the Terms of Use changes, so
+ * older records still point at the wording those people actually saw.
+ */
+export const CONSENT_VERSION = '2026-08-14'
+
+export const CONSENT_STATEMENT =
+  'I agree to the Privacy Policy and Terms of Use, and confirm the details above are correct.'
+
+/** The one line under the tick. Says the only three things a visitor actually
+ *  needs at this moment: what we do with it, that it is not a booking, and that
+ *  they can undo it. Everything else is in the two linked documents. */
+export const CONSENT_NOTE =
+  'We use your details only to prepare your quote and reply to you — never sold, never shared for anyone else’s marketing. This is an enquiry, not a booking, and you can ask us to delete your details at any time.'
 
 export const CUP_TARGET = 25
 export const BASE_PRICE = 1675
@@ -187,7 +234,9 @@ export const PHONE_RE = /^(?:\+?27|0)\d{9}$/
 /** Drops spaces, dashes, dots and brackets so the pattern above sees digits. */
 export const normalisePhone = (s: string) => s.replace(/[\s()\-.]/g, '')
 
-export type FieldErrors = Partial<Record<'name' | 'email' | 'phone' | 'date' | 'venue' | 'notes', string>>
+export type FieldErrors = Partial<
+  Record<'name' | 'email' | 'phone' | 'date' | 'venue' | 'notes' | 'consent', string>
+>
 
 /** Validates the contact step. Same rules as the server, phrased for a human. */
 export function validateDetails(f: {
@@ -197,6 +246,7 @@ export function validateDetails(f: {
   date: string
   venue: string
   notes: string
+  consent: boolean
 }): FieldErrors {
   const errors: FieldErrors = {}
   const name = f.name.trim()
@@ -236,6 +286,13 @@ export function validateDetails(f: {
   if (f.venue.length > LIMITS.venue) errors.venue = `Keep it under ${LIMITS.venue} characters.`
   if (f.notes.length > LIMITS.notes) errors.notes = `Keep it under ${LIMITS.notes} characters.`
 
+  // Consent is not a nicety we can infer from someone pressing Send — POPIA
+  // s11(1)(a) wants it voluntary, specific and informed, which means an unticked
+  // box has to block the enquiry the same way a missing name does.
+  if (!f.consent) {
+    errors.consent = 'Please tick the box so we can use your details to quote you.'
+  }
+
   return errors
 }
 
@@ -258,6 +315,10 @@ export function toEnquiryPayload(q: Quote, startedAt: number, honeypot: string) 
     date: q.date,
     venue: q.venue,
     notes: q.notes,
+    // The tick, and which wording it was given against. The server refuses the
+    // enquiry outright if this is not exactly `true`.
+    consent: q.consent,
+    consentVersion: CONSENT_VERSION,
     startedAt,
     company: honeypot,
   }

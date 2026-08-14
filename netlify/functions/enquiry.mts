@@ -8,7 +8,7 @@ import type { Config, Context } from '@netlify/functions'
  * read-only schedule token is bundled into the client on purpose
  * (VITE_AIRTABLE_TOKEN), but a token that can *write* must never be — anyone
  * could then create, and depending on scopes edit, records in the base. This
- * function reads AIRTABLE_WRITE_TOKEN from the Netlify environment, where the
+ * function reads the write token from the Netlify environment, where the
  * browser cannot see it, and the client only ever talks to this endpoint.
  *
  * ── Trust model ─────────────────────────────────────────────────────────────
@@ -21,7 +21,8 @@ import type { Config, Context } from '@netlify/functions'
  * fields.
  *
  * Required Netlify environment variables:
- *   AIRTABLE_WRITE_TOKEN  — PAT with data.records:write on the base
+ *   NAUGHTY_WRITE         — PAT with data.records:write on the base
+ *                           (AIRTABLE_WRITE_TOKEN is accepted as a fallback)
  *   AIRTABLE_BASE_ID      — optional, defaults to the production base
  *   AIRTABLE_LEADS_TABLE  — optional, defaults to the Leads table id
  *   ALLOWED_ORIGINS       — optional, comma-separated; defaults to the site
@@ -260,6 +261,22 @@ function validate(input: Json): Validated | { error: string } {
     }
   }
 
+  // The agreement tick. One box on screen, carrying three things: POPIA
+  // s11(1)(a) consent, acceptance of the Terms of Use, and confirmation that
+  // the entered details are correct (ECTA s43(2)'s review-and-correct
+  // opportunity, which s43(3) lets the customer cancel over if never given).
+  // It is the lawful ground for everything below it, so an enquiry without it
+  // is not a validation nicety to be papered over — it is a record we are not
+  // allowed to create. Strictly `true`: a string "false", a 0 or a missing key
+  // all mean no.
+  if (input.consent !== true) {
+    return { error: 'Please tick the box to let us use your details to quote you.' }
+  }
+  // Which wording they agreed to. Recorded rather than trusted — it proves what
+  // was on screen only in combination with the deploy that served it, and a
+  // client-chosen string is never allowed near a select field.
+  const consentVersion = field(input.consentVersion, 20)
+
   const venue = field(input.venue, LIMITS.venue)
   const notes = field(input.notes, LIMITS.notes, { multiline: true })
 
@@ -351,6 +368,21 @@ function validate(input: Json): Validated | { error: string } {
     // The exact answer, alongside the four-way "Event type" this collapses into.
     'Occasion': OCCASIONS.has(rawOccasion) ? rawOccasion : 'Something Else',
     'Special Requests': field(specialRequests, 4000, { multiline: true }),
+    // Proof of consent: the tick, the moment, and the wording it was given
+    // against. POPIA s11(2)(a) puts the burden of proving consent on us, and a
+    // bare boolean proves nothing without a time and a version. Written here
+    // rather than trusted from the client — the request only got this far
+    // because `input.consent` was exactly `true`.
+    'POPI Consent': true,
+    // Terms of Use accepted and details confirmed correct. The same tick as
+    // above — the wording the visitor agreed to covers both — but kept as its
+    // own column so the base can still answer "did they accept the terms?"
+    // without anyone having to know the two were merged in the UI. Written
+    // here, never read from the client: the request only reached this line
+    // because `input.consent` was exactly `true`.
+    'T&Cs Agreement': true,
+    'Consent captured': new Date().toISOString(),
+    'Consent wording version': consentVersion,
   }
   // Only the capped boxes have a figure worth storing — an Indulgent spread is
   // priced around the event, so writing a base price there would read as a quote
@@ -422,9 +454,14 @@ async function handle(req: Request, context: Context): Promise<Response> {
     return json(429, { error: 'Too many enquiries. Please try again in a minute.' }, { 'Retry-After': '60' })
   }
 
-  const token = process.env.AIRTABLE_WRITE_TOKEN
+  // NAUGHTY_WRITE is the name the token is actually stored under; the original
+  // AIRTABLE_WRITE_TOKEN is kept as a fallback so an existing deploy configured
+  // under that name does not break. Either satisfies this check — a mismatch
+  // between the two is silent in every way except a 503 on every enquiry, which
+  // is a miserable thing to debug from the outside.
+  const token = process.env.NAUGHTY_WRITE ?? process.env.AIRTABLE_WRITE_TOKEN
   if (!token) {
-    console.error('AIRTABLE_WRITE_TOKEN is not set')
+    console.error('No Airtable write token — set NAUGHTY_WRITE (or AIRTABLE_WRITE_TOKEN)')
     return json(503, { error: 'Enquiries are not configured yet.' })
   }
 

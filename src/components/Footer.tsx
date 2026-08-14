@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { usePopupSchedule } from '../hooks/usePopupSchedule'
 import { mapsHref, pickNext, shortWhen } from '../lib/nextStop'
+import { CookieSettingsLink } from './CookieBanner'
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 /** TODO: swap in Daybreak's live site — this is the only place it's referenced. */
@@ -550,6 +551,11 @@ export default function Footer() {
               >
                 Terms
               </a>
+
+              {/* Consent has to be as easy to withdraw as it was to give, from
+                  any page. This is that route back in; it renders nothing when
+                  no analytics is configured. */}
+              <CookieSettingsLink className="text-[11px] text-[#7A3B5E]/50 transition-colors hover:text-[#E8176D]" />
             </div>
 
             <p className="flex items-center gap-1.5 text-[11px] text-[#7A3B5E]/50">
