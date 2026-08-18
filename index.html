@@ -137,6 +137,17 @@
       a menu — rather than two words that happen to appear on a page. It is also
       what feeds the brand panel and the sitelinks.
 
+      The share photo is a single ImageObject (#primaryimage) that the other
+      nodes reference by @id rather than three copies of the same URL, and the
+      WebPage node nominates it via primaryImageOfPage. og:image only governs
+      social unfurls; primaryImageOfPage is the documented way to tell a search
+      engine which image belongs to the *page*, which is what it draws on when
+      it picks a result thumbnail. It cannot be forced, but this is the strongest
+      signal available short of the photo appearing on the page itself.
+
+      The WebPage @id and url follow the route — src/lib/canonical.ts rewrites
+      them alongside the canonical, for exactly the reason described there.
+
       Everything below is asserted from the site itself: the menu mirrors
       MENU_CATEGORIES in src/components/MenuPreview.tsx and must be kept in step
       with it. Nothing here is invented — no ratings, no opening hours, no street
@@ -160,7 +171,7 @@
             "width": 900,
             "height": 548
           },
-          "image": "https://naughtyberry.co.za/og-image.jpg",
+          "image": { "@id": "https://naughtyberry.co.za/#primaryimage" },
           "description": "Cape Town's first strawberries & chocolate on tap — fresh chocolate-covered strawberry cups served from a mobile trailer at pop-ups, markets and private events.",
           "areaServed": {
             "@type": "City",
@@ -179,13 +190,32 @@
           "inLanguage": "en-ZA"
         },
         {
+          "@type": "ImageObject",
+          "@id": "https://naughtyberry.co.za/#primaryimage",
+          "url": "https://naughtyberry.co.za/og-image.jpg",
+          "contentUrl": "https://naughtyberry.co.za/og-image.jpg",
+          "width": 1200,
+          "height": 630,
+          "caption": "Chocolate poured over a Naughty Berry brownie cup of fresh strawberries at the trailer window"
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://naughtyberry.co.za/#webpage",
+          "url": "https://naughtyberry.co.za/",
+          "name": "Naughty Berry | Chocolate Strawberry Cups – Cape Town",
+          "isPartOf": { "@id": "https://naughtyberry.co.za/#website" },
+          "about": { "@id": "https://naughtyberry.co.za/#organization" },
+          "primaryImageOfPage": { "@id": "https://naughtyberry.co.za/#primaryimage" },
+          "inLanguage": "en-ZA"
+        },
+        {
           "@type": ["FoodEstablishment", "LocalBusiness"],
           "@id": "https://naughtyberry.co.za/#business",
           "name": "Naughty Berry",
           "description": "Cape Town's first strawberries & chocolate on tap — chocolate-covered strawberry cups, Dubai chocolate cups, brownie cups and strawberry iced tea, at weekend pop-ups and private events.",
           "url": "https://naughtyberry.co.za/",
           "email": "naughtyberryinfo@gmail.com",
-          "image": "https://naughtyberry.co.za/og-image.jpg",
+          "image": { "@id": "https://naughtyberry.co.za/#primaryimage" },
           "logo": "https://naughtyberry.co.za/naughty-berry-logo.png",
           "parentOrganization": { "@id": "https://naughtyberry.co.za/#organization" },
           "servesCuisine": ["Desserts", "Chocolate strawberries", "Iced tea"],

@@ -34,6 +34,46 @@ function remove(selector: string) {
 }
 
 /**
+ * Points the WebPage node in the JSON-LD @graph at the route being viewed.
+ *
+ * Same problem as the canonical, one layer down: the @graph is baked into the
+ * single index.html, so its WebPage node would otherwise tell a crawler that
+ * /story and /quote are both the home page — contradicting the canonical we
+ * just set, from the one source a search engine trusts most. The rest of the
+ * graph is route-independent (the business, the site, the menu and the share
+ * photo are the same facts on every page) and is left alone.
+ */
+function setGraphPage(href: string | null) {
+  const script = document.querySelector<HTMLScriptElement>('script[type="application/ld+json"]')
+  if (!script?.textContent) return
+
+  try {
+    const data = JSON.parse(script.textContent)
+    const graph: { '@type'?: string }[] | undefined = data['@graph']
+    if (!graph) return
+
+    if (href === null) {
+      // A 404 is not a page worth describing, for the same reason it gets no
+      // canonical. The business and site nodes stay — they remain true.
+      data['@graph'] = graph.filter((node) => node['@type'] !== 'WebPage')
+    } else {
+      const page = graph.find((node) => node['@type'] === 'WebPage') as
+        | Record<string, unknown>
+        | undefined
+      if (!page) return
+      page['@id'] = `${href}#webpage`
+      page.url = href
+    }
+
+    script.textContent = JSON.stringify(data)
+  } catch {
+    // Malformed JSON-LD is the build's problem, not this function's. Leaving
+    // the original block in place is strictly better than replacing it with
+    // half-rewritten output.
+  }
+}
+
+/**
  * Call once per route render. `pathname` should already be normalised the way
  * App does it (trailing slashes stripped, '' becomes '/').
  */
@@ -41,6 +81,7 @@ export function setCanonical(pathname: string) {
   if (!KNOWN.has(pathname)) {
     // A 404 must not claim to be canonical for anything.
     remove('link[rel="canonical"]')
+    setGraphPage(null)
     return
   }
 
@@ -63,4 +104,6 @@ export function setCanonical(pathname: string) {
     m.setAttribute('property', 'og:url')
     return m
   }, href)
+
+  setGraphPage(href)
 }

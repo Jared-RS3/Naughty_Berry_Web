@@ -1942,12 +1942,12 @@ function StepDetails({
           </div>
 
           <div>
-            <label htmlFor="q-venue" className={labelCls}>Venue / area</label>
+            <label htmlFor="q-venue" className={labelCls}>Address</label>
             <input
               id="q-venue"
               value={form.venue}
               onChange={set('venue')}
-              placeholder="Constantia, Cape Town"
+              placeholder="123 Main St, Constantia, Cape Town"
               maxLength={LIMITS.venue}
               className={cls('venue')}
               {...a11y('venue')}

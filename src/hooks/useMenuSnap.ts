@@ -130,7 +130,13 @@ export function useMenuSnap() {
       const off = navOffset(el)
       const lenis = getLenis()
       if (lenis) {
-        lenis.scrollTo(el, { offset: -off, duration: 0.7, lock: true, onComplete: beginLock })
+        // Lenis honours the target's scroll-margin-top; #menu carries a
+        // *negative* one (-scroll-mt-6 / md:-scroll-mt-4) so that anchor jumps
+        // land past its top edge. Left alone it drags the lock 16-24px further
+        // down than `off` asks for. Cancel it here so `off` means the same
+        // thing on this path as it does on the native one below.
+        const sm = parseFloat(window.getComputedStyle(el).scrollMarginTop) || 0
+        lenis.scrollTo(el, { offset: -off + sm, duration: 0.7, lock: true, onComplete: beginLock })
       } else {
         const top = window.scrollY + el.getBoundingClientRect().top - off
         window.scrollTo({ top, behavior: 'smooth' })
