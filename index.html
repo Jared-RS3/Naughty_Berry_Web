@@ -5,13 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Icons. All generated from /naughty-berry-logo.png by `npm run icons` —
-         the logo itself, trimmed and letterboxed into a square, never redrawn or
-         re-proportioned. The larger sizes are listed so that tab strips, the
-         bookmark bar and Android's "add to home screen" each pick the sharpest
-         file rather than upscaling the 16px one. -->
+         the logo itself, trimmed of its transparent margin and centred in a
+         square frame. Never redrawn, never re-proportioned, never cropped.
+         The empty space above and below is the only thing added.
+
+         Every size declared here is a multiple of 48, because that is what
+         Google requires of a favicon before it will draw it beside a search
+         result. The raw 900×548 logo is not square and cannot satisfy that:
+         handed a non-square icon, Google squashes it, centre-crops it, or
+         discards it for a generic globe, and the site does not get to choose
+         which. 32x32 is deliberately absent from this list for the same
+         reason — it is not a multiple of 48 — and stays on disk only for
+         browsers that ask for it by size.
+
+         Order matters: the largest file is listed last so that a tab strip, a
+         bookmark bar and a search crawler each resolve to the sharpest source
+         rather than upscaling a small one. -->
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="144x144" href="/favicon-144x144.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
@@ -46,25 +59,32 @@
          number of smaller unfurlers do not resolve relative og:image paths, and
          a share card that fails on WhatsApp fails where most of this site's
          traffic is actually shared. og:url is kept in step with the canonical
-         by src/lib/canonical.ts. -->
+         by src/lib/canonical.ts.
+
+         The image is /Stand.webp served exactly as it sits in public/ — the
+         same file the story, quote and events pages show — rather than a card
+         cropped for this slot, so the photo in the search result is the photo
+         on the page. It is portrait (1100×1376); unfurlers that insist on
+         1.91:1 crop it themselves, which is the accepted cost of not
+         substituting a different frame here. -->
     <meta property="og:site_name" content="Naughty Berry" />
     <meta property="og:title" content="Naughty Berry | Chocolate Strawberry Cups – Cape Town" />
     <meta property="og:description" content="Cape Town's first strawberries &amp; chocolate on tap. Chocolate-covered strawberry cups, Dubai chocolate cups and brownie cups — at pop-ups and private events." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://naughtyberry.co.za/" />
-    <meta property="og:image" content="https://naughtyberry.co.za/og-image.jpg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:alt" content="Chocolate poured over a Naughty Berry brownie cup of fresh strawberries at the trailer window" />
+    <meta property="og:image" content="https://naughtyberry.co.za/Stand.webp" />
+    <meta property="og:image:width" content="1100" />
+    <meta property="og:image:height" content="1376" />
+    <meta property="og:image:type" content="image/webp" />
+    <meta property="og:image:alt" content="The Naughty Berry stand, served from its branded cart with fresh chocolate strawberry cups on the counter" />
     <meta property="og:locale" content="en_ZA" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Naughty Berry | Chocolate Strawberry Cups – Cape Town" />
     <meta name="twitter:description" content="Cape Town's first strawberries &amp; chocolate on tap. Chocolate-covered strawberry cups at pop-ups and private events." />
-    <meta name="twitter:image" content="https://naughtyberry.co.za/og-image.jpg" />
-    <meta name="twitter:image:alt" content="Chocolate poured over a Naughty Berry brownie cup of fresh strawberries at the trailer window" />
+    <meta name="twitter:image" content="https://naughtyberry.co.za/Stand.webp" />
+    <meta name="twitter:image:alt" content="The Naughty Berry stand, served from its branded cart with fresh chocolate strawberry cups on the counter" />
 
     <!-- The intro needs these before the JS bundle could ask for them. The
          poster is the first thing on screen, so it goes first. -->
@@ -143,7 +163,12 @@
       social unfurls; primaryImageOfPage is the documented way to tell a search
       engine which image belongs to the *page*, which is what it draws on when
       it picks a result thumbnail. It cannot be forced, but this is the strongest
-      signal available short of the photo appearing on the page itself.
+      signal available short of the photo appearing on the page itself — and
+      /Stand.webp does appear on the page, which is the other half of the signal.
+
+      Its URL matches og:image exactly. Google reconciles the two, and pointing
+      them at two different files is how a listing ends up showing whichever one
+      it trusts more rather than the one that was chosen.
 
       The WebPage @id and url follow the route — src/lib/canonical.ts rewrites
       them alongside the canonical, for exactly the reason described there.
@@ -192,11 +217,11 @@
         {
           "@type": "ImageObject",
           "@id": "https://naughtyberry.co.za/#primaryimage",
-          "url": "https://naughtyberry.co.za/og-image.jpg",
-          "contentUrl": "https://naughtyberry.co.za/og-image.jpg",
-          "width": 1200,
-          "height": 630,
-          "caption": "Chocolate poured over a Naughty Berry brownie cup of fresh strawberries at the trailer window"
+          "url": "https://naughtyberry.co.za/Stand.webp",
+          "contentUrl": "https://naughtyberry.co.za/Stand.webp",
+          "width": 1100,
+          "height": 1376,
+          "caption": "The Naughty Berry stand, served from its branded cart with fresh chocolate strawberry cups on the counter"
         },
         {
           "@type": "WebPage",

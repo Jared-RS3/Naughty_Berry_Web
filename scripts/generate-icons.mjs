@@ -1,5 +1,5 @@
 /**
- * Generates every favicon, app icon and social-share image the site serves.
+ * Generates the square app icons that Android and iOS require.
  *
  *   npm run icons
  *
@@ -9,9 +9,14 @@
  * Every icon is that logo, scaled. It is a wide lockup (900×548) going into
  * square frames, so it is trimmed of its transparent margin and letterboxed —
  * the proportions are never altered, the logo is simply centred with space
- * above and below. At 16px this is a pink smudge rather than a legible mark;
- * that is the accepted cost of using the lockup itself rather than a symbol
- * lifted out of it.
+ * above and below.
+ *
+ * The padding is what makes the icon eligible at all: Google only renders a
+ * favicon that is a square whose side is a multiple of 48px, and every browser
+ * draws the tab icon in a square box. Serving the raw 900×548 file instead was
+ * tried and reverted — a non-square icon is squashed, centre-cropped or
+ * dropped for a generic globe, and which of the three you get is not the site's
+ * choice to make.
  *
  * Everything written below is a build product. Edit the source and re-run;
  * never hand-edit the generated files, they will be overwritten.
@@ -96,62 +101,46 @@ function ico(images) {
   return Buffer.concat([header, ...entries, ...images.map((i) => i.data)])
 }
 
-/**
- * The 1200×630 card that WhatsApp, Facebook, LinkedIn, Slack, iMessage and X
- * show when the URL is pasted, and the thumbnail Google draws beside the search
- * result. Without it those unfurls fall back to a bare link.
+/*
+ * No share card is generated here any more.
  *
- * It is a crop of the brownie-cup photograph rather than a composed graphic:
- * the shot already carries the wordmark on the cup, and a real photo of the
- * product outperforms a laid-out card in both places this file is shown.
- *
- * SHARE_PHOTO is portrait, so it cannot be handed to og:image as-is — 1.91:1 is
- * what every unfurler crops to, and doing that to a 1078×1300 frame would take
- * the lid and the base off the cup. The band below is cut deliberately instead,
- * so the crop is decided here rather than by five different consumers.
+ * This script used to cut a 1200×630 og-image.jpg out of public/brownie.jpg.
+ * index.html now points og:image and the JSON-LD #primaryimage straight at
+ * public/Stand.webp — the same file the story, quote and events pages render —
+ * so the search result and the page show the identical photograph rather than
+ * a crop that exists only in the <head>. Nothing to build: the photo ships as
+ * it is. Changing the share photo is now a one-line edit in index.html, not a
+ * re-run of this script.
  */
-const SHARE_PHOTO = src('public/brownie.jpg')
-
-async function shareCard() {
-  const W = 1200
-  const H = 630
-
-  const photo = await sharp(SHARE_PHOTO).metadata()
-
-  // Full width, a 1.91:1 band of it. CUP_CENTRE is the vertical middle of the
-  // cup in the source frame; the band is centred on that and then clamped, so
-  // the subject sits on the centre line instead of at whatever height a plain
-  // centre crop would land on.
-  const CUP_CENTRE = 0.56
-  const bandHeight = Math.round(photo.width * (H / W))
-  const top = Math.min(
-    Math.max(Math.round(photo.height * CUP_CENTRE - bandHeight / 2), 0),
-    photo.height - bandHeight,
-  )
-
-  const card = await sharp(SHARE_PHOTO)
-    .extract({ left: 0, top, width: photo.width, height: bandHeight })
-    .resize(W, H)
-    .jpeg({ quality: 88, chromaSubsampling: '4:4:4' })
-    .toBuffer()
-
-  await writeFile(out('og-image.jpg'), card)
-  return { width: W, height: H, bytes: card.length }
-}
 
 async function main() {
   await mkdir(out('.'), { recursive: true })
 
-  // Browser tabs. There is no favicon.svg any more: the logo is a raster PNG,
-  // and the only way to serve it as an SVG icon would be a 40 KB base64 payload
-  // fetched on every page load to draw a 16px square. PNG + ICO covers every
-  // browser without that.
+  // Browser tabs, and the icon Google draws beside the search result.
+  //
+  // Every size here is a multiple of 48. That is not decoration — it is
+  // Google's stated requirement for a favicon it will actually render ("a
+  // square that is a multiple of 48px"), and the reason 32x32 is no longer in
+  // the set that index.html declares. A wide lockup cannot be square without
+  // padding, so it is padded: trimmed of its transparent margin, then centred
+  // in the square with empty space above and below. The artwork is never
+  // squashed, cropped or redrawn — this is the logo file, framed.
+  //
+  // There is no favicon.svg: the logo is a raster PNG, and serving it as an
+  // SVG icon would mean a 40 KB base64 payload fetched on every page load to
+  // draw a 16px square. PNG + ICO covers every browser without that.
   const png16 = await mark(16)
   const png32 = await mark(32)
   const png48 = await mark(48)
   await writeFile(out('favicon-32x32.png'), png32)
+  await writeFile(out('favicon-48x48.png'), png48)
   await writeFile(out('favicon-96x96.png'), await mark(96))
+  await writeFile(out('favicon-144x144.png'), await mark(144))
   await writeFile(out('favicon-192x192.png'), await mark(192))
+
+  // The root /favicon.ico. Google falls back to this when it cannot use a
+  // declared <link>, and browsers request it blind, so it has to carry the
+  // same mark rather than being left to rot as a stale copy.
   await writeFile(
     out('favicon.ico'),
     ico([
@@ -172,12 +161,9 @@ async function main() {
   await writeFile(out('web-app-manifest-512x512.png'), await mark(512, { background: PINK, pad: 0.08 }))
   await writeFile(out('web-app-manifest-maskable-512x512.png'), await mark(512, { background: PINK, pad: 0.28 }))
 
-  const card = await shareCard()
-
   console.log('icons written to public/')
-  console.log(`  favicon.ico (16/32/48), favicon-{32,96,192}.png`)
+  console.log(`  favicon.ico (16/32/48), favicon-{32,48,96,144,192}.png`)
   console.log(`  apple-touch-icon.png, web-app-manifest-{192,512,maskable}`)
-  console.log(`  og-image.jpg (${card.width}x${card.height}, ${Math.round(card.bytes / 1024)} KB)`)
 }
 
 main().catch((err) => {
