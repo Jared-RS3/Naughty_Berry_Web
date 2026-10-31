@@ -25,14 +25,13 @@ import LegalLayout, {
  *   • The Events section embeds an Airtable-hosted form in an iframe. That one
  *     submits straight to Airtable and never touches our function, so Airtable
  *     is the first party for anything typed into it.
- *   • usePopupSchedule now reads the pop-up schedule from our own /api/schedule
- *     function, NOT from api.airtable.com in the visitor's browser. That used to
- *     disclose the visitor's IP to Airtable on every page load; it no longer
- *     does. If anyone ever points that hook back at Airtable directly, this
- *     page and the Cookie Policy both become wrong in the same commit.
+ *   • The pop-up schedule is hardcoded in src/data/nextStop.ts. Nothing about a
+ *     visit is sent to Airtable unless the visitor uses the embedded form.
+ *   • The home page newsletter invitation (NewsletterEnvelope.tsx) posts to
+ *     /api/subscribe, which adds the address to our Mailchimp audience. Section 4.
  *   • Google Fonts is loaded from index.html — another IP disclosure, to Google.
- *   • The footer newsletter form is not wired to anything. Saying so is the only
- *     honest option; see the note in Footer.tsx.
+ *   • The footer newsletter form is still not wired to anything. Saying so is
+ *     the only honest option; see the note in Footer.tsx.
  *   • Google Analytics 4 runs — but only after the visitor consents. See
  *     src/lib/analytics.ts: gtag.js is not added to the document at all until
  *     consent is granted, and withdrawing it disables the library and deletes
@@ -331,23 +330,25 @@ export default function PrivacyPolicyPage() {
 
       {/* ─────────────────────────────────────────────────────────────── */}
       <Section id="newsletter" heading="4. Newsletter sign-up">
-        <Callout>
-          <strong>The newsletter form in our footer is not connected yet.</strong> If you type your
-          email address into it and press Subscribe, the address is checked for typos and then
-          cleared. It is not stored, not emailed to us, and not sent to any mailing-list provider.
-          Nobody is subscribed to anything.
-        </Callout>
-
         <p>
-          We are being explicit about this because a form that looks like it works, but quietly does
-          nothing, is unfair to you either way — you should not believe you have subscribed when you
-          have not, and you should not believe we are holding your address when we are not.
+          The “You’ve got mail” invitation on our home page lets you join our newsletter, which
+          we call the naughty list: where we are popping up next, new treats and early access to
+          drops. It only asks for your email address, and you are only added if you type it in and
+          press the button yourself.
         </p>
 
         <p>
-          When we do switch it on, we will update this policy first and say here who runs the
-          mailing list, what we store, and how long for. Sign-up will be opt-in, every message will
-          carry a one-click unsubscribe, and we will not add anyone who has not asked.
+          Your address is sent by our own server to <strong>Mailchimp</strong>, the mailing-list
+          provider listed in section 6, and kept on our list until you unsubscribe. Every email we
+          send carries a one-click unsubscribe link; using it removes you from the list. We never
+          sell the list or share it with anyone else, and we do not use it for anything except
+          sending the newsletter.
+        </p>
+
+        <p>
+          The newsletter form in our footer is not connected yet. If you type your email address
+          into that one, it is checked for typos and then cleared. It is not stored or sent
+          anywhere.
         </p>
       </Section>
 
@@ -394,7 +395,12 @@ export default function PrivacyPolicyPage() {
           rows={[
             [
               'Airtable (Airtable Inc.)',
-              'Every enquiry is stored in our Airtable base. The enquiry form embedded in our Events section is hosted by Airtable and submits directly to them. Our pop-up schedule also lives in Airtable, but your browser no longer fetches it directly — our own server does, so Airtable does not see your IP address unless you use that embedded form.',
+              'Every enquiry is stored in our Airtable base. The enquiry form embedded in our Events section is hosted by Airtable and submits directly to them, so Airtable only sees your IP address if you use that embedded form.',
+              'United States',
+            ],
+            [
+              'Mailchimp (Intuit Inc.)',
+              'Only if you join our newsletter (“the naughty list”). Mailchimp stores your email address on our mailing list and sends our newsletters. You can unsubscribe from the link in any email, and we delete your address from the list when you do.',
               'United States',
             ],
             [

@@ -223,10 +223,9 @@ export default function CookiePolicyPage() {
         </Bullets>
 
         <p>
-          Our pop-up schedule lives in Airtable and used to be fetched by your browser, which
-          disclosed your IP address to Airtable on every visit. It is now fetched by our own server
-          instead and passed on to you, so Airtable no longer sees you at all unless you use the
-          embedded form in <A href="#third-party">section 4</A>.
+          Our pop-up schedule is built into the site itself, so loading the page sends nothing to
+          Airtable. Airtable only sees you if you use the embedded form in{' '}
+          <A href="#third-party">section 4</A>.
         </p>
 
         <p>

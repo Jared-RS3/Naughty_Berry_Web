@@ -24,6 +24,7 @@ const PrivacyPolicyPage = lazy(() => import('./components/PrivacyPolicyPage'))
 const CookiePolicyPage  = lazy(() => import('./components/CookiePolicyPage'))
 const TermsPage         = lazy(() => import('./components/TermsPage'))
 const NotFoundPage      = lazy(() => import('./components/NotFoundPage'))
+const NewsletterEnvelope = lazy(() => import('./components/NewsletterEnvelope'))
 
 /** Standalone routes. Plain <a> navigation, resolved by the SPA fallback in
  *  public/_redirects — no router dependency for the handful of pages here. */
@@ -176,6 +177,11 @@ function HomePage() {
           decision they cannot see, over a full-screen film, is not "informed" —
           and nothing is loading in the meantime, so the wait costs nothing. */}
       <CookieBanner ready={introDone} />
+
+      {/* Arrives a beat after the intro, never on top of it. */}
+      <Suspense fallback={null}>
+        <NewsletterEnvelope ready={introDone} />
+      </Suspense>
     </>
   )
 }

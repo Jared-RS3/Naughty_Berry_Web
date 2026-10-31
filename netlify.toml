@@ -31,10 +31,9 @@
 # Adding a new third-party script, font, iframe or API means adding it here too,
 # or the browser will silently refuse to load it.
 #
-# Note what is NOT in connect-src: api.airtable.com. The browser no longer talks
-# to Airtable at all — the pop-up schedule comes from /api/schedule, which holds
-# the token server-side. Putting api.airtable.com back here would re-open the
-# path that made a browser-side token possible in the first place.
+# Note what is NOT in connect-src: api.airtable.com. The browser never talks to
+# Airtable — the pop-up schedule is hardcoded in src/data/nextStop.ts and only
+# netlify/functions/enquiry.mts writes to Airtable, server-side.
 #
 # The Google Analytics entries below only permit the request; they do not make
 # it. gtag.js is appended to the document by src/lib/analytics.ts and only after

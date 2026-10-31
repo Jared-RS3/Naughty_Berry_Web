@@ -19,5 +19,10 @@ export default defineConfig({
     // taken — a drifting port is what causes the 404. Fail loudly instead so
     // a stale server gets cleaned up rather than hidden.
     strictPort: true,
+    // Plain Vite has no functions, so /api/* would 404. Forward it to
+    // `npm run dev:api` (netlify functions:serve) running alongside.
+    proxy: {
+      '/api': 'http://localhost:9999',
+    },
   },
 })
