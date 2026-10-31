@@ -166,9 +166,27 @@ export default function CookieBanner({ ready = true }: { ready?: boolean }) {
     setPanelOpen(false)
   }, [])
 
-  if (!configured) return null
+  const barVisible = configured && undecided && ready && settled && !panelOpen
 
-  const barVisible = undecided && ready && settled && !panelOpen
+  /* Publish the bar's height as --nb-cookie-bar while it is up, so whatever
+   * else lives in the bottom corner (the newsletter envelope) can sit above it
+   * instead of underneath. Back to 0 the moment the bar goes. */
+  const barRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const root = document.documentElement
+    const bar = barRef.current
+    if (!barVisible || !bar) return
+    const publish = () => root.style.setProperty('--nb-cookie-bar', `${bar.offsetHeight}px`)
+    publish()
+    const ro = new ResizeObserver(publish)
+    ro.observe(bar)
+    return () => {
+      ro.disconnect()
+      root.style.removeProperty('--nb-cookie-bar')
+    }
+  }, [barVisible])
+
+  if (!configured) return null
 
   return (
     <>
@@ -176,6 +194,7 @@ export default function CookieBanner({ ready = true }: { ready?: boolean }) {
       <AnimatePresence>
         {barVisible && (
           <motion.div
+            ref={barRef}
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 24 }}

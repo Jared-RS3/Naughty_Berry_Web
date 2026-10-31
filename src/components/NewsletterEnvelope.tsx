@@ -2,14 +2,22 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { X } from 'lucide-react'
 import { EMAIL_MAX, normaliseEmail } from '../lib/email'
+import { useMediaQuery } from '../hooks/useIsMobile'
 
 /**
  * "You've got mail, babe." — the naughty-list sign-up.
  *
- * A small pink envelope tucks into the bottom-right corner a beat after the
- * intro has finished, so it never stacks on top of the loader as a second
- * interruption. Tapping it opens the flap and the invitation slides out with
- * the email field; a successful sign-up stamps the card and folds it away.
+ * A small pink envelope arrives a beat after the intro has finished, so it
+ * never stacks on top of the loader as a second interruption. Tapping it opens
+ * the flap and the invitation slides out with the email field; a successful
+ * sign-up stamps the card and folds it away.
+ *
+ * Where it lands:
+ *  - Phones: in the hero, in the empty band between the "Next stop" pill and
+ *    the headline. The bottom of a phone belongs to the cookie banner, which
+ *    sat right over the envelope and hid the strawberry's whole entrance.
+ *  - Larger screens: the bottom-right corner, lifted above the cookie banner
+ *    (--nb-cookie-bar, published by CookieBanner) for as long as it is up.
  *
  * Sign-ups go to /api/subscribe (netlify/functions/subscribe.mts → Mailchimp).
  */
@@ -59,6 +67,48 @@ const EASE_OUT = [0.22, 1, 0.36, 1] as const
 
 type Stage = 'closed' | 'open' | 'done'
 
+/** The hero's own mobile breakpoint — below `sm`, where the pill and headline
+ *  stack and leave the band the envelope sits in. */
+const HERO_BAND_QUERY = '(max-width: 639px)'
+
+/** Height of the closed envelope pill, which is what has to fit the band. */
+const LAUNCHER_H = 54
+
+/**
+ * Page-relative top for the envelope on phones: centred in the band between
+ * the hero's pill (`data-mail-band="top"`) and whichever of the headline or
+ * cup reaches highest (`data-mail-band="floor"`). Undefined until measured;
+ * null when the hero isn't there to measure, which drops the envelope back to
+ * its corner.
+ */
+function useHeroBandTop(enabled: boolean): number | null | undefined {
+  const [top, setTop] = useState<number | null | undefined>(undefined)
+
+  useEffect(() => {
+    if (!enabled) return
+    const measure = () => {
+      const pill = document.querySelector('[data-mail-band="top"]')
+      const floors = [...document.querySelectorAll('[data-mail-band="floor"]')]
+      if (!pill || !floors.length) return setTop(null)
+      const bandTop = pill.getBoundingClientRect().bottom
+      const bandBottom = Math.min(...floors.map((el) => el.getBoundingClientRect().top))
+      const slack = Math.max(0, bandBottom - bandTop - LAUNCHER_H)
+      setTop(Math.round(window.scrollY + bandTop + slack / 2))
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    const hero = document.getElementById('top')
+    if (hero) ro.observe(hero)
+    window.addEventListener('resize', measure)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', measure)
+    }
+  }, [enabled])
+
+  return enabled ? top : undefined
+}
+
 export default function NewsletterEnvelope({ ready }: { ready: boolean }) {
   const reduce = useReducedMotion()
   const [visible, setVisible] = useState(false)
@@ -67,6 +117,15 @@ export default function NewsletterEnvelope({ ready }: { ready: boolean }) {
   const [arrived, setArrived] = useState(!!reduce)
   const handleArrived = useCallback(() => setArrived(true), [])
   const delivered = arrived || !!reduce
+
+  // Measured only once it's about to show, by which point the hero's own
+  // entrance has finished moving things.
+  const phone = useMediaQuery(HERO_BAND_QUERY)
+  const bandTop = useHeroBandTop(phone && visible)
+  const inHero = typeof bandTop === 'number'
+  // On a phone, hold off rendering until the band is measured, so the berry
+  // doesn't start its roll in the corner and jump.
+  const placed = !phone || bandTop !== undefined
 
   useEffect(() => {
     if (!SHOW_NEWSLETTER || !ready || !shouldOffer()) return
@@ -87,11 +146,28 @@ export default function NewsletterEnvelope({ ready }: { ready: boolean }) {
 
   return (
     <AnimatePresence>
-      {visible && (
-        <motion.div
+      {visible && placed && (
+        <div
           key="naughty-list"
+          // Phones: part of the page (it scrolls with the hero, like the mobile
+          // nav). Closed, z-44 keeps it under the mobile menu's scrim (45) and
+          // drawer (46) but over the flying cup (40). Open, it goes over the
+          // cookie banner (300): on a short phone the card runs down behind
+          // the banner, which would hide the very button it was opened for.
+          className={
+            inHero
+              ? `pointer-events-none absolute inset-x-0 flex justify-center px-3 ${stage === 'closed' ? 'z-[44]' : 'z-[305]'}`
+              : 'pointer-events-none fixed right-4 z-[90] transition-[bottom] duration-500 ease-out [--nb-corner-gap:1rem] sm:right-6 sm:[--nb-corner-gap:1.5rem]'
+          }
+          style={
+            inHero
+              ? { top: bandTop }
+              : { bottom: 'calc(var(--nb-corner-gap) + var(--nb-cookie-bar, 0px))' }
+          }
+        >
+        <motion.div
           exit={{ opacity: 0, y: reduce ? 0 : 40, transition: { duration: 0.35, ease: 'easeIn' } }}
-          className="fixed bottom-4 right-4 z-[90] sm:bottom-6 sm:right-6"
+          className="pointer-events-auto relative"
         >
           {/* The delivery: a chocolate-dipped strawberry rolls in with the
               mail, then pops into the envelope. Skipped for reduced motion. */}
@@ -118,6 +194,7 @@ export default function NewsletterEnvelope({ ready }: { ready: boolean }) {
             )}
           </AnimatePresence>
         </motion.div>
+        </div>
       )}
     </AnimatePresence>
   )
@@ -258,8 +335,10 @@ function Launcher({
           <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#C01057]">
             New mail
           </span>
+          {/* One line, always: on a phone the pill sits in a band that is
+              only just taller than it, and a wrapped line would overflow. */}
           <span
-            className="text-[14px] text-[#3B2116]"
+            className="whitespace-nowrap text-[13px] text-[#3B2116] min-[360px]:text-[14px]"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             You’ve got mail, babe.

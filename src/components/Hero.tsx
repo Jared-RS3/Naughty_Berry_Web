@@ -147,6 +147,9 @@ function HeroLocationStrip({
       animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
       transition={{ duration: 0.7, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
       className={`z-30 ${wrapperClass}${hiddenClass}`}
+      // The phone envelope (NewsletterEnvelope) sits in the band between this
+      // pill and the headline; these markers are how it finds that band.
+      data-mail-band={placement === 'top' ? 'top' : undefined}
       aria-hidden={!show || undefined}
     >
       {/* The headline is a whole sentence now ("Next stop drops Monday"), so the
@@ -400,7 +403,14 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
               { t: 'CHOCOLATE', col: c.brown },
               { t: 'CHOCOLATE', col: c.brown },
             ].map((row, i) => (
-              <motion.span key={i} custom={i} variants={rise} className="block" style={{ color: row.col }}>
+              <motion.span
+                key={i}
+                custom={i}
+                variants={rise}
+                className="block"
+                style={{ color: row.col }}
+                data-mail-band={i === 0 ? 'floor' : undefined}
+              >
                 {row.t}
               </motion.span>
             ))}
@@ -448,6 +458,7 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
               static cup while the flying cup renders in its place. ── */}
           <div
             data-cup-anchor="hero"
+            data-mail-band="floor"
             className="cup-static absolute left-1/2 top-[56%] z-20 pointer-events-none"
             style={{
               transform: 'translate(-50%, -50%)',
