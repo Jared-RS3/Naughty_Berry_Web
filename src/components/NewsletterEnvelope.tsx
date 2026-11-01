@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { X } from 'lucide-react'
-import { EMAIL_MAX, normaliseEmail } from '../lib/email'
+import { EMAIL_MAX } from '../lib/email'
+import { isSubscribed, SUBSCRIBED_EVENT, useNewsletterSignup } from '../lib/newsletter'
 import { useMediaQuery } from '../hooks/useIsMobile'
 
 /**
@@ -11,6 +12,9 @@ import { useMediaQuery } from '../hooks/useIsMobile'
  * never stacks on top of the loader as a second interruption. Tapping it opens
  * the flap and the invitation slides out with the email field; a successful
  * sign-up stamps the card and folds it away.
+ *
+ * It turns up on every load until the visitor signs up — here or in the
+ * section above the footer. Closing it only puts it away for this visit.
  *
  * Where it lands:
  *  - Phones: in the hero, in the empty band between the "Next stop" pill and
@@ -31,37 +35,6 @@ const ARRIVE_MS = 1800
 
 /** The strawberry's roll-in, bump, hop and pop, start to finish. */
 const ARRIVE_S = 1.8
-
-/** Someone who closed it isn't asked again for this long. */
-const SNOOZE_MS = 14 * 24 * 60 * 60 * 1000
-
-const STORAGE_KEY = 'nb-naughty-list'
-
-type Stored = { subscribed: true } | { dismissedAt: number }
-
-function readStored(): Stored | null {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as Stored) : null
-  } catch {
-    return null
-  }
-}
-
-function writeStored(value: Stored) {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
-  } catch {
-    // Private mode or blocked storage — it just asks again next visit.
-  }
-}
-
-function shouldOffer(): boolean {
-  const stored = readStored()
-  if (!stored) return true
-  if ('subscribed' in stored) return false
-  return Date.now() - stored.dismissedAt > SNOOZE_MS
-}
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 
@@ -128,18 +101,24 @@ export default function NewsletterEnvelope({ ready }: { ready: boolean }) {
   const placed = !phone || bandTop !== undefined
 
   useEffect(() => {
-    if (!SHOW_NEWSLETTER || !ready || !shouldOffer()) return
+    if (!SHOW_NEWSLETTER || !ready || isSubscribed()) return
     const t = window.setTimeout(() => setVisible(true), ARRIVE_MS)
     return () => window.clearTimeout(t)
   }, [ready])
 
-  const dismiss = () => {
-    writeStored({ dismissedAt: Date.now() })
-    setVisible(false)
-  }
+  // Signed up in the footer section instead: step aside, unless it's this
+  // envelope's own card that is open and stamping.
+  useEffect(() => {
+    if (stage !== 'closed') return
+    const onSubscribed = () => setVisible(false)
+    window.addEventListener(SUBSCRIBED_EVENT, onSubscribed)
+    return () => window.removeEventListener(SUBSCRIBED_EVENT, onSubscribed)
+  }, [stage])
+
+  // Away for this visit only — nothing is stored, so it's back next load.
+  const dismiss = () => setVisible(false)
 
   const handleSubscribed = () => {
-    writeStored({ subscribed: true })
     setStage('done')
     window.setTimeout(() => setVisible(false), 2600)
   }
@@ -186,7 +165,6 @@ export default function NewsletterEnvelope({ ready }: { ready: boolean }) {
               <Invitation
                 key="invitation"
                 reduce={!!reduce}
-                done={stage === 'done'}
                 onClose={() => setStage('closed')}
                 onDismiss={dismiss}
                 onSubscribed={handleSubscribed}
@@ -381,23 +359,18 @@ function EnvelopeIcon() {
 
 function Invitation({
   reduce,
-  done,
   onClose,
   onDismiss,
   onSubscribed,
 }: {
   reduce: boolean
-  done: boolean
   onClose: () => void
   onDismiss: () => void
   onSubscribed: () => void
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null)
-  const [startedAt] = useState(() => Date.now())
-  const [email, setEmail] = useState('')
-  const [company, setCompany] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [sending, setSending] = useState(false)
+  const { email, setEmail, company, setCompany, error, sending, done, submit } =
+    useNewsletterSignup(onSubscribed)
 
   // Focus the field once the card has slid out, not while it's still inside.
   useEffect(() => {
@@ -410,40 +383,6 @@ function Invitation({
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
-
-  const submit = async (e: FormEvent) => {
-    e.preventDefault()
-    if (sending) return
-    const value = normaliseEmail(email)
-    if (!value) {
-      setError('That email doesn’t look quite right.')
-      return
-    }
-    setSending(true)
-    setError(null)
-    try {
-      const res = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: value, company, startedAt }),
-        signal: AbortSignal.timeout(12_000),
-      })
-      if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { error?: unknown }
-        // Only show a short plain-string message; React escapes it either way.
-        const message = typeof body.error === 'string' && body.error.length <= 200 ? body.error : null
-        throw new Error(message ?? 'We couldn’t add you just now. Please try again.')
-      }
-      onSubscribed()
-    } catch (err) {
-      setError(
-        err instanceof Error && err.name !== 'TimeoutError'
-          ? err.message
-          : 'We couldn’t add you just now. Please try again.'
-      )
-      setSending(false)
-    }
-  }
 
   // Timings for the opening sequence: flap lifts, then the card slides out.
   const flapDelay = reduce ? 0 : 0.1
@@ -530,10 +469,7 @@ function Invitation({
               required
               placeholder="Email address"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value)
-                if (error) setError(null)
-              }}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={sending || done}
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? 'naughty-list-error' : undefined}

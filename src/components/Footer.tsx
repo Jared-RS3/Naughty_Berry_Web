@@ -12,6 +12,7 @@ import {
 import { usePopupSchedule } from '../hooks/usePopupSchedule'
 import { mapsHref, pickNext, shortWhen } from '../lib/nextStop'
 import { CookieSettingsLink } from './CookieBanner'
+import NewsletterSignup from './NewsletterSignup'
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const
 /** TODO: swap in Daybreak's live site — this is the only place it's referenced. */
@@ -71,12 +72,6 @@ export default function Footer() {
       scrollTo(href)
     }
   }
-
-  // The newsletter block below is commented out, so its email state, its submit
-  // handler and their imports (useState, FormEvent, EMAIL_RE) went with it —
-  // `tsc -b` runs with noUnusedLocals and fails the Netlify build on dead
-  // declarations, which is exactly what it did here. Turning the sign-up back on
-  // means restoring those three imports along with the JSX; see the block below.
 
   return (
     <>
@@ -363,93 +358,7 @@ export default function Footer() {
             </div>
           </motion.div>
 
-          {/* Newsletter */}
-          {/* <div className="relative mt-9 overflow-hidden rounded-[25px] border border-[#E8176D]/12 bg-white/35 px-6 py-7 sm:px-9">
-            <div className="grid items-center gap-7 lg:grid-cols-[0.8fr_1.2fr]">
-              <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-                <Mail
-                  size={27}
-                  strokeWidth={1.6}
-                  className="shrink-0 text-[#E8176D]"
-                />
-
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#D81464]">
-                    Sign up to our newsletter - new flavours, pop-up dates, new products and more
-                  </p>
-                  <p className="mt-1 text-sm text-[#684756]">
-                    New flavours, pop-up dates and sweet moments.
-                  </p>
-                </div>
-              </div>
-
-              <form
-                onSubmit={handleNewsletterSubmit}
-                className="flex min-h-14 overflow-hidden rounded-full border border-[#E8176D]/12 bg-white/70 p-1.5"
-              >
-                <label htmlFor="newsletter-email" className="sr-only">
-                  Email address
-                </label>
-
-                <input
-                  id="newsletter-email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(event) => {
-                    setEmail(event.target.value)
-                    if (newsletterError) setNewsletterError(null)
-                  }}
-                  placeholder="Your email address"
-                  maxLength={254}
-                  autoComplete="email"
-                  inputMode="email"
-                  aria-invalid={newsletterError ? true : undefined}
-                  aria-describedby={newsletterError ? 'newsletter-error' : undefined}
-                  className="min-w-0 flex-1 bg-transparent px-5 text-sm text-[#3B2116] outline-none placeholder:text-[#9B7586]/65"
-                />
-
-                <button
-                  type="submit"
-                  className="shrink-0 rounded-full bg-[#E8176D] px-6 text-[11px] font-bold uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#D71062]"
-                >
-                  Subscribe
-                </button>
-              </form>
-              {newsletterError && (
-                <p id="newsletter-error" className="mt-2 pl-5 text-[12px] font-semibold text-[#C01057]">
-                  {newsletterError}
-                </p>
-              )}
-
-              {/* Says out loud what the NOTE above the handler says in code: this
-                  form has no destination. /privacy-policy §4 states the same, and
-                  both have to change on the day it is wired up. */}
-              {/* <p className="text-[11px] leading-relaxed text-[#7A3B5E]/60 lg:col-start-2">
-                Sign-ups aren’t live yet — nothing is stored or sent. Follow{' '}
-                <a
-                  href="https://www.instagram.com/naughtyberrycpt"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold text-[#E8176D] underline decoration-[#E8176D]/30 underline-offset-2 hover:text-[#C01057]"
-                >
-                  @naughtyberrycpt
-                </a>{' '}
-                for drops in the meantime. See our{' '}
-                <a
-                  href="/privacy-policy"
-                  className="font-semibold text-[#E8176D] underline decoration-[#E8176D]/30 underline-offset-2 hover:text-[#C01057]"
-                >
-                  Privacy Policy
-                </a>
-                .
-              </p>
-            </div>
-
-            <div className="pointer-events-none absolute -bottom-11 right-5 hidden h-28 w-28 items-center justify-center rounded-full bg-[#3B2116]/5 md:flex">
-              <span className="text-6xl">🍓</span>
-            </div>
-          </div> */}
+          <NewsletterSignup />
           
         </div>
       </section>

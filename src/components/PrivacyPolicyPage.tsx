@@ -27,11 +27,10 @@ import LegalLayout, {
  *     is the first party for anything typed into it.
  *   • The pop-up schedule is hardcoded in src/data/nextStop.ts. Nothing about a
  *     visit is sent to Airtable unless the visitor uses the embedded form.
- *   • The home page newsletter invitation (NewsletterEnvelope.tsx) posts to
+ *   • The home page newsletter invitation (NewsletterEnvelope.tsx) and the
+ *     sign-up above the footer (NewsletterSignup.tsx) both post to
  *     /api/subscribe, which adds the address to our Mailchimp audience. Section 4.
  *   • Google Fonts is loaded from index.html — another IP disclosure, to Google.
- *   • The footer newsletter form is still not wired to anything. Saying so is
- *     the only honest option; see the note in Footer.tsx.
  *   • Google Analytics 4 runs — but only after the visitor consents. See
  *     src/lib/analytics.ts: gtag.js is not added to the document at all until
  *     consent is granted, and withdrawing it disables the library and deletes
@@ -331,7 +330,8 @@ export default function PrivacyPolicyPage() {
       {/* ─────────────────────────────────────────────────────────────── */}
       <Section id="newsletter" heading="4. Newsletter sign-up">
         <p>
-          The “You’ve got mail” invitation on our home page lets you join our newsletter, which
+          The “You’ve got mail” invitation on our home page, and the sign-up box near the bottom
+          of the page, let you join our newsletter, which
           we call the naughty list: where we are popping up next, new treats and early access to
           drops. It only asks for your email address, and you are only added if you type it in and
           press the button yourself.
@@ -346,9 +346,8 @@ export default function PrivacyPolicyPage() {
         </p>
 
         <p>
-          The newsletter form in our footer is not connected yet. If you type your email address
-          into that one, it is checked for typos and then cleared. It is not stored or sent
-          anywhere.
+          Once you have signed up, your browser remembers it (one entry in its local storage, no
+          email address) so we stop showing you the invitation.
         </p>
       </Section>
 
