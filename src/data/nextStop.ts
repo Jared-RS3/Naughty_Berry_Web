@@ -10,7 +10,7 @@
  * What the tag says is decided by `day`:
  *   • a weekday, e.g. 'Saturday'  → "Next stop drops Saturday"
  *   • 'Location'                  → "Next stop <eventName>"
- *   • 'TBA'                       → "Next stop to be announced"
+ *   • 'TBA'                       → "Maynardville Park, Wynberg"
  *
  * `location` is the address the tag opens in Google Maps when tapped.
  * `date` is YYYY-MM-DD; leave it '' if you don't want a date shown.
@@ -20,9 +20,9 @@ export const SHOW_NEXT_STOP = true
 
 export const NEXT_STOP = {
   eventName: 'To be announced',
-  day: 'Location',
+  day: 'TBA',
   date: '',
-  location: '',
+  location: 'Maynardville Park, Wynberg',
   area: '',
   startTime: '',
   endTime: '',

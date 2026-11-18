@@ -149,7 +149,7 @@ export function stopHeadline(slot: ScheduleSlot): string | null {
   const day = slot.day.trim().toLowerCase()
   if (isDayOff(slot)) return null
 
-  if (day === TBA_OPTION) return 'Next stop to be announced'
+  if (day === TBA_OPTION) return 'Maynardville Park, Wynberg'
 
   if (day && day !== LOCATION_OPTION) return `Next stop drops ${slot.day.trim()}`
 
