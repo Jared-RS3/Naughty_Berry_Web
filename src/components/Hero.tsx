@@ -1,8 +1,9 @@
 import { motion, useReducedMotion } from 'framer-motion'
-import { MapPin, ArrowRight, ChevronRight } from 'lucide-react'
+import { MapPin, ArrowRight, ChevronRight, ShoppingBag } from 'lucide-react'
 import { usePopupSchedule, type ScheduleSlot } from '../hooks/usePopupSchedule'
 import { currentSlot, isScheduleOff, mapsHref, stopHeadline } from '../lib/nextStop'
 import { useIsMobile } from '../hooks/useIsMobile'
+import { SHOP_URL } from '../lib/shop'
 
 type HeroProps = {
   isNaughtyMode: boolean
@@ -308,6 +309,23 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
     </a>
   )
 
+  // Secondary to View Menu: the cream pill rather than a second berry button,
+  // so the pair reads as one lead action and one alternative.
+  const shopCta = (
+    <a
+      href={SHOP_URL}
+      className={`group inline-flex items-center gap-2.5 rounded-full px-8 py-3.5 text-[12px] font-bold uppercase tracking-[0.18em] transition-colors ${
+        isNaughtyMode
+          ? 'bg-[#3A1140]/85 text-[#FFB3E0] hover:text-white shadow-[0_8px_20px_rgba(0,0,0,0.28)]'
+          : 'nb-pill text-[#E8176D] hover:text-[#C01057]'
+      }`}
+      aria-label="Visit the shop"
+    >
+      <ShoppingBag size={15} aria-hidden="true" />
+      Shop
+    </a>
+  )
+
   return (
     <section
       id="top"
@@ -560,12 +578,12 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
           initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 14 }}
           animate={loaded ? { opacity: 1, y: 0 } : { opacity: 0 }}
           transition={{ duration: 0.7, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-auto mt-[clamp(16px,4.4svh,36px)] flex justify-center sm:hidden"
+          className="mb-auto mt-[clamp(16px,4.4svh,36px)] flex flex-wrap justify-center gap-3 sm:hidden"
         >
           <motion.a
             href="#menu"
             whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
-            className={`group inline-flex min-h-[56px] items-center justify-center gap-3 rounded-full px-9 text-[13px] font-bold uppercase tracking-[0.18em] text-white transition-colors ${
+            className={`group inline-flex min-h-[56px] items-center justify-center gap-3 rounded-full px-7 text-[13px] font-bold uppercase tracking-[0.18em] text-white transition-colors ${
               isNaughtyMode
                 ? 'bg-gradient-to-r from-[#FF2D9C] to-[#7A1B78]'
                 : 'bg-[#E8176D] shadow-[0_14px_32px_rgba(232,23,109,0.32)]'
@@ -578,6 +596,19 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
               className="transition-transform duration-300 group-active:translate-x-1"
               aria-hidden="true"
             />
+          </motion.a>
+          <motion.a
+            href={SHOP_URL}
+            whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
+            className={`inline-flex min-h-[56px] items-center justify-center gap-2.5 rounded-full px-7 text-[13px] font-bold uppercase tracking-[0.18em] transition-colors ${
+              isNaughtyMode
+                ? 'bg-[#3A1140]/85 text-[#FFB3E0] shadow-[0_8px_20px_rgba(0,0,0,0.28)]'
+                : 'nb-pill text-[#E8176D]'
+            }`}
+            aria-label="Visit the shop"
+          >
+            <ShoppingBag size={16} aria-hidden="true" />
+            Shop
           </motion.a>
         </motion.div>
       </div>
@@ -604,7 +635,10 @@ export default function Hero({ isNaughtyMode, loaded = true }: HeroProps) {
             : `calc(clamp(3.5rem, 9svh, 7.5rem) + ${HERO_LIFT})`,
         }}
       >
-        {menuCta}
+        <div className="flex items-center gap-3">
+          {menuCta}
+          {shopCta}
+        </div>
       </motion.div>
 
       {/* Desktop keeps the live-location pill pinned along the hero. The mobile
