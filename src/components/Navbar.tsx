@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 // Moon/Sun come back with the naughty-mode toggle below, which is commented
 // out — left out of the import so `tsc -b` (and therefore `npm run build`)
 // doesn't fail on two unused names.
-import { Download, Instagram, Menu, ShoppingBag, X } from 'lucide-react'
+import { Download, Instagram, Menu, X } from 'lucide-react'
 import { scrollToSelector } from '../lib/smoothScroll'
 import { SHOP_URL } from '../lib/shop'
 
@@ -12,8 +12,11 @@ type NavbarProps = {
   onToggleNaughtyMode: () => void
 }
 
+// Shop is the one item that leaves the page — every other href is an in-page
+// anchor the bar scrolls to; see isAnchor below.
 const links = [
   { label: 'Menu', href: '#menu' },
+  { label: 'Shop', href: SHOP_URL },
   { label: 'Book Now', href: '#events' },
   { label: 'About', href: '#about' },
   { label: 'Contact', href: '#contact' },
@@ -21,12 +24,15 @@ const links = [
 
 const mobileLinks = [
   { label: 'Menu', href: '#menu' },
+  { label: 'Shop', href: SHOP_URL },
   { label: 'Book Now', href: '#events' },
   { label: 'Find Us', href: '#findus' },
   { label: 'Gallery', href: '#gallery' },
   { label: 'About', href: '#about' },
   { label: 'Contact', href: '#contact' },
 ]
+
+const isAnchor = (href: string) => href.startsWith('#')
 
 export default function Navbar({ isNaughtyMode }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
@@ -85,13 +91,22 @@ export default function Navbar({ isNaughtyMode }: NavbarProps) {
           <ul className="hidden md:flex items-center gap-8" role="list">
             {links.map(({ label, href }) => (
               <li key={label}>
-                <button
-                  onClick={() => handleNavClick(href)}
-                  className={`text-[13px] font-bold tracking-[0.18em] uppercase transition-colors duration-200 cursor-pointer ${linkClass}`}
-                  aria-label={`Navigate to ${label}`}
-                >
-                  {label}
-                </button>
+                {isAnchor(href) ? (
+                  <button
+                    onClick={() => handleNavClick(href)}
+                    className={`text-[13px] font-bold tracking-[0.18em] uppercase transition-colors duration-200 cursor-pointer ${linkClass}`}
+                    aria-label={`Navigate to ${label}`}
+                  >
+                    {label}
+                  </button>
+                ) : (
+                  <a
+                    href={href}
+                    className={`text-[13px] font-bold tracking-[0.18em] uppercase transition-colors duration-200 ${linkClass}`}
+                  >
+                    {label}
+                  </a>
+                )}
               </li>
             ))}
           </ul>
@@ -160,23 +175,6 @@ export default function Navbar({ isNaughtyMode }: NavbarProps) {
               <Instagram size={19} strokeWidth={1.6} />
             </a>
 
-            {/* Shop sits beside the primary action as the cream pill, so the
-                bar still has one berry button leading. */}
-            <motion.a
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.97 }}
-              href={SHOP_URL}
-              className={`hidden md:flex items-center gap-2 px-6 py-2.5 text-[12px] tracking-[0.16em] uppercase font-bold rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                isNaughtyMode
-                  ? 'bg-[#3A1140]/85 text-[#FFB3E0] hover:text-white focus:ring-[#FF2D9C] focus:ring-offset-[#220A2C]'
-                  : 'nb-pill text-[#E8176D] hover:text-[#C01057] focus:ring-[#E8176D] focus:ring-offset-[#FFDCEA]'
-              }`}
-              aria-label="Visit the shop"
-            >
-              <ShoppingBag size={14} />
-              Shop
-            </motion.a>
-
             {/* The bar's primary action downloads the menu rather than
                 scrolling to it — the "Menu" nav link above already does that. */}
             <motion.a
@@ -239,16 +237,30 @@ export default function Navbar({ isNaughtyMode }: NavbarProps) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.06 }}
                 >
-                  <button
-                    onClick={() => handleNavClick(href)}
-                    className={`text-[22px] font-bold transition-colors cursor-pointer ${
-                      isNaughtyMode
-                        ? 'text-[#FFE4F5] hover:text-[#FF4DAE]'
-                        : 'text-[#2D1225] hover:text-[#E8176D]'
-                    }`}
-                  >
-                    {label}
-                  </button>
+                  {isAnchor(href) ? (
+                    <button
+                      onClick={() => handleNavClick(href)}
+                      className={`text-[22px] font-bold transition-colors cursor-pointer ${
+                        isNaughtyMode
+                          ? 'text-[#FFE4F5] hover:text-[#FF4DAE]'
+                          : 'text-[#2D1225] hover:text-[#E8176D]'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ) : (
+                    <a
+                      href={href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`text-[22px] font-bold transition-colors ${
+                        isNaughtyMode
+                          ? 'text-[#FFE4F5] hover:text-[#FF4DAE]'
+                          : 'text-[#2D1225] hover:text-[#E8176D]'
+                      }`}
+                    >
+                      {label}
+                    </a>
+                  )}
                 </motion.li>
               ))}
             </ul>
@@ -264,18 +276,6 @@ export default function Navbar({ isNaughtyMode }: NavbarProps) {
               >
                 {isNaughtyMode ? 'Light Mode' : 'Get Naughty'}
               </button> */}
-              <a
-                href={SHOP_URL}
-                onClick={() => setMobileOpen(false)}
-                className={`flex w-full items-center justify-center gap-2 py-3 rounded-full font-semibold text-sm tracking-widest uppercase border ${
-                  isNaughtyMode
-                    ? 'border-[#FF8FD0] text-[#FFB3E0]'
-                    : 'bg-[#FFF9ED] border-[#FFB8D2] text-[#E8176D]'
-                }`}
-              >
-                <ShoppingBag size={15} />
-                Shop
-              </a>
               <a
                 href="/naughty-berry-menu.pdf"
                 download="Naughty-Berry-Menu.pdf"

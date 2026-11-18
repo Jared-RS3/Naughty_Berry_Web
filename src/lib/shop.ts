@@ -1,7 +1,5 @@
 /**
- * Where every "Shop" button on the site points — the hero CTA, the desktop
- * nav and the mobile drawer all read this one value.
- *
- * TODO: placeholder until the shop link is ready. Swap in the real URL here.
+ * Where every "Shop" link on the site points — the hero CTAs and the Shop
+ * item in the desktop nav and mobile drawer all read this one value.
  */
-export const SHOP_URL = '#'
+export const SHOP_URL = 'https://naughtyberry-store.myshopify.com/'
