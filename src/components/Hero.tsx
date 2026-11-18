@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { MapPin, ArrowRight, ChevronRight, ShoppingBag } from 'lucide-react'
 import { usePopupSchedule, type ScheduleSlot } from '../hooks/usePopupSchedule'
-import { currentSlot, isScheduleOff, mapsHref, stopHeadline } from '../lib/nextStop'
+import { currentSlot, isScheduleOff, longDate, mapsHref, parseDate, stopHeadline } from '../lib/nextStop'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { SHOP_URL } from '../lib/shop'
 
@@ -107,6 +107,15 @@ function HeroLocationStrip({
   // source for both halves now, so they cannot disagree.
   const slot = error ? null : currentSlot(schedule)
   const headline = slot ? stopHeadline(slot) : null
+  // A TBA row's headline is the bare place name, so the pill supplies the
+  // "Next stop" lead-in itself, as a small tag perched on its top edge so the
+  // place name keeps the pill's width. Headlines that already open with it
+  // don't get it twice. The row's date rides along in the tag when there is one.
+  const slotDate = slot ? parseDate(slot.date) : null
+  const lead =
+    headline && !/^next stop\b/i.test(headline)
+      ? ['next stop', slotDate && longDate(slotDate)].filter(Boolean).join(' · ')
+      : null
 
   // Nothing to point at — see hasLiveLocation. The hero reads the same rule to
   // lift its composition into the space this leaves on desktop.
@@ -124,6 +133,7 @@ function HeroLocationStrip({
     : 'border-[#E8176D]/15 bg-white/70 text-[#7A3B5E] hover:bg-white'
   const accent = isNaughtyMode ? 'text-[#FF4DAE]' : 'text-[#E8176D]'
   const strong = isNaughtyMode ? 'text-white' : 'text-[#3B2116]'
+  const sticker = isNaughtyMode ? 'bg-[#FF4DAE] text-white' : 'bg-[#E8176D] text-white'
 
   // Mobile ('top') now rides in the document flow at the head of the hero
   // column — with the pill pinned and the rest of the hero centred, the nav→pill
@@ -161,7 +171,9 @@ function HeroLocationStrip({
         href={venueHref ?? '#next-stop'}
         {...(venueHref ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
         aria-label={
-          venueHref && slot ? `${headline} — get directions to ${slot.location}` : undefined
+          venueHref && slot
+            ? `${lead ? `${lead}: ` : ''}${headline} — get directions to ${slot.location}`
+            : undefined
         }
         whileTap={prefersReducedMotion ? undefined : { scale: 0.97 }}
         /* `relative` so the "click me" doodle can hang off the pill itself
@@ -176,6 +188,15 @@ function HeroLocationStrip({
           )}
           <span className="relative inline-flex h-2 w-2 rounded-full bg-current" />
         </span>
+
+        {!loading && lead && (
+          <span
+            className={`pointer-events-none absolute -top-2.5 left-5 -rotate-3 whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-extrabold italic leading-none shadow-sm ${sticker}`}
+            style={{ fontFamily: 'var(--font-body)' }}
+          >
+            {lead}
+          </span>
+        )}
 
         {loading ? (
           <span className="h-3 w-32 shrink animate-pulse rounded-full bg-current opacity-20 sm:w-40" />

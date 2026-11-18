@@ -60,6 +60,14 @@ export function relativeLabel(date: Date): string {
   return weekday
 }
 
+/** "20th November" — the day people say out loud, for the hero's next-stop tag. */
+export function longDate(date: Date): string {
+  const d = date.getDate()
+  const suffix =
+    d % 100 >= 11 && d % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][d % 10] ?? 'th'
+  return `${d}${suffix} ${date.toLocaleDateString('en-ZA', { month: 'long' })}`
+}
+
 /** Short "Saturday · 9:00–14:00" line for the compact cards. */
 export function shortWhen(next: NextStop): string {
   const day = next.date

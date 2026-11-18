@@ -21,7 +21,7 @@ export const SHOW_NEXT_STOP = true
 export const NEXT_STOP = {
   eventName: 'To be announced',
   day: 'TBA',
-  date: '',
+  date: '2026-11-20',
   location: 'Maynardville Park, Wynberg',
   area: '',
   startTime: '',
